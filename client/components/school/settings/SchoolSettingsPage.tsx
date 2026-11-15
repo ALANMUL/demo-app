@@ -12,6 +12,7 @@ import { useAppearance, useSaveAppearance } from "@/lib/school/settings";
 import {
   ACCENT_COLORS,
   accentSwatch,
+  accentSwatchText,
   applySchoolColors,
   asAccent,
   asSidebar,
@@ -136,7 +137,7 @@ function AppearanceCard() {
               <Swatches
                 title={t("accent.title")}
                 hint={t("accent.hint")}
-                options={ACCENT_COLORS.map((key) => ({ key, color: accentSwatch(key), label: t(`accent.colors.${key}`), isDefault: key === "BLUE" }))}
+                options={ACCENT_COLORS.map((key) => ({ key, color: accentSwatch(key), text: accentSwatchText(key), label: t(`accent.colors.${key}`), isDefault: key === "BLUE" }))}
                 value={chosen.accent}
                 onChange={(accent) => pick({ accent: accent as AccentColor })}
               />
@@ -181,7 +182,7 @@ function Swatches({
 }: {
   title: string;
   hint: string;
-  options: { key: string; color: string; label: string; isDefault: boolean }[];
+  options: { key: string; color: string; text?: string; label: string; isDefault: boolean }[];
   value: string;
   onChange: (key: string) => void;
 }) {
@@ -202,7 +203,7 @@ function Swatches({
             onClick={() => onChange(o.key)}
             className={cn("flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50", value === o.key && "border-brand ring-1 ring-brand")}
           >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full text-white shadow-inner" style={{ background: o.color }}>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full text-white shadow-inner ring-1 ring-black/10 ring-inset" style={{ background: o.color, color: o.text }}>
               {value === o.key && <Check className="size-4" />}
             </span>
             <span className="min-w-0">

@@ -4,17 +4,23 @@
  * - the accent (--brand: tabs, table headers, badges, highlights; --brand-soft: its pale tint),
  *   in light and dark mode. Picked to stay readable on white and on the dark canvas, and to
  *   never look like the status colours (green present / paid, red absent / due, amber late).
+ * - the accent band (--brand-band, with --brand-band-foreground for its text): a strip in the
+ *   accent itself, such as the Students page's status tabs. The same in both modes; golden and
+ *   cream carry dark text, the rest white.
  * - the sidebar (--school-sidebar), always dark so its white text and gold highlights read.
  *
  * Same keys as ACCENT_COLORS / SIDEBAR_COLORS in server/src/app/modules/schoolSettings: keep
  * them in step.
  */
 
-export const ACCENT_COLORS = ["BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE"] as const;
+export const ACCENT_COLORS = ["BLUE", "NAVY", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 export type AccentColor = (typeof ACCENT_COLORS)[number];
 
 export const SIDEBAR_COLORS = ["NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 export type SidebarColor = (typeof SIDEBAR_COLORS)[number];
+
+// text on the darker bands
+const WHITE = "oklch(0.985 0 0)";
 
 /*
  * brand / soft: highlights and their pale tint (--brand, --brand-soft).
@@ -23,11 +29,18 @@ export type SidebarColor = (typeof SIDEBAR_COLORS)[number];
  * "ink" is a light tint instead, as globals.css does for the default navy.
  */
 type Shade = { brand: string; soft: string; ink: string; inkSoft: string };
-const ACCENTS: Record<AccentColor, { light: Shade; dark: Shade }> = {
+type Accent = { light: Shade; dark: Shade; band?: { color: string; text: string } };
+const ACCENTS: Record<AccentColor, Accent> = {
   // the platform's own (what globals.css has): a school without a choice looks like this
   BLUE: {
     light: { brand: "oklch(0.5 0.17 262)", soft: "oklch(0.952 0.022 262)", ink: "oklch(0.305 0.1 258)", inkSoft: "oklch(0.955 0.018 258)" },
     dark: { brand: "oklch(0.64 0.15 262)", soft: "oklch(0.29 0.05 262)", ink: "oklch(0.82 0.07 258)", inkSoft: "oklch(0.27 0.05 258)" },
+  },
+  // the sidebar navy as the accent too: deep navy text and buttons, and a navy band
+  NAVY: {
+    light: { brand: "oklch(0.36 0.11 260)", soft: "oklch(0.95 0.02 258)", ink: "oklch(0.285 0.11 263)", inkSoft: "oklch(0.955 0.018 258)" },
+    dark: { brand: "oklch(0.72 0.1 260)", soft: "oklch(0.28 0.05 260)", ink: "oklch(0.82 0.07 258)", inkSoft: "oklch(0.27 0.05 258)" },
+    band: { color: "oklch(0.285 0.11 263)", text: WHITE },
   },
   INDIGO: {
     light: { brand: "oklch(0.47 0.18 280)", soft: "oklch(0.952 0.026 280)", ink: "oklch(0.33 0.13 280)", inkSoft: "oklch(0.955 0.02 280)" },
@@ -50,7 +63,27 @@ const ACCENTS: Record<AccentColor, { light: Shade; dark: Shade }> = {
     light: { brand: "oklch(0.42 0.04 255)", soft: "oklch(0.955 0.008 255)", ink: "oklch(0.32 0.03 255)", inkSoft: "oklch(0.955 0.008 255)" },
     dark: { brand: "oklch(0.72 0.03 255)", soft: "oklch(0.28 0.015 255)", ink: "oklch(0.84 0.02 255)", inkSoft: "oklch(0.27 0.012 255)" },
   },
+  /*
+   * The two warm ones. As text and buttons they are a deep gold and a caramel brown (a pale gold or
+   * a cream would not read on white); their band is the colour itself, with dark text. Golden's
+   * band is the sidebar's gold with its navy text. Contrast on white, light mode: golden text 4.75:1,
+   * white on its buttons 8.6:1, navy on its band 8:1; cream text 5.6:1, white on its buttons 10:1,
+   * brown on its band 9.3:1.
+   */
+  GOLDEN: {
+    light: { brand: "oklch(0.56 0.12 75)", soft: "oklch(0.96 0.04 88)", ink: "oklch(0.42 0.085 68)", inkSoft: "oklch(0.96 0.03 85)" },
+    dark: { brand: "oklch(0.78 0.13 82)", soft: "oklch(0.3 0.05 80)", ink: "oklch(0.85 0.08 85)", inkSoft: "oklch(0.28 0.04 80)" },
+    band: { color: "oklch(0.8 0.13 85)", text: "oklch(0.27 0.08 258)" },
+  },
+  CREAM: {
+    light: { brand: "oklch(0.52 0.08 62)", soft: "oklch(0.965 0.025 85)", ink: "oklch(0.38 0.05 58)", inkSoft: "oklch(0.965 0.02 85)" },
+    dark: { brand: "oklch(0.78 0.07 72)", soft: "oklch(0.3 0.03 75)", ink: "oklch(0.86 0.05 85)", inkSoft: "oklch(0.28 0.025 75)" },
+    band: { color: "oklch(0.94 0.04 88)", text: "oklch(0.36 0.06 58)" },
+  },
 };
+
+// the band: the accent's light-mode colour with white text, unless it has its own
+const band = (accent: AccentColor) => ACCENTS[accent].band ?? { color: ACCENTS[accent].light.brand, text: WHITE };
 
 // dark enough for white text in both modes (the sidebar never changes with the theme)
 const SIDEBARS: Record<SidebarColor, string> = {
@@ -78,8 +111,9 @@ export const SUGGESTED_ACCENT: Record<SidebarColor, AccentColor> = {
   CHARCOAL: "SLATE",
 };
 
-/** The accent's main colour in light mode (for a swatch). */
-export const accentSwatch = (accent: AccentColor) => ACCENTS[accent].light.brand;
+/** The accent as a swatch: its band colour (the colour by its name), and the colour of a mark on it. */
+export const accentSwatch = (accent: AccentColor) => band(accent).color;
+export const accentSwatchText = (accent: AccentColor) => band(accent).text;
 /** The sidebar colour (for a swatch or a preview). */
 export const sidebarSwatch = (sidebar: SidebarColor) => SIDEBARS[sidebar];
 
@@ -103,7 +137,9 @@ export const schoolColorsCss = ({ accent, sidebar }: SchoolColors) => {
   let css = "";
   if (accent && accent !== "BLUE") {
     const { light, dark } = ACCENTS[accent];
+    const { color, text } = band(accent);
     css +=
+      `:root{--brand-band:${color};--brand-band-foreground:${text}}` +
       `:root:not(.dark){--brand:${light.brand};--brand-soft:${light.soft};--primary:${light.ink};--navy:${light.ink};--navy-soft:${light.inkSoft}}` +
       `.dark{--brand:${dark.brand};--brand-soft:${dark.soft};--navy:${dark.ink};--navy-soft:${dark.inkSoft}}`;
   }

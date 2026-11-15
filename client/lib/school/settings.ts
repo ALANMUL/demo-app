@@ -96,7 +96,10 @@ const useAboutMutation = <T,>(request: (body: T) => Promise<About>) => {
 
 // the words and the facts
 export const useSaveAbout = () =>
-  useAboutMutation(async (body: Pick<About, "body" | "facts">) => (await httpClient.put<ApiResponse<About>>("/school-settings/about", body)).data.data);
+  useAboutMutation(
+    async (body: Pick<About, "body" | "facts" | "tagline" | "footerNote">) =>
+      (await httpClient.put<ApiResponse<About>>("/school-settings/about", body)).data.data,
+  );
 
 export const useUploadAboutImage = () =>
   useAboutMutation(async (file: File) => {

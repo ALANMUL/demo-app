@@ -1,17 +1,16 @@
-import { Globe, Mail, MapPin, Phone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Globe, Mail, MapPin, Phone, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
-import type { ReactNode } from "react";
 import { AboutSection } from "@/components/school/site/AboutSection";
 import { AdmissionSection } from "@/components/school/site/AdmissionSection";
+import { Chapter } from "@/components/school/site/Chapter";
 import { GallerySection } from "@/components/school/site/GallerySection";
 import { HeroSection } from "@/components/school/site/HeroSection";
 import { NoticesSection } from "@/components/school/site/NoticesSection";
 import { SchoolSiteHeader } from "@/components/school/site/SchoolSiteHeader";
-import { SectionHeading } from "@/components/school/site/SectionHeading";
 import { SiteFooter } from "@/components/school/site/SiteFooter";
 import { pickName } from "@/lib/i18n/names";
-import { hasAbout, hasAdmission } from "@/lib/site";
+import { siteChapters } from "@/lib/site";
 import { getCurrentSchoolSite } from "@/lib/site.server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -22,85 +21,104 @@ export async function generateMetadata(): Promise<Metadata> {
 // "+8801712345678" -> "01712345678", how people here write it
 const localPhone = (phone: string) => phone.replace(/^\+?880/, "0");
 
+type ContactRow = { icon: LucideIcon; label: string; value: string; action?: { href: string; label: string; external?: boolean } };
+
 /**
- * A school's public homepage (no login), its only page: the header, the hero (words on the left,
- * the image slider on the right), then a section per menu item (about, admission, gallery,
- * notices, contact; those the school left empty are skipped) and the footer; the menu scrolls to
- * the sections.
+ * A school's public homepage (no login), its only page, laid out like a printed prospectus: the
+ * header, the photos with the school's name over them and the newest notice under them, then a
+ * numbered chapter per menu item (about, admission, notices, gallery, contact; those the school
+ * left empty are skipped and the rest keep counting) and the footer. The menu scrolls to them.
  */
 export default async function SchoolHomePage() {
   const [t, locale, school] = await Promise.all([getTranslations("schoolHome"), getLocale(), getCurrentSchoolSite()]);
   // the school layout has already 404'd an unknown or inactive school
   if (!school) return null;
+  // the name in the language being read (the other one only when this one is missing)
   const name = pickName(school, locale);
-  // the other language's name under it, when the school has both
-  const otherName = locale === "bn" ? school.nameEn : school.nameBn;
+
+  // each chapter's number, counting only those shown
+  const chapters = siteChapters(school);
+  const numberOf = (id: (typeof chapters)[number]) => chapters.indexOf(id) + 1;
 
   const contacts = [
-    school.address && { icon: MapPin, label: t("contact.address"), value: school.address },
-    school.phone && { icon: Phone, label: t("contact.phone"), value: localPhone(school.phone), href: `tel:${school.phone}` },
-    school.publicEmail && { icon: Mail, label: t("contact.email"), value: school.publicEmail, href: `mailto:${school.publicEmail}` },
-    school.website && { icon: Globe, label: t("contact.website"), value: school.website.replace(/^https?:\/\//, ""), href: school.website, external: true },
-  ].filter(Boolean) as { icon: typeof MapPin; label: string; value: string; href?: string; external?: boolean }[];
+    school.phone && {
+      icon: Phone,
+      label: t("contact.phone"),
+      value: localPhone(school.phone),
+      action: { href: `tel:${school.phone}`, label: t("contact.call") },
+    },
+    school.publicEmail && {
+      icon: Mail,
+      label: t("contact.email"),
+      value: school.publicEmail,
+      action: { href: `mailto:${school.publicEmail}`, label: t("contact.write") },
+    },
+    school.address && {
+      icon: MapPin,
+      label: t("contact.address"),
+      value: school.address,
+      action: {
+        // a plain map search for the address: no embedded map, nothing to set up
+        href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${school.address.replace(/\s*\n\s*/g, ", ")}`)}`,
+        label: t("contact.map"),
+        external: true,
+      },
+    },
+    school.website && {
+      icon: Globe,
+      label: t("contact.website"),
+      value: school.website.replace(/^https?:\/\//, ""),
+      action: { href: school.website, label: t("contact.visit"), external: true },
+    },
+  ].filter(Boolean) as ContactRow[];
 
   return (
     <div className="site-home flex min-h-screen flex-1 flex-col bg-canvas">
       <SchoolSiteHeader school={school} />
 
       <main className="flex-1">
-        <HeroSection school={school} name={name} otherName={otherName} />
+        <HeroSection school={school} name={name} />
 
-        {hasAbout(school.about) && <AboutSection about={school.about} name={name} />}
+        {chapters.includes("about") && <AboutSection about={school.about} number={numberOf("about")} />}
 
-        {hasAdmission(school.admission) && <AdmissionSection admission={school.admission} />}
+        {chapters.includes("admission") && <AdmissionSection admission={school.admission} number={numberOf("admission")} />}
 
-        {school.gallery.length > 0 && <GallerySection photos={school.gallery} />}
+        <NoticesSection subdomain={school.subdomain} number={numberOf("notices")} />
 
-        <NoticesSection subdomain={school.subdomain} />
+        {chapters.includes("gallery") && <GallerySection photos={school.gallery} number={numberOf("gallery")} />}
 
-        <section id="contact" className="scroll-mt-20 border-t bg-card">
-          <div className="mx-auto max-w-5xl px-4 py-16 sm:py-20">
-            <SectionHeading eyebrow={t("contact.eyebrow")} title={t("contact.title")} subtitle={t("contact.subtitle")} />
-            {contacts.length === 0 ? (
-              <p className="text-center text-sm text-muted-foreground">{t("contact.none")}</p>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {contacts.map(({ icon: Icon, label, value, href, external }) => (
-                  <ContactCard key={label} icon={<Icon className="size-5" />} label={label} value={value} href={href} external={external} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+        <Chapter id="contact" number={numberOf("contact")} title={t("contact.title")}>
+          {contacts.length === 0 ? (
+            <p className="border-y border-border/70 py-6 text-muted-foreground">{t("contact.none")}</p>
+          ) : (
+            <dl className="divide-y divide-border/70 border-y border-border/70">
+              {contacts.map(({ icon: Icon, label, value, action }) => (
+                <div key={label} className="grid gap-x-6 gap-y-1.5 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:items-baseline">
+                  <dt className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <Icon className="size-4 shrink-0 text-navy" />
+                    {label}
+                  </dt>
+                  <dd className="text-lg font-medium break-words whitespace-pre-line tabular-nums">{value}</dd>
+                  {action && (
+                    <dd>
+                      <a
+                        href={action.href}
+                        {...(action.external ? { target: "_blank", rel: "noreferrer" } : {})}
+                        className="-my-3 inline-flex items-center gap-1 rounded-sm py-3 text-sm font-semibold text-navy underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+                      >
+                        {action.label}
+                        {action.external ? <ArrowUpRight className="size-4" /> : <ArrowRight className="size-4" />}
+                      </a>
+                    </dd>
+                  )}
+                </div>
+              ))}
+            </dl>
+          )}
+        </Chapter>
       </main>
 
       <SiteFooter school={school} />
     </div>
-  );
-}
-
-function ContactCard({ icon, label, value, href, external }: { icon: ReactNode; label: string; value: string; href?: string; external?: boolean }) {
-  const body = (
-    <>
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-school-sidebar text-white shadow-md shadow-school-sidebar/20 transition-transform group-hover:scale-105">
-        {icon}
-      </span>
-      <span className="min-w-0">
-        <span className="block text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</span>
-        <span className="block font-medium break-words whitespace-pre-line">{value}</span>
-      </span>
-    </>
-  );
-  const box = "group flex items-start gap-4 rounded-xl border bg-background p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]";
-  return href ? (
-    <a
-      href={href}
-      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-      className={`${box} transition-all hover:-translate-y-0.5 hover:border-school-sidebar/30 hover:shadow-lg`}
-    >
-      {body}
-    </a>
-  ) : (
-    <div className={box}>{body}</div>
   );
 }

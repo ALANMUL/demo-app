@@ -1,4 +1,4 @@
-import { BookOpen, CalendarDays, CreditCard, LayoutDashboard, Package, School } from "lucide-react";
+import { BookOpen, CalendarDays, CreditCard, LayoutDashboard, Megaphone, Package, School } from "lucide-react";
 import type { MenuGroup } from "@/components/layout/SidebarShell";
 
 // The platform admin's modules, in sidebar order. Add new modules here.
@@ -13,6 +13,8 @@ export const platformMenu: MenuGroup[] = [
       { href: "/packages", label: "packages", icon: Package },
       { href: "/subjects", label: "subjects", icon: BookOpen },
       { href: "/holidays", label: "holidays", icon: CalendarDays },
+      // news for every school's super admin (their header bell)
+      { href: "/announcements", label: "announcements", icon: Megaphone },
     ],
   },
 ];

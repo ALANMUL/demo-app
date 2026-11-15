@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Megaphone, Paperclip, Pin } from "lucide-react";
+import { ChevronDown, ChevronRight, Megaphone, Paperclip, Pin } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState, type ReactNode } from "react";
 import { NoticeText } from "@/components/school/notices/NoticeText";
@@ -84,12 +84,12 @@ export function NoticeBoard({ subdomain, first }: { subdomain: string; first: Pu
   return (
     <>
       {items.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border/70 bg-card p-10 text-center text-sm text-muted-foreground">
-          <Megaphone className="size-7 text-muted-foreground/50" />
+        <p className="flex items-center gap-3 border-y border-border/70 py-6 text-muted-foreground">
+          <Megaphone className="size-5 shrink-0 text-muted-foreground/60" />
           {t("empty")}
-        </div>
+        </p>
       ) : (
-        <ul className="divide-y overflow-hidden rounded-2xl border border-border/70 bg-card">
+        <ul className="divide-y divide-border/70 border-y border-border/70">
           {items.map((n) => (
             <li key={n.id}>
               <NoticeRow notice={n} onOpen={() => open(n)} />
@@ -99,7 +99,7 @@ export function NoticeBoard({ subdomain, first }: { subdomain: string; first: Pu
       )}
 
       {page < totalPages && (
-        <div className="mt-5 flex flex-col items-center gap-2">
+        <div className="mt-6 flex flex-col items-start gap-2">
           <Button variant="outline" onClick={showMore} disabled={loadingMore}>
             <ChevronDown /> {loadingMore ? t("loading") : t("showMore")}
           </Button>
@@ -118,15 +118,22 @@ function NoticeRow({ notice: n, onOpen }: { notice: PublicNoticeItem; onOpen: ()
   const day = (opts: { day?: "numeric"; month?: "short"; year?: "numeric" }) => format.dateTime(new Date(n.publishAt), { ...opts, timeZone: "Asia/Dhaka" });
 
   return (
-    <button type="button" onClick={onOpen} className="flex w-full items-center gap-4 p-4 text-left transition-colors hover:bg-muted/50 sm:px-5">
-      <div className="flex w-14 shrink-0 flex-col items-center rounded-lg bg-brand-soft py-2 text-center">
-        <span className="text-xl leading-none font-semibold tabular-nums">{day({ day: "numeric" })}</span>
-        <span className="mt-0.5 text-[13px] text-muted-foreground uppercase">{day({ month: "short" })}</span>
-        <span className="text-[12px] text-muted-foreground tabular-nums">{day({ year: "numeric" })}</span>
-      </div>
-      <div className="min-w-0 flex-1 space-y-1">
-        <h3 className="leading-snug font-medium">{n.title}</h3>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+    // a dated line of the notice book: the day large in the margin, the title, then what it is
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group grid w-full grid-cols-[3.5rem_minmax(0,1fr)_auto] items-center gap-4 px-1 py-4 text-left transition-colors hover:bg-muted/40 focus-visible:bg-muted/50 focus-visible:outline-none sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-6 sm:px-2 sm:py-5"
+    >
+      <time dateTime={n.publishAt} className="flex flex-col border-r border-border/70 pr-3 sm:pr-5">
+        <span className="text-[1.75rem] leading-none font-normal text-navy tabular-nums sm:text-[2rem]">{day({ day: "numeric" })}</span>
+        <span className="mt-1 text-xs text-muted-foreground tabular-nums">
+          {day({ month: "short" })} {day({ year: "numeric" })}
+        </span>
+      </time>
+      {/* spans, not a heading and divs: a button may only hold phrasing content */}
+      <span className="block min-w-0 space-y-1.5">
+        <span className="block text-base leading-snug font-semibold text-pretty group-hover:underline group-hover:underline-offset-4 sm:text-lg">{n.title}</span>
+        <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <CategoryBadge category={n.category} />
           {n.pinned && (
             <span className="inline-flex items-center gap-1">
@@ -138,8 +145,9 @@ function NoticeRow({ notice: n, onOpen }: { notice: PublicNoticeItem; onOpen: ()
               <Paperclip className="size-3.5" /> {t("files", { count: n.attachmentCount })}
             </span>
           )}
-        </div>
-      </div>
+        </span>
+      </span>
+      <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
     </button>
   );
 }

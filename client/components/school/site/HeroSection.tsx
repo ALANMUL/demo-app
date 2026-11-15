@@ -1,20 +1,27 @@
-import { ArrowRight, MapPin, Megaphone, Phone } from "lucide-react";
-import { getTranslations } from "next-intl/server";
-import { getPublicNotices } from "@/lib/publicNotices";
+import { ArrowRight, ChevronRight, MapPin, Megaphone, Phone } from "lucide-react";
+import { getFormatter, getTranslations } from "next-intl/server";
+import { getPublicNotices, type PublicNoticeItem } from "@/lib/publicNotices";
 import { hasAdmission, type SchoolSite } from "@/lib/site";
-import { HeroSlider } from "./HeroSlider";
+import { cn } from "@/lib/utils";
+import { HeroStage } from "./HeroStage";
 import { OpenNoticeButton } from "./NoticeBoard";
 
 // "+8801712345678" -> "01712345678", how people here write it
 const localPhone = (phone: string) => phone.replace(/^\+?880/, "0");
 
+// characters past which the name is set a size smaller
+const LONG_NAME = 28;
+
+// a focus ring that shows on the school's colour
+const focusOnDark = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-primary";
+
 /*
- * The top of the homepage, in two parts: on the left the school's name, a line about it, the
- * way to admission (or the notices) and its phone and address; on the right the picture frame,
- * set on a tilted block of the school's colour, with the newest notice floating at its corner.
- * One column on a phone, the words first.
+ * The top of the homepage: the school's photos across the full width, fading one into the next,
+ * and over them at the bottom left its name, its own line, the way to admission (or the notices)
+ * and contact, and its phone and address. Without slides the about photo or the first gallery
+ * photos stand in; without any photo, the school's colour. Under it, a strip with the newest notice.
  */
-export async function HeroSection({ school, name, otherName }: { school: SchoolSite; name: string; otherName: string | null }) {
+export async function HeroSection({ school, name }: { school: SchoolSite; name: string }) {
   // the notices section loads the same page; Next keeps one copy of the request
   const [t, notices] = await Promise.all([getTranslations("schoolHome.hero"), getPublicNotices(school.subdomain)]);
   const latest = notices?.items[0];
@@ -23,102 +30,95 @@ export async function HeroSection({ school, name, otherName }: { school: SchoolS
     : { href: "#notices", label: t("notices") };
   const firstAddressLine = school.address?.split("\n")[0];
 
+  // the slides, else the about photo, else up to three gallery photos
+  const slides =
+    school.slides.length > 0
+      ? school.slides
+      : school.about.image
+        ? [{ id: "about", image: school.about.image, caption: null }]
+        : school.gallery.slice(0, 3);
+
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* backdrop: a faint grid, and soft light in the school's colour and the gold */}
-      <div aria-hidden className="site-hero-grid absolute inset-0 -z-10" />
-      <div aria-hidden className="absolute -top-32 -left-32 -z-10 size-[28rem] rounded-full bg-school-sidebar/10 blur-3xl" />
-      <div aria-hidden className="absolute top-1/3 -right-24 -z-10 size-[24rem] rounded-full bg-sidebar-primary/15 blur-3xl" />
-
-      <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 pt-12 pb-16 sm:pt-16 lg:grid-cols-12 lg:gap-10 lg:pt-20 lg:pb-24">
-        <div className="lg:col-span-5">
-          <span className="inline-flex items-center gap-2 rounded-full border bg-card/80 px-3 py-1 text-[13px] font-semibold tracking-[0.16em] text-school-sidebar uppercase shadow-sm backdrop-blur dark:text-foreground">
-            <span className="relative flex size-2">
-              <span className="absolute inset-0 animate-ping rounded-full bg-sidebar-primary/70 motion-reduce:animate-none" />
-              <span className="relative size-2 rounded-full bg-sidebar-primary" />
-            </span>
-            {t("eyebrow")}
-          </span>
-
-          <h1 className="mt-5 text-4xl leading-[1.1] font-extrabold tracking-tight text-balance sm:text-5xl xl:text-[3.5rem]">{name}</h1>
-          {/* a hand-drawn gold stroke under the name */}
-          <svg aria-hidden viewBox="0 0 220 14" className="mt-3 h-3.5 w-44 text-sidebar-primary" fill="none">
-            <path d="M2 10C40 3 90 2 130 5s60 4 88-2" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-          </svg>
-          {otherName && otherName !== name && <p className="mt-3 text-lg font-medium text-muted-foreground">{otherName}</p>}
-
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg">{t("tagline")}</p>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href={primary.href}
-              className="group inline-flex h-12 items-center gap-2 rounded-lg bg-school-sidebar px-6 font-semibold text-white shadow-lg shadow-school-sidebar/25 transition-transform hover:-translate-y-0.5"
-            >
-              {primary.label}
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </a>
-            <a
-              href="#contact"
-              className="inline-flex h-12 items-center gap-2 rounded-lg border bg-card px-6 font-semibold shadow-sm transition-colors hover:bg-muted"
-            >
-              {t("contact")}
-            </a>
-          </div>
-
-          {(school.phone || firstAddressLine) && (
-            <dl className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t pt-6">
-              {school.phone && (
-                <Fact icon={<Phone className="size-4" />} label={t("phone")}>
-                  <a href={`tel:${school.phone}`} className="tabular-nums hover:text-school-sidebar">
-                    {localPhone(school.phone)}
-                  </a>
-                </Fact>
-              )}
-              {firstAddressLine && (
-                <Fact icon={<MapPin className="size-4" />} label={t("address")}>
-                  {firstAddressLine}
-                </Fact>
-              )}
-            </dl>
+    <>
+      <HeroStage slides={slides} name={name}>
+        {/* a long name ("… সরকারি বালিকা উচ্চ বিদ্যালয় ও কলেজ") steps down a size, so it stays within three lines on a phone */}
+        <h1
+          className={cn(
+            "font-bold tracking-[-0.02em] text-balance",
+            name.length > LONG_NAME ? "text-[clamp(2rem,4vw,3.5rem)]" : "text-[clamp(2.5rem,5.4vw,4.5rem)]",
+            // after the size: tailwind-merge drops a line height that comes before a font size
+            "leading-[1.08]",
           )}
+        >
+          {name}
+        </h1>
+        <p className="mt-5 max-w-xl text-base leading-relaxed text-pretty text-white/80 sm:text-lg">{school.about.tagline || t("tagline")}</p>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <a
+            href={primary.href}
+            className={`inline-flex h-12 items-center gap-2 rounded-md bg-white px-6 font-semibold text-school-sidebar transition-colors hover:bg-white/90 ${focusOnDark}`}
+          >
+            {primary.label}
+            <ArrowRight className="size-4" />
+          </a>
+          <a
+            href="#contact"
+            className={`inline-flex h-12 items-center rounded-md border border-white/60 px-6 font-semibold text-white transition-colors hover:bg-white/10 ${focusOnDark}`}
+          >
+            {t("contact")}
+          </a>
         </div>
 
-        <div className="relative lg:col-span-7">
-          {/* the tilted block behind the frame, and a patch of gold dots at its corner */}
-          <div aria-hidden className="absolute -inset-2 rotate-2 rounded-3xl bg-school-sidebar sm:-inset-3" />
-          <div aria-hidden className="site-dots absolute -top-8 -right-4 size-28 text-sidebar-primary/70 sm:-right-8" />
-          <div className="relative">
-            <HeroSlider slides={school.slides} name={name} logo={school.logo} />
-          </div>
+        {(school.phone || firstAddressLine) && (
+          <p className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/75">
+            {school.phone && (
+              <a href={`tel:${school.phone}`} className={`-my-3 inline-flex items-center gap-2 rounded-sm py-3 tabular-nums hover:text-white ${focusOnDark}`}>
+                <Phone className="size-4" />
+                <span className="sr-only">{t("phone")}: </span>
+                {localPhone(school.phone)}
+              </a>
+            )}
+            {school.phone && firstAddressLine && <span aria-hidden className="h-4 w-px bg-white/30" />}
+            {firstAddressLine && (
+              <span className="inline-flex min-w-0 items-center gap-2">
+                <MapPin className="size-4 shrink-0" />
+                <span className="sr-only">{t("address")}: </span>
+                {firstAddressLine}
+              </span>
+            )}
+          </p>
+        )}
+      </HeroStage>
 
-          {latest && (
-            <OpenNoticeButton
-              notice={latest}
-              className="absolute -bottom-7 left-4 flex max-w-[min(20rem,calc(100%-2rem))] items-center gap-3 rounded-xl bg-card p-3 pr-4 text-left shadow-xl ring-1 ring-border transition-transform hover:-translate-y-0.5 sm:-left-6"
-            >
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary/20 text-school-sidebar dark:text-sidebar-primary">
-                <Megaphone className="size-4.5" />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-[12px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">{t("latestNotice")}</span>
-                <span className="block truncate text-sm font-semibold">{latest.title}</span>
-              </span>
-            </OpenNoticeButton>
-          )}
-        </div>
-      </div>
-    </section>
+      {latest && <LatestNotice notice={latest} label={t("latestNotice")} />}
+    </>
   );
 }
 
-function Fact({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+/* The strip under the photos: the newest notice, opening in full on the page. */
+async function LatestNotice({ notice, label }: { notice: PublicNoticeItem; label: string }) {
+  const format = await getFormatter();
   return (
-    <div className="flex items-center gap-3">
-      <span className="flex size-9 items-center justify-center rounded-lg bg-school-sidebar/10 text-school-sidebar dark:bg-white/10 dark:text-foreground">{icon}</span>
-      <div className="min-w-0">
-        <dt className="text-[13px] font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>
-        <dd className="text-sm font-semibold">{children}</dd>
-      </div>
+    <div className="border-b border-border/70 bg-card">
+      <OpenNoticeButton
+        notice={notice}
+        className="group mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted/50 focus-visible:bg-muted/60 focus-visible:outline-none sm:gap-5"
+      >
+        <span className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-navy">
+          <Megaphone className="size-4" />
+          <span className="hidden sm:inline">{label}</span>
+        </span>
+        <span aria-hidden className="hidden h-4 w-px bg-border sm:block" />
+        <time dateTime={notice.publishAt} className="shrink-0 text-sm text-muted-foreground tabular-nums">
+          {format.dateTime(new Date(notice.publishAt), { day: "numeric", month: "short", timeZone: "Asia/Dhaka" })}
+        </time>
+        <span className="min-w-0 flex-1 truncate font-medium">
+          <span className="sr-only sm:hidden">{label}: </span>
+          {notice.title}
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      </OpenNoticeButton>
     </div>
   );
 }

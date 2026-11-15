@@ -156,7 +156,7 @@ function PhotoRow({
       <div className={cn("relative w-full shrink-0 overflow-hidden rounded-md bg-muted", list === "slides" ? "aspect-[4/3] sm:w-36" : "aspect-square sm:w-28")}>
         {photo.image && (
           // eslint-disable-next-line @next/next/no-img-element -- signed links to private storage
-          <img src={photo.image} alt="" className="size-full object-cover" />
+          <img src={photo.image} alt="" className={cn("size-full", list === "slides" ? "object-contain" : "object-cover")} />
         )}
         <span className="absolute top-1.5 left-1.5 rounded bg-black/60 px-1.5 text-xs font-semibold text-white tabular-nums">{number}</span>
       </div>

@@ -6,6 +6,7 @@ import { SidebarShell } from "@/components/layout/SidebarShell";
 import { useSchoolMe } from "@/lib/auth/hooks";
 import { useTranslations } from "next-intl";
 import { useLocalizedName } from "@/lib/i18n/names";
+import { AnnouncementsMenu } from "./announcements/AnnouncementsMenu";
 import { MessagesMenu } from "./messages/MessagesMenu";
 import { schoolMenu } from "./navigation";
 import { SchoolBottomNav, useBottomNavHasMessages } from "./SchoolBottomNav";
@@ -37,11 +38,16 @@ export function SchoolShell({ children }: { children: ReactNode }) {
         home: "/dashboard",
       }}
       menu={schoolMenu}
-      // on a phone, families and teachers find Messages in the bottom bar instead
+      // the super admin: the platform's announcements (the bell). Families and teachers: their
+      // messages (on a phone those are in the bottom bar instead). Other staff get no messages.
       topBarItems={
-        <div className={bottomHasMessages ? "hidden md:block" : undefined}>
-          <MessagesMenu />
-        </div>
+        me?.isSuperAdmin ? (
+          <AnnouncementsMenu />
+        ) : bottomHasMessages ? (
+          <div className="hidden md:block">
+            <MessagesMenu />
+          </div>
+        ) : null
       }
       // a phone's bottom bar of the main pages
       bottomNav={<SchoolBottomNav />}

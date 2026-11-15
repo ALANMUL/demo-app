@@ -40,9 +40,31 @@ export type Admission = {
 
 export const hasAdmission = (a: Admission) => a.requirements.length + a.dates.length + a.fees.length > 0;
 
-export type About = { body: string; image: string | null; facts: { label: string; value: string }[] };
+export type About = {
+  body: string;
+  image: string | null;
+  facts: { label: string; value: string }[];
+  // the homepage's line under the school's name, and its footer line; "" = the default lines
+  tagline: string;
+  footerNote: string;
+};
 
-export const hasAbout = (a: About) => a.body.trim().length > 0 || !!a.image || a.facts.length > 0;
+// a chapter needs words or facts: a picture alone isn't one (without slides it opens the homepage instead)
+export const hasAbout = (a: About) => a.body.trim().length > 0 || a.facts.length > 0;
+
+export type SiteChapter = "about" | "admission" | "notices" | "gallery" | "contact";
+
+/**
+ * The homepage's chapters in page order, leaving out those the school hasn't filled in (notices
+ * and contact always show). The menu, the chapter numbers and the footer all follow this list.
+ */
+export const siteChapters = (school: Pick<SchoolSite, "about" | "admission" | "gallery">): SiteChapter[] => [
+  ...(hasAbout(school.about) ? (["about"] as const) : []),
+  ...(hasAdmission(school.admission) ? (["admission"] as const) : []),
+  "notices",
+  ...(school.gallery.length > 0 ? (["gallery"] as const) : []),
+  "contact",
+];
 
 const API_URL = process.env.API_URL ?? "http://localhost:5000";
 

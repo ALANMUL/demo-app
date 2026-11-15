@@ -15,6 +15,9 @@ import type { About } from "@/lib/site";
 import { ListEditor } from "./AdmissionCard";
 
 const MAX_BODY = 3000;
+// the same limits as the server
+const MAX_TAGLINE = 160;
+const MAX_FOOTER_NOTE = 300;
 
 /** The public homepage's about section: the school's own words, a picture and up to four facts. */
 export function AboutCard() {
@@ -42,7 +45,7 @@ export function AboutCard() {
           <>
             <AboutPicture image={about.data.image} />
             {/* keyed by the saved words, so a save (or another tab's) starts the form afresh */}
-            <AboutForm key={JSON.stringify([about.data.body, about.data.facts])} saved={about.data} />
+            <AboutForm key={JSON.stringify([about.data.body, about.data.facts, about.data.tagline, about.data.footerNote])} saved={about.data} />
           </>
         )}
       </div>
@@ -105,21 +108,44 @@ function AboutPicture({ image }: { image: string | null }) {
 
 function AboutForm({ saved }: { saved: About }) {
   const t = useTranslations("school.settings.about");
+  // the homepage's default lines, shown as the fallback while a field is empty
+  const tHome = useTranslations("schoolHome");
   const describeError = useErrorMessage();
   const save = useSaveAbout();
   const [body, setBody] = useState(saved.body);
   const [facts, setFacts] = useState(saved.facts);
-  const changed = body !== saved.body || JSON.stringify(facts) !== JSON.stringify(saved.facts);
+  const [tagline, setTagline] = useState(saved.tagline);
+  const [footerNote, setFooterNote] = useState(saved.footerNote);
+  const changed =
+    body !== saved.body ||
+    JSON.stringify(facts) !== JSON.stringify(saved.facts) ||
+    tagline !== saved.tagline ||
+    footerNote !== saved.footerNote;
 
   const submit = () =>
     save.mutate(
       // rows left wholly blank are dropped; half-filled ones go to the server, which names the problem
-      { body, facts: facts.filter((f) => f.label.trim() || f.value.trim()) },
+      { body, facts: facts.filter((f) => f.label.trim() || f.value.trim()), tagline, footerNote },
       { onSuccess: () => toast.success(t("saved")), onError: (e) => toast.error(describeError(e)) },
     );
 
   return (
     <div className="space-y-7">
+      <div className="space-y-2">
+        <Label htmlFor="about-tagline">{t("tagline")}</Label>
+        <Input
+          id="about-tagline"
+          value={tagline}
+          onChange={(e) => setTagline(e.target.value)}
+          maxLength={MAX_TAGLINE}
+          placeholder={tHome("hero.tagline")}
+          aria-describedby="about-tagline-hint"
+        />
+        <p id="about-tagline-hint" className="text-xs text-muted-foreground">
+          {t("taglineHint", { fallback: tHome("hero.tagline") })}
+        </p>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="about-body">{t("body")}</Label>
         <Textarea id="about-body" value={body} onChange={(e) => setBody(e.target.value)} rows={7} maxLength={MAX_BODY} placeholder={t("bodyPlaceholder")} />
@@ -143,7 +169,25 @@ function AboutForm({ saved }: { saved: About }) {
         )}
       />
 
-      <p className="text-xs text-muted-foreground">{t("note")}</p>
+      <div className="space-y-2">
+        <Label htmlFor="about-footer-note">{t("footerNote")}</Label>
+        <Textarea
+          id="about-footer-note"
+          value={footerNote}
+          onChange={(e) => setFooterNote(e.target.value)}
+          rows={2}
+          maxLength={MAX_FOOTER_NOTE}
+          placeholder={tHome("footer.about")}
+          aria-describedby="about-footer-note-hint"
+        />
+        <p id="about-footer-note-hint" className="text-xs text-muted-foreground">
+          {t("footerNoteHint", { fallback: tHome("footer.about") })}
+        </p>
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        {t("note")} {t("linesNote")}
+      </p>
       <div className="flex justify-end gap-2">
         {changed && (
           <Button
@@ -151,6 +195,8 @@ function AboutForm({ saved }: { saved: About }) {
             onClick={() => {
               setBody(saved.body);
               setFacts(saved.facts);
+              setTagline(saved.tagline);
+              setFooterNote(saved.footerNote);
             }}
             disabled={save.isPending}
           >

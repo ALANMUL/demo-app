@@ -709,22 +709,30 @@ const getStudents = async (schoolId: string, query: ListStudentsQuery) => {
   };
   const where: Prisma.StudentWhereInput = { ...filtered, ...(status ? { status } : {}) };
 
+  const include = {
+    // the enrollment for the chosen (or current) year, else the latest one
+    enrollments: {
+      where: yearId ? { academicYearId: yearId } : undefined,
+      orderBy: { academicYear: { startDate: "desc" as const } },
+      take: 1,
+      select: enrollmentSelect,
+    },
+  };
+
+  // by roll only for a class, section or group list (a bounded set) in a known year; otherwise by admission no.
+  const byRoll = sortBy === "roll" && placementFilter && !!yearId;
+  const orderBy = sortBy === "roll" ? "admissionNo" : sortBy;
+
   const [rows, total, byStatus] = await Promise.all([
-    prisma.student.findMany({
-      where,
-      orderBy: [{ [sortBy]: sortOrder } as Prisma.StudentOrderByWithRelationInput, { id: "asc" }],
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        // the enrollment for the chosen (or current) year, else the latest one
-        enrollments: {
-          where: yearId ? { academicYearId: yearId } : undefined,
-          orderBy: { academicYear: { startDate: "desc" } },
-          take: 1,
-          select: enrollmentSelect,
-        },
-      },
-    }),
+    byRoll
+      ? studentsByRoll(where, yearId!, sortOrder, page, limit, include)
+      : prisma.student.findMany({
+          where,
+          orderBy: [{ [orderBy]: sortOrder } as Prisma.StudentOrderByWithRelationInput, { id: "asc" }],
+          skip: (page - 1) * limit,
+          take: limit,
+          include,
+        }),
     prisma.student.count({ where }),
     // asked for by the students page: how many each status has under the other filters
     withStatusCounts === "true" ? prisma.student.groupBy({ by: ["status"], where: filtered, _count: { _all: true } }) : null,
@@ -748,6 +756,43 @@ const getStudents = async (schoolId: string, query: ListStudentsQuery) => {
     : undefined;
 
   return { items, ...(statusCounts ? { statusCounts } : {}), meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+};
+
+/*
+ * One page of a class's (or section's) students in roll order. Rolls are text, so the order is
+ * worked out here: numbers by value ("2" before "10"), then any other rolls as text, students
+ * without a roll last, admission no. breaking ties. A class is small, so its ids are read whole.
+ */
+const studentsByRoll = async <I extends Prisma.StudentInclude>(
+  where: Prisma.StudentWhereInput,
+  yearId: string,
+  sortOrder: "asc" | "desc",
+  page: number,
+  limit: number,
+  include: I,
+) => {
+  const all = await prisma.student.findMany({
+    where,
+    select: { id: true, admissionNo: true, enrollments: { where: { academicYearId: yearId }, take: 1, select: { rollNumber: true } } },
+  });
+  const key = (roll: string | null | undefined) => {
+    const text = roll?.trim() ?? "";
+    if (!text) return { group: 2, num: 0, text };
+    return /^\d+$/.test(text) ? { group: 0, num: Number(text), text } : { group: 1, num: 0, text };
+  };
+  const dir = sortOrder === "desc" ? -1 : 1;
+  const ordered = all
+    .map((s) => ({ id: s.id, admissionNo: s.admissionNo, roll: key(s.enrollments[0]?.rollNumber) }))
+    .sort((a, b) => {
+      // students without a roll stay last whichever way the list runs
+      if (a.roll.group !== b.roll.group) return a.roll.group === 2 || b.roll.group === 2 ? a.roll.group - b.roll.group : dir * (a.roll.group - b.roll.group);
+      const byRoll = a.roll.group === 0 ? a.roll.num - b.roll.num : a.roll.text.localeCompare(b.roll.text);
+      return dir * byRoll || a.admissionNo.localeCompare(b.admissionNo);
+    });
+  const pageIds = ordered.slice((page - 1) * limit, page * limit).map((s) => s.id);
+  const rows = await prisma.student.findMany({ where: { id: { in: pageIds } }, include });
+  const at = new Map(pageIds.map((id, i) => [id, i]));
+  return rows.sort((a, b) => at.get(a.id)! - at.get(b.id)!);
 };
 
 // ------------------------------------------------------------------- photo

@@ -12,6 +12,7 @@ import { groupRoutes } from '../modules/group/group.route';
 import { teacherRoutes } from '../modules/teacher/teacher.route';
 import { subjectTeacherRoutes } from '../modules/subjectTeacher/subjectTeacher.route';
 import { calendarRoutes, nationalHolidayRoutes } from '../modules/calendar/calendar.route';
+import { platformAnnouncementRoutes, schoolAnnouncementRoutes } from '../modules/announcement/announcement.route';
 import { attendanceRoutes } from '../modules/attendance/attendance.route';
 import { gradingRoutes } from '../modules/grading/grading.route';
 import { examRoutes, optionalSubjectRoutes } from '../modules/exam/exam.route';
@@ -111,6 +112,16 @@ const moduleRoutes = [
         // national holidays for every school, platform admin only
         path: '/platform/national-holiday',
         route: nationalHolidayRoutes
+    },
+    {
+        // the platform's announcements to every school, platform admin only
+        path: '/platform/announcement',
+        route: platformAnnouncementRoutes
+    },
+    {
+        // the same announcements, read by the school super admin (the header bell)
+        path: '/announcement',
+        route: schoolAnnouncementRoutes
     },
     {
         path: '/attendance',

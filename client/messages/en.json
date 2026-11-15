@@ -150,6 +150,11 @@
     "monthsRequired": "Tick at least one month",
     "schoolNameRequired": "Enter your school or college name",
     "max1000": "At most 1000 characters",
+    "max5000": "At most 5000 characters",
+    "titleEnRequired": "English title is required",
+    "titleBnRequired": "Bangla title is required",
+    "bodyEnRequired": "English text is required",
+    "bodyBnRequired": "Bangla text is required",
     "packageRequired": "Choose a package"
   },
   "auth": {
@@ -252,7 +257,8 @@
     "homework": "Homework",
     "idCards": "ID cards",
     "fees": "Fees",
-    "packages": "Packages"
+    "packages": "Packages",
+    "announcements": "Announcements"
   },
   "platform": {
     "welcome": "Welcome, {name}",
@@ -624,6 +630,46 @@
         "confirm": "Delete",
         "deleting": "Deleting…",
         "deleted": "{name} deleted."
+      }
+    },
+    "announcements": {
+      "title": "Announcements",
+      "description": "News for every school's super admin: new features, changes and maintenance. It shows in the bell at the top of their dashboard.",
+      "add": "New announcement",
+      "columns": {
+        "date": "Published",
+        "kind": "Type",
+        "title": "Title",
+        "reads": "Opened by",
+        "actions": "Actions"
+      },
+      "reads": "{count, plural, =0 {Nobody yet} one {# admin} other {# admins}}",
+      "empty": "No announcements yet.",
+      "loadFailed": "Couldn't load announcements.",
+      "edit": "Edit",
+      "delete": "Delete",
+      "form": {
+        "addTitle": "New announcement",
+        "editTitle": "Edit announcement",
+        "addNote": "It goes to every school's super admin at once.",
+        "editNote": "Schools that already read it won't be told again.",
+        "kind": "Type",
+        "titleEn": "Title (English)",
+        "titleBn": "Title (Bangla)",
+        "bodyEn": "Text (English)",
+        "bodyBn": "Text (Bangla)",
+        "save": "Publish",
+        "update": "Save",
+        "saving": "Saving…",
+        "created": "Announcement published.",
+        "updated": "Announcement updated."
+      },
+      "deleteDialog": {
+        "title": "Delete “{title}”?",
+        "description": "It disappears from every school's bell.",
+        "confirm": "Delete",
+        "deleting": "Deleting…",
+        "deleted": "Announcement deleted."
       }
     },
     "packages": {
@@ -1346,9 +1392,9 @@
         "class": "Class",
         "roll": "Roll",
         "father": "Father",
-        "family": "Family login",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "phone": "Guardian phone"
       },
       "admissionNoShort": "Adm. {no}",
       "roll": "Roll {roll}",
@@ -1530,7 +1576,24 @@
       },
       "export": "Export",
       "exporting": "Exporting…",
-      "exportFailed": "Couldn't export the students."
+      "exportFailed": "Couldn't export the students.",
+      "register": {
+        "title": "Classes",
+        "allClasses": "All classes",
+        "school": "School",
+        "college": "College",
+        "allSections": "All",
+        "sectionsOf": "Sections of {className}",
+        "classSection": "{className}, section {section}",
+        "countStatus": "{count, plural, one {# {status} student} other {# {status} students}} in {year}",
+        "countAll": "{count, plural, one {# student} other {# students}} in {year}",
+        "loading": "Loading…",
+        "countStatusAnyYear": "{count, plural, one {# {status} student} other {# {status} students}}",
+        "countAllAnyYear": "{count, plural, one {# student} other {# students}}",
+        "noneInTab": "No {status} students here.",
+        "showTab": "{status} ({count})"
+      },
+      "actionsFor": "Actions for {name}"
     },
     "calendar": {
       "title": "Calendar",
@@ -3688,11 +3751,14 @@
           "hint": "Buttons, tabs, table headers and highlights.",
           "colors": {
             "BLUE": "Royal blue",
+            "NAVY": "Navy",
             "INDIGO": "Indigo",
             "VIOLET": "Violet",
             "MAROON": "Maroon",
             "TEAL": "Teal",
-            "SLATE": "Slate"
+            "SLATE": "Slate",
+            "GOLDEN": "Golden",
+            "CREAM": "Cream"
           }
         },
         "suggestion": "{accent} goes well with a {sidebar} sidebar.",
@@ -3715,13 +3781,13 @@
       },
       "slides": {
         "title": "Homepage slider",
-        "hint": "The pictures in the frame at the top of your public homepage, up to {max}. They're cropped to 4 : 3 (1600 × 1200), so keep the subject near the middle.",
+        "hint": "The pictures across the top of your public homepage, behind your school's name, up to {max}. Wide landscape pictures (16 : 9) fill it best; a tall picture is shown whole over a softened copy of itself.",
         "add": "Add picture",
         "uploading": "Uploading…",
         "added": "Picture added",
-        "empty": "No pictures yet. Until you add some, the homepage shows your school's name and logo on its colour.",
+        "empty": "No pictures yet. Until you add some, the homepage opens with your school's name and details on its colour.",
         "caption": "Caption of picture {number}",
-        "captionPlaceholder": "Caption (optional), shown over the picture",
+        "captionPlaceholder": "Caption (optional), shown at the bottom of the picture",
         "save": "Save",
         "saved": "Caption saved",
         "moveUp": "Move up",
@@ -3759,7 +3825,7 @@
       },
       "about": {
         "title": "About section",
-        "hint": "Tell visitors about your school on the homepage: your story, a picture and a few facts. Left empty, the section is hidden.",
+        "hint": "Tell visitors about your school on the homepage: your story, a picture and a few facts. Without words or facts the section is hidden; the picture then opens the homepage when there are no slides.",
         "picture": "Picture",
         "pictureHint": "Shown beside the words, cropped to 4 : 3 (1200 × 900). JPG, PNG or WebP, up to 5 MB.",
         "addPicture": "Add picture",
@@ -3778,7 +3844,12 @@
         "undo": "Undo changes",
         "save": "Save",
         "saving": "Saving…",
-        "saved": "About section saved"
+        "saved": "About section saved",
+        "tagline": "Line under the school's name",
+        "taglineHint": "Shown at the top of the homepage, under the name. Leave empty to use: “{fallback}”",
+        "footerNote": "Footer line",
+        "footerNoteHint": "Shown at the bottom of the homepage, beside the name. Leave empty to use: “{fallback}”",
+        "linesNote": "Both lines show exactly as you write them, in Bangla and in English."
       },
       "gallery": {
         "title": "Gallery",
@@ -4866,6 +4937,23 @@
       "playProtect": "Until the app is on Google Play, Android may say it is from an unknown developer: tap “Install anyway”. The app tells you when a new version is out."
     }
   },
+  "announcements": {
+    "title": "Notifications",
+    "pageTitle": "Notifications from SNCMT",
+    "description": "News from the SNCMT team: new features, changes and planned maintenance.",
+    "superAdminOnly": "Only the school's super admin gets notifications from SNCMT.",
+    "unreadCount": "{count, number} unread",
+    "markAllRead": "Mark all as read",
+    "viewAll": "See all notifications",
+    "empty": "No notifications yet.",
+    "loadFailed": "Couldn't load notifications.",
+    "new": "New",
+    "kinds": {
+      "NEW_FEATURE": "New feature",
+      "CHANGE": "Change",
+      "MAINTENANCE": "Maintenance"
+    }
+  },
   "inbox": {
     "title": "Messages",
     "description": "Updates from the school about your children.",
@@ -5007,42 +5095,43 @@
     "openApp": "Open the app",
     "contact": {
       "title": "Contact us",
-      "subtitle": "Visit, call or write to the school office.",
       "address": "Address",
       "phone": "Phone",
       "email": "Email",
       "website": "Website",
       "none": "The school hasn't added its contact details yet.",
-      "eyebrow": "Get in touch"
+      "call": "Call",
+      "write": "Send an email",
+      "map": "Open in Google Maps",
+      "visit": "Visit the website"
     },
     "nav": {
-      "home": "Home",
       "admission": "Admission",
       "notices": "Notices",
       "contact": "Contact",
       "menu": "Open menu",
       "closeMenu": "Close menu",
       "about": "About",
-      "gallery": "Gallery"
+      "gallery": "Gallery",
+      "label": "Homepage sections"
     },
     "slider": {
       "label": "Pictures of {name}",
       "slideOf": "Picture {current} of {total}",
       "previous": "Previous picture",
       "next": "Next picture",
-      "goTo": "Show picture {number}"
+      "goTo": "Show picture {number}",
+      "pause": "Pause the pictures",
+      "play": "Play the pictures"
     },
     "admission": {
       "title": "Admission",
-      "subtitle": "What you need, when to apply and what it costs.",
       "requirements": "Requirements",
       "dates": "Important dates",
-      "fees": "Fees",
-      "eyebrow": "Join us"
+      "fees": "Fees"
     },
     "notices": {
       "title": "Latest notices",
-      "subtitle": "News and announcements from the school.",
       "empty": "There are no notices right now.",
       "pinned": "Pinned",
       "files": "{count, plural, one {# file} other {# files}}",
@@ -5052,11 +5141,9 @@
       "posted": "Posted {date}",
       "until": "until {date}",
       "notFound": "Notice not available",
-      "notFoundHint": "This notice has been removed or is no longer public.",
-      "eyebrow": "Stay informed"
+      "notFoundHint": "This notice has been removed or is no longer public."
     },
     "hero": {
-      "eyebrow": "Welcome to",
       "tagline": "A place where curious minds grow, character is shaped, and every student is helped to shine.",
       "admission": "Admission info",
       "notices": "Latest notices",
@@ -5068,23 +5155,20 @@
     "footer": {
       "about": "Learning, discipline and care, together. Visit us, call us, or follow our notices to stay up to date.",
       "links": "Quick links",
-      "reach": "Reach us",
       "rights": "© {year} {name}. All rights reserved."
     },
     "about": {
-      "eyebrow": "About us",
-      "title": "Welcome to {name}"
+      "title": "About the school"
     },
     "gallery": {
-      "eyebrow": "Gallery",
       "title": "Life at our school",
-      "subtitle": "Moments from our classrooms, events and celebrations.",
       "open": "Open picture {number}",
       "openNamed": "Open picture: {caption}",
       "counter": "{current} of {total}",
       "previous": "Previous picture",
       "next": "Next picture",
-      "close": "Close"
+      "close": "Close",
+      "showAll": "Show all {count, number} pictures"
     }
   },
   "publicNotices": {

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { SchoolLoader } from "@/components/layout/SchoolLoader";
+import { ShellSkeleton } from "@/components/layout/ShellSkeleton";
 
 type Props = {
   loading?: boolean;
@@ -8,19 +8,16 @@ type Props = {
   actions?: ReactNode;
 };
 
-/** Centered loader or message, used while a session loads or when it can't. */
+/** The dashboard's outline while a session loads, or a centered message when it can't. */
 export function FullPageState({ loading, title, message, actions }: Props) {
+  if (loading) return <ShellSkeleton />;
   return (
     <div className="flex min-h-screen flex-1 items-center justify-center bg-canvas p-6">
-      {loading ? (
-        <SchoolLoader />
-      ) : (
-        <div className="max-w-sm space-y-3 text-center">
-          {title && <h1 className="text-lg font-semibold">{title}</h1>}
-          {message && <p className="text-sm text-muted-foreground">{message}</p>}
-          {actions && <div className="flex justify-center gap-2 pt-2">{actions}</div>}
-        </div>
-      )}
+      <div className="max-w-sm space-y-3 text-center">
+        {title && <h1 className="text-lg font-semibold">{title}</h1>}
+        {message && <p className="text-sm text-muted-foreground">{message}</p>}
+        {actions && <div className="flex justify-center gap-2 pt-2">{actions}</div>}
+      </div>
     </div>
   );
 }

@@ -114,7 +114,8 @@ const listStudentsQuery = z.object({
   hasAccount: z.enum(["true", "false"]).optional(),
   // "true": the reply also counts each status under the other filters (the students page's cards)
   withStatusCounts: z.enum(["true", "false"]).optional(),
-  sortBy: z.enum(["admissionNo", "nameEn", "createdAt"]).default("admissionNo"),
+  // "roll": by roll number in the chosen (or current) year, for a class, section or group list
+  sortBy: z.enum(["admissionNo", "nameEn", "createdAt", "roll"]).default("admissionNo"),
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),

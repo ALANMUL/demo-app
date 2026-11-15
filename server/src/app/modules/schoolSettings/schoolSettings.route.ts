@@ -19,7 +19,7 @@ import { deleteFile, fileKey, putFile, withFileUrls } from "../../shared/storage
  * and late; sidebars stay dark enough for their white text. null is the default (blue, navy).
  * The colours themselves live in the client (lib/theme/accents.ts): keep the lists in step.
  */
-export const ACCENT_COLORS = ["BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE"] as const;
+export const ACCENT_COLORS = ["BLUE", "NAVY", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 export const SIDEBAR_COLORS = ["NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 
 const appearanceSelect = { accentColor: true, sidebarColor: true } as const;
@@ -196,9 +196,12 @@ const MAX_FACTS = 4;
 const aboutBody = z.strictObject({
   body: z.string().trim().max(3000, "Keep it under 3000 characters"),
   facts: z.array(z.strictObject({ label: text(40), value: text(40) })).max(MAX_FACTS, `Up to ${MAX_FACTS} facts`),
+  // the homepage's line under the school's name, and its footer line; blank = the app's default line
+  tagline: z.string().trim().max(160, "Keep it under 160 characters").default(""),
+  footerNote: z.string().trim().max(300, "Keep it under 300 characters").default(""),
 });
-const aboutSelect = { body: true, image: true, facts: true } as const;
-const NO_ABOUT = { body: "", image: null, facts: [] };
+const aboutSelect = { body: true, image: true, facts: true, tagline: true, footerNote: true } as const;
+const NO_ABOUT = { body: "", image: null, facts: [], tagline: "", footerNote: "" };
 
 const readAbout = async (schoolId: string) => {
   const about = await prisma.schoolAbout.findUnique({ where: { schoolId }, select: aboutSelect });

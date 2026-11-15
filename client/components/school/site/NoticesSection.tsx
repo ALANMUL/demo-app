@@ -1,16 +1,15 @@
 import { getTranslations } from "next-intl/server";
 import { getPublicNotices } from "@/lib/publicNotices";
+import { Chapter } from "./Chapter";
 import { NoticeBoard } from "./NoticeBoard";
-import { SectionHeading } from "./SectionHeading";
 
-/** The homepage's notices section: the public notices, newest first, each opening in full on the page. */
-export async function NoticesSection({ subdomain }: { subdomain: string }) {
+/** The homepage's notices chapter: the public notices, newest first, each opening in full on the page. */
+export async function NoticesSection({ subdomain, number }: { subdomain: string; number: number }) {
   const [t, first] = await Promise.all([getTranslations("schoolHome.notices"), getPublicNotices(subdomain)]);
 
   return (
-    <section id="notices" className="mx-auto max-w-4xl scroll-mt-20 px-4 py-16 sm:py-20">
-      <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
+    <Chapter id="notices" number={number} title={t("title")}>
       <NoticeBoard subdomain={subdomain} first={first} />
-    </section>
+    </Chapter>
   );
 }

@@ -87,7 +87,8 @@ export type StudentListQuery = {
   sectionId?: string;
   groupId?: string;
   admissionType?: AdmissionType;
-  sortBy?: "admissionNo" | "nameEn" | "createdAt";
+  // "roll": roll order, for a class, section or group list
+  sortBy?: "admissionNo" | "nameEn" | "createdAt" | "roll";
   sortOrder?: "asc" | "desc";
   // also count each status under the other filters (the students page's status cards)
   withStatusCounts?: boolean;
@@ -194,9 +195,11 @@ export type StudentFilterQuery = Omit<StudentListQuery, "page" | "limit" | "sort
 /** Every student under these filters, a page of the most the server allows at a time (for an export). */
 export async function listAllStudents(query: StudentFilterQuery) {
   const limit = 100;
-  const first = await studentsApi.list({ ...query, page: 1, limit });
+  // a class's export runs in roll order, like its list
+  const sorted = { ...query, ...(query.classId ? { sortBy: "roll" as const } : {}) };
+  const first = await studentsApi.list({ ...sorted, page: 1, limit });
   const items = [...first.items];
-  for (let page = 2; page <= first.meta.totalPages; page++) items.push(...(await studentsApi.list({ ...query, page, limit })).items);
+  for (let page = 2; page <= first.meta.totalPages; page++) items.push(...(await studentsApi.list({ ...sorted, page, limit })).items);
   return items;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Images, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -9,12 +9,19 @@ import type { SchoolSite } from "@/lib/site";
 // a swipe shorter than this is a tap
 const SWIPE_PX = 40;
 
+// a contact sheet starts with two rows of three; the rest are a click away
+const FIRST = 6;
+
 /*
- * The gallery's pictures as a masonry wall (each keeps its own shape); a picture opens full size
- * in a dark viewer with its caption, arrows, swipes and the arrow keys.
+ * The gallery's pictures as a contact sheet: even 4:3 frames with their captions under them,
+ * the first six and then "Show all". A picture opens full size in a dark viewer with its caption,
+ * arrows, swipes and the arrow keys (through every picture, shown or not yet).
  */
 export function GalleryGrid({ photos }: { photos: SchoolSite["gallery"] }) {
   const t = useTranslations("schoolHome.gallery");
+  const [all, setAll] = useState(false);
+  const shown = all ? photos : photos.slice(0, FIRST);
+  const hidden = photos.length - shown.length;
   const [open, setOpen] = useState<number | null>(null);
   const touchStart = useRef<number | null>(null);
   const count = photos.length;
@@ -36,30 +43,39 @@ export function GalleryGrid({ photos }: { photos: SchoolSite["gallery"] }) {
 
   return (
     <>
-      <ul className="columns-2 gap-3 sm:columns-3 sm:gap-4 lg:columns-4">
-        {photos.map((photo, i) => (
-          <li key={photo.id} className="mb-3 break-inside-avoid sm:mb-4">
+      <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-7">
+        {shown.map((photo, i) => (
+          <li key={photo.id}>
             <button
               type="button"
               onClick={() => setOpen(i)}
               aria-label={photo.caption ? t("openNamed", { caption: photo.caption }) : t("open", { number: i + 1 })}
-              className="group relative block w-full overflow-hidden rounded-xl bg-muted text-left focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+              className="group block w-full rounded-2xl text-left focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
-              <img src={photo.image} alt={photo.caption ?? ""} loading="lazy" className="w-full transition-transform duration-500 group-hover:scale-105" />
-              <span className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <span className="absolute top-3 right-3 flex size-8 items-center justify-center rounded-full bg-white/90 text-slate-900 opacity-0 shadow transition-opacity duration-300 group-hover:opacity-100">
-                <Maximize2 className="size-4" />
+              <span className="block rounded-2xl border border-border/70 bg-card p-1 transition-colors group-hover:border-foreground/25">
+                {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
+                <img src={photo.image} alt={photo.caption ?? ""} loading="lazy" decoding="async" className="aspect-4/3 w-full rounded-xl bg-muted object-cover" />
               </span>
               {photo.caption && (
-                <span className="absolute inset-x-0 bottom-0 translate-y-2 p-3 text-sm font-medium text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                  {photo.caption}
-                </span>
+                <span className="mt-2 line-clamp-2 block px-1 text-sm leading-snug text-foreground/75 group-hover:text-foreground">{photo.caption}</span>
               )}
             </button>
           </li>
         ))}
       </ul>
+
+      {hidden > 0 && (
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={() => setAll(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-card px-5 text-sm font-semibold transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+          >
+            <Images className="size-4 text-navy" />
+            {t("showAll", { count })}
+          </button>
+        </div>
+      )}
 
       <Dialog open={open !== null} onOpenChange={(o) => !o && setOpen(null)}>
         <DialogContent

@@ -282,7 +282,7 @@ const getPublicSite = async (subdomain: string) => {
       status: true,
       slides: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
       admissionInfo: { select: { requirements: true, dates: true, fees: true } },
-      about: { select: { body: true, image: true, facts: true } },
+      about: { select: { body: true, image: true, facts: true, tagline: true, footerNote: true } },
       galleryPhotos: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
     },
   });
@@ -303,7 +303,8 @@ const getPublicSite = async (subdomain: string) => {
     slides: signedSlides.filter((slide) => slide.image),
     // never saved = nothing to show
     admission: admissionInfo ?? { requirements: [], dates: [], fees: [] },
-    about: signedAbout ?? { body: "", image: null, facts: [] },
+    // tagline / footerNote "" = the site shows its default lines
+    about: signedAbout ?? { body: "", image: null, facts: [], tagline: "", footerNote: "" },
     gallery: signedGallery.filter((photo) => photo.image),
   };
 };

@@ -40,7 +40,7 @@ export function ExportMenu({ load, className }: { load: () => Promise<ListExport
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" disabled={busy !== null} className={cn("h-9 px-4 shadow-sm", className)}>
+          <Button variant="outline" disabled={busy !== null} className={cn("h-9 px-4", className)}>
             <Download /> {busy ? t("preparing") : t("button")}
           </Button>
         </DropdownMenuTrigger>
@@ -58,8 +58,8 @@ export function ExportMenu({ load, className }: { load: () => Promise<ListExport
   );
 }
 
-/* The list as printed pages (only it prints), the print dialog opened once the fonts are in. */
-function PrintList({ list, onDone }: { list: ListExport; onDone: () => void }) {
+/* The list as printed pages (only it prints), the print dialog opened once the fonts are in. Also used by pages with a print button of their own (the Students page's Print list). */
+export function PrintList({ list, onDone }: { list: ListExport; onDone: () => void }) {
   const t = useTranslations("export");
 
   useEffect(() => {

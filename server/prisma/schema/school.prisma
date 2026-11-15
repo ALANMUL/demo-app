@@ -390,6 +390,11 @@ model SchoolAbout {
   // [{ label, value }]: "Established" / "1998", "Students" / "1,200"; up to four
   facts Json    @default("[]")
 
+  // the line under the school's name at the top of the homepage; "" = the app's default line
+  tagline    String @default("")
+  // the line in the homepage's footer; "" = the app's default line
+  footerNote String @default("")
+
   updatedAt DateTime @updatedAt
 }
 

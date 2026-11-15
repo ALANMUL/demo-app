@@ -32,6 +32,8 @@ model User {
   notifications       Notification[]
   // phones that get push notifications (the mobile app)
   deviceTokens        DeviceToken[]
+  // the platform's announcements a school super admin has opened
+  platformAnnouncementReads PlatformAnnouncementRead[]
 
   @@index([email])
   @@index([phone])

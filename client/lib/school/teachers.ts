@@ -103,6 +103,11 @@ export const teachersApi = {
 
   removePhoto: async (teacherId: string) =>
     (await httpClient.delete<ApiResponse<Teacher>>(`/teacher/${teacherId}/photo`)).data.data,
+
+  // only a teacher with no history (see the delete check); the rest leave
+  remove: async ({ teacherId, reason }: { teacherId: string; reason?: string }) => {
+    await httpClient.delete(`/teacher/${teacherId}`, { params: { reason } });
+  },
 };
 
 /** Every teacher under these filters, page by page (for exports). */
@@ -144,3 +149,4 @@ export const useUpdateTeacher = () => useTeacherMutation(teachersApi.update);
 export const useTeacherLeaves = () => useTeacherMutation(teachersApi.leave);
 export const useSetTeacherPhoto = () => useTeacherMutation(teachersApi.setPhoto);
 export const useRemoveTeacherPhoto = () => useTeacherMutation(teachersApi.removePhoto);
+export const useDeleteTeacher = () => useTeacherMutation(teachersApi.remove);

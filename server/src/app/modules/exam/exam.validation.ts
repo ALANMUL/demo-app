@@ -80,6 +80,12 @@ const listExamsQuery = z.object({
   academicYearId: optionalId,
 });
 
+// deleting an exam (or a class of it): once marks exist, a reason and its name typed again
+const deleteExamQuery = z.object({
+  reason: z.string().trim().max(300).optional(),
+  confirmName: z.string().trim().max(200).optional(),
+});
+
 // ------------------------------------------------------------------ routine
 
 const part = z
@@ -178,6 +184,7 @@ const setOptionalChoices = z.strictObject({
 });
 
 export const ExamValidation = {
+  deleteExamQuery,
   createExam,
   updateExam,
   addClasses,
@@ -194,6 +201,7 @@ export type CreateExamPayload = z.infer<typeof createExam>;
 export type UpdateExamPayload = z.infer<typeof updateExam>;
 export type AddClassesPayload = z.infer<typeof addClasses>;
 export type ListExamsQuery = z.infer<typeof listExamsQuery>;
+export type DeleteExamQuery = z.infer<typeof deleteExamQuery>;
 export type SetRoutinePayload = z.infer<typeof setRoutine>;
 export type SetStatusPayload = z.infer<typeof setStatus>;
 export type OptionalQuery = z.infer<typeof optionalQuery>;

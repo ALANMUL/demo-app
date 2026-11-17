@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, DoorOpen, KeyRound, MoreHorizontal, Palmtree, Pencil, Undo2 } from "lucide-react";
+import { ArrowLeft, DoorOpen, KeyRound, MoreHorizontal, Palmtree, Pencil, Trash2, Undo2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { ImageUpload } from "@/components/data/ImageUpload";
@@ -30,7 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SetPasswordDialog } from "@/components/auth/SetPasswordDialog";
-import { useCan, useSchoolMe } from "@/lib/auth/hooks";
+import { useCan, useIsSuperAdmin, useSchoolMe } from "@/lib/auth/hooks";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import {
@@ -42,6 +43,7 @@ import {
   type SectionRef,
   type TeacherDetail,
 } from "@/lib/school/teachers";
+import { DeleteTeacherDialog } from "./DeleteTeacherDialog";
 import { TeacherCredentialsDialog, type TeacherCredentials } from "./TeacherCredentialsDialog";
 import { TeacherFormDialog } from "./TeacherFormDialog";
 import { TeacherStatusBadge } from "./TeacherStatusBadge";
@@ -99,8 +101,12 @@ function Detail({ teacher }: { teacher: TeacherDetail }) {
   const setPhoto = useSetTeacherPhoto();
   const removePhoto = useRemoveTeacherPhoto();
 
+  const tDelete = useTranslations("deletes.teacher");
+  const router = useRouter();
+  const isSuperAdmin = useIsSuperAdmin();
   const [editing, setEditing] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const me = useSchoolMe();
   const [settingPassword, setSettingPassword] = useState(false);
   const [credentials, setCredentials] = useState<TeacherCredentials | null>(null);
@@ -132,8 +138,10 @@ function Detail({ teacher }: { teacher: TeacherDetail }) {
     reset: !!me?.isSuperAdmin && working,
     leave: can("teacher:deactivate") && working,
     photo: can("teacher:update") && working,
+    // the super admin only: with their attendance, subjects and duties
+    remove: isSuperAdmin,
   };
-  const anyMenuAction = actions.toggleLeave || actions.reset || actions.leave;
+  const anyMenuAction = actions.toggleLeave || actions.reset || actions.leave || actions.remove;
 
   return (
     <div className="space-y-6">
@@ -182,6 +190,14 @@ function Detail({ teacher }: { teacher: TeacherDetail }) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem variant="destructive" onSelect={() => setLeaving(true)}>
                       <DoorOpen /> {t("actions.leave")}
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {actions.remove && (
+                  <>
+                    {!actions.leave && <DropdownMenuSeparator />}
+                    <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(true)}>
+                      <Trash2 /> {tDelete("action")}
                     </DropdownMenuItem>
                   </>
                 )}
@@ -269,6 +285,7 @@ function Detail({ teacher }: { teacher: TeacherDetail }) {
 
       <TeacherFormDialog open={editing} teacher={teacher} onClose={() => setEditing(false)} onCredentials={setCredentials} />
       <LeaveDialog teacher={leaving ? teacher : null} onClose={() => setLeaving(false)} />
+      <DeleteTeacherDialog teacher={teacher} open={deleting} onClose={() => setDeleting(false)} onDeleted={() => router.replace("/teachers")} />
       <SetPasswordDialog
         account={settingPassword ? { userId: user.id, name: teacherName, login: localPhone(user.phone) } : null}
         onClose={() => setSettingPassword(false)}

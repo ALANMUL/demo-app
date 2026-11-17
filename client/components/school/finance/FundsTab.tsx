@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeftRight, MoreHorizontal, Pencil, PiggyBank, Plus, Power, PowerOff } from "lucide-react";
+import { ArrowLeftRight, MoreHorizontal, Pencil, PiggyBank, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,14 +10,16 @@ import { FormError } from "@/components/auth/AuthCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DeleteRecordDialog } from "@/components/data/DeleteRecordDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useIsSuperAdmin } from "@/lib/auth/hooks";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { applyServerErrors } from "@/lib/auth/formErrors";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
-import { useCreateFund, useFunds, useMoney, useUpdateFund, type Fund } from "@/lib/school/finance";
+import { useCreateFund, useDeleteFund, useFunds, useMoney, useUpdateFund, type Fund } from "@/lib/school/finance";
 import { cn } from "@/lib/utils";
 import { fundFormSchema, type FundFormInput, type FundFormValues } from "@/zod/finance";
 import { NameFields, useSchoolLanguage } from "../NameFields";
@@ -45,6 +47,11 @@ export function FundsTab({
   const [editing, setEditing] = useState<Fund | null | undefined>();
   const [depositing, setDepositing] = useState<Fund | null>(null);
   const [transferring, setTransferring] = useState(false);
+  // the super admin only, and only a fund money never went through
+  const canDelete = useIsSuperAdmin();
+  const tDelete = useTranslations("deletes.fund");
+  const remove = useDeleteFund();
+  const [deleting, setDeleting] = useState<Fund | null>(null);
   const activeCount = (data ?? []).filter((f) => f.isActive).length;
 
   const setActive = (fund: Fund, isActive: boolean) =>
@@ -97,7 +104,7 @@ export function FundsTab({
                     <Badge variant={fund.isActive ? "secondary" : "outline"}>{t(fund.isActive ? "active" : "inactive")}</Badge>
                   </TableCell>
                   <TableCell>
-                    {(canUpdate || (canDeposit && fund.isActive)) && (
+                    {(canUpdate || canDelete || (canDeposit && fund.isActive)) && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8" aria-label={t("actions")}>
@@ -124,6 +131,14 @@ export function FundsTab({
                               <Power /> {t("activate")}
                             </DropdownMenuItem>
                           )}
+                          {canDelete && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(fund)}>
+                                <Trash2 /> {tDelete("action")}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -138,6 +153,19 @@ export function FundsTab({
       <FundFormDialog fund={editing} onClose={() => setEditing(undefined)} />
       <DepositDialog fund={depositing} onClose={() => setDepositing(null)} />
       <TransferDialog open={transferring} onClose={() => setTransferring(false)} />
+      <DeleteRecordDialog
+        target={
+          deleting && {
+            title: tDelete("title", { name: name(deleting) }),
+            description: tDelete("description"),
+            checkPath: `/fund/${deleting.id}/delete-check`,
+            confirmText: name(deleting),
+            done: tDelete("done", { name: name(deleting) }),
+            run: (reason) => remove.mutateAsync({ fundId: deleting.id, reason }),
+          }
+        }
+        onClose={() => setDeleting(null)}
+      />
     </div>
   );
 }

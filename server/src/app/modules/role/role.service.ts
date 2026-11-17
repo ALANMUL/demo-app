@@ -3,6 +3,7 @@ import type { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "../../../../lib/prisma";
 import { AppError } from "../../errorHandler/AppError";
 import { ensureMembership, ensureRole, findOrCreateAccount, GUARDIAN_ROLE, TEACHER_ROLE } from "../../shared/schoolAccounts";
+import { SUPER_ADMIN_ONLY_PERMISSIONS } from "../../shared/superAdminPermissions";
 import { isUniqueViolation } from "../../utils/prismaError";
 import type { AddStaffPayload, CreateRolePayload, UpdateRolePayload } from "./role.validation";
 
@@ -23,10 +24,17 @@ const kindOf = (role: { name: string; isSystem: boolean }): RoleKind =>
   !role.isSystem ? "CUSTOM" : role.name === SUPER_ADMIN ? "SUPER_ADMIN" : role.name === TEACHER_ROLE.name ? "TEACHER" : "GUARDIAN";
 const KIND_ORDER: Record<RoleKind, number> = { SUPER_ADMIN: 0, TEACHER: 1, GUARDIAN: 2, CUSTOM: 3 };
 
-/* The permissions a school can give: active ones of its enabled modules. */
+/*
+ * The permissions a school can give: active ones of its enabled modules, except deleting
+ * records and reversing money, which stay with the super admin.
+ */
 const permissionCatalog = (db: Db, schoolId: string) =>
   db.permission.findMany({
-    where: { isActive: true, module: { isActive: true, schoolModules: { some: { schoolId, isEnabled: true } } } },
+    where: {
+      isActive: true,
+      code: { notIn: SUPER_ADMIN_ONLY_PERMISSIONS },
+      module: { isActive: true, schoolModules: { some: { schoolId, isEnabled: true } } },
+    },
     select: { id: true, code: true, name: true, module: { select: { code: true, name: true } } },
     orderBy: [{ module: { name: "asc" } }, { code: "asc" }],
   });

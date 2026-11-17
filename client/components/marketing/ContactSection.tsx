@@ -3,82 +3,69 @@ import { getTranslations } from "next-intl/server";
 import { companyContact, localPhone } from "@/lib/marketing/company";
 import type { PublicPackage } from "@/lib/marketing/packages";
 import { ContactForm } from "./ContactForm";
-import { MkHeading } from "./MkHeading";
+import { MarginHeading, MarginRow, Note } from "./Margin";
 
-/** The last section: one card, the way it works on navy at the left and the form at the right. */
+/** The last section, on navy: the three steps and our contacts at the left, the form on a white card at the right. */
 export async function ContactSection({ packages }: { packages: PublicPackage[] }) {
   const t = await getTranslations("marketing.contact");
   const { phone, email, address } = companyContact;
 
   return (
-    <section id="contact" className="relative scroll-mt-16 bg-canvas py-20 sm:py-28">
-      <div aria-hidden className="site-hero-grid absolute inset-0" />
-      <div className="relative mx-auto max-w-6xl px-4">
-        <MkHeading index="03" eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
+    <section id="contact" aria-labelledby="contact-title" className="scroll-mt-16 bg-mk-ink [--mk-line:rgb(255_255_255/0.2)]">
+      <MarginRow className="h-20 sm:h-28" />
+      <MarginRow note={<Note className="text-white/65 max-lg:mb-4 lg:pt-3">{t("eyebrow")}</Note>}>
+        <MarginHeading light id="contact-title" title={t("title")} subtitle={t("subtitle")} />
 
-        <div className="grid overflow-hidden rounded-3xl border bg-card shadow-[0_30px_80px_-30px_rgb(15_20_60/0.25)] lg:grid-cols-[2fr_3fr]">
-          <aside className="dark relative isolate overflow-hidden bg-mk-ink p-8 text-white sm:p-10">
-            <div aria-hidden className="absolute -right-24 -bottom-24 -z-10 size-72 rounded-full bg-mk-blue/40 blur-3xl" />
-            <div aria-hidden className="absolute -top-16 -left-16 -z-10 size-48 rounded-full bg-mk-gold/15 blur-3xl" />
-
-            <h3 className="text-2xl font-bold tracking-tight">{t("stepsTitle")}</h3>
-            <ol className="mt-8 space-y-6">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-16">
+          <div>
+            <h3 className="text-xl font-bold text-white">{t("stepsTitle")}</h3>
+            {/* a real order: send, see it, go live */}
+            <ol className="mt-6 space-y-6">
               {(["step1", "step2", "step3"] as const).map((key, i) => (
-                <li key={key} className="relative flex gap-4">
-                  {/* a line joining the numbers */}
-                  {i < 2 && <span aria-hidden className="absolute top-9 bottom-[-1.25rem] left-[1.0625rem] w-px bg-white/15" />}
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-mk-gold/40 bg-mk-gold/10 font-mono text-sm font-bold text-mk-gold">
-                    {i + 1}
-                  </span>
+                <li key={key} className="flex gap-4">
+                  <span className="w-6 shrink-0 text-[1.75rem] leading-none text-mk-gold tabular-nums">{i + 1}</span>
                   <span>
-                    <span className="block font-semibold">{t(`${key}.title`)}</span>
-                    <span className="mt-0.5 block text-sm leading-relaxed text-white/60">{t(`${key}.body`)}</span>
+                    <span className="block text-lg font-semibold text-white">{t(`${key}.title`)}</span>
+                    <span className="mt-1 block text-base leading-relaxed text-white/70">{t(`${key}.body`)}</span>
                   </span>
                 </li>
               ))}
             </ol>
 
             {(phone || email || address) && (
-              <ul className="mt-10 space-y-3.5 border-t border-white/10 pt-8 text-sm">
+              <ul className="mt-10 space-y-3 border-t border-white/15 pt-8 text-base text-white">
                 {phone && (
                   <li>
-                    <a href={`tel:${phone}`} className="group flex items-center gap-3 text-white/85 hover:text-white">
-                      <ContactIcon icon={Phone} />
+                    <a href={`tel:${phone}`} className="flex items-center gap-3 hover:underline">
+                      <Phone className="size-4 shrink-0 text-mk-gold" />
                       <span className="tabular-nums">{localPhone(phone)}</span>
                     </a>
                   </li>
                 )}
                 {email && (
                   <li>
-                    <a href={`mailto:${email}`} className="group flex items-center gap-3 break-all text-white/85 hover:text-white">
-                      <ContactIcon icon={Mail} />
+                    <a href={`mailto:${email}`} className="flex items-center gap-3 break-all hover:underline">
+                      <Mail className="size-4 shrink-0 text-mk-gold" />
                       {email}
                     </a>
                   </li>
                 )}
                 {address && (
-                  <li className="flex items-start gap-3 text-white/85">
-                    <ContactIcon icon={MapPin} />
-                    <span className="pt-1.5 whitespace-pre-line">{address}</span>
+                  <li className="flex items-start gap-3">
+                    <MapPin className="mt-1 size-4 shrink-0 text-mk-gold" />
+                    <span className="whitespace-pre-line">{address}</span>
                   </li>
                 )}
               </ul>
             )}
-          </aside>
+          </div>
 
-          <div className="p-6 sm:p-10">
+          <div className="rounded-lg bg-white p-5 shadow-[0_30px_60px_-30px_rgb(0_0_0/0.5)] sm:p-8">
             <ContactForm packages={packages} />
           </div>
         </div>
-      </div>
+      </MarginRow>
+      <MarginRow className="h-24 sm:h-32" />
     </section>
-  );
-}
-
-function ContactIcon({ icon: Icon }: { icon: typeof Phone }) {
-  return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white/[0.07] text-mk-gold transition-colors group-hover:bg-mk-gold group-hover:text-mk-ink">
-      <Icon className="size-4" />
-    </span>
   );
 }

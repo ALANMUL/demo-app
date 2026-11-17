@@ -4,7 +4,9 @@ import { AppError } from "../../errorHandler/AppError";
 import { checkPermission } from "../../middlewares/authorize";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
+import type { OptionalReasonQuery } from "../../shared/deleteSchemas";
 import { StudentService } from "./student.service";
+import { StudentDeleteService } from "./studentDelete.service";
 import type { ListStudentsQuery } from "./student.type";
 
 const createStudent = catchAsync(async (req: Request, res: Response) => {
@@ -71,6 +73,11 @@ const changePlacement = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Placement updated!", data: result });
 });
 
+const placeStudent = catchAsync(async (req: Request, res: Response) => {
+  const result = await StudentService.placeStudent(req.auth!.schoolId!, req.params.studentId as string, req.body);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Student placed in the class!", data: result });
+});
+
 const setPhoto = catchAsync(async (req: Request, res: Response) => {
   const result = await StudentService.setPhoto(req.auth!.schoolId!, req.params.studentId as string, req.file!.buffer);
 
@@ -83,7 +90,20 @@ const removePhoto = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Photo removed!", data: result });
 });
 
+const deleteCheck = catchAsync(async (req: Request, res: Response) => {
+  const data = await StudentDeleteService.deleteCheck(req.auth!.schoolId!, req.params.studentId as string);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Delete check done", data });
+});
+
+const deleteStudent = catchAsync(async (req: Request, res: Response) => {
+  const data = await StudentDeleteService.deleteStudent(req.auth!, req.params.studentId as string, req.query as OptionalReasonQuery);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Student deleted", data });
+});
+
 export const StudentController = {
+  placeStudent,
+  deleteCheck,
+  deleteStudent,
   changePlacement,
   setPhoto,
   removePhoto,

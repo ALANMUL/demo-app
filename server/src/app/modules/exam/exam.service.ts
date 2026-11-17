@@ -183,15 +183,6 @@ const updateExam = async (schoolId: string, examId: string, data: UpdateExamPayl
   });
 };
 
-/* Only while every class is still setting up its routine (nothing marked, nothing published). */
-const deleteExam = async (schoolId: string, examId: string) => {
-  const exam = await findExam(schoolId, examId);
-  if (exam.classes.some((c) => c.status !== "ROUTINE")) {
-    throw new AppError("Marks entry has started for this exam, so it cannot be deleted", httpStatus.CONFLICT);
-  }
-  await prisma.exam.delete({ where: { id: examId } });
-};
-
 const addClasses = async (schoolId: string, examId: string, data: AddClassesPayload) => {
   const exam = await findExam(schoolId, examId);
   await assertClassesInSchool(schoolId, data.classIds);
@@ -203,15 +194,6 @@ const addClasses = async (schoolId: string, examId: string, data: AddClassesPayl
 
   await prisma.examClass.createMany({ data: data.classIds.map((classId) => ({ examId, classId })) });
   return findExam(schoolId, examId);
-};
-
-/* Takes a class out of the exam (with its routine), only while it is still at the routine stage. */
-const removeClass = async (schoolId: string, examId: string, classId: string) => {
-  const examClass = await findExamClass(schoolId, examId, classId);
-  if (examClass.status !== "ROUTINE") {
-    throw new AppError("Marks entry has started for this class, so it cannot be removed", httpStatus.CONFLICT);
-  }
-  await prisma.examClass.delete({ where: { id: examClass.id } });
 };
 
 // -------------------------------------------------------------------- routine
@@ -456,9 +438,7 @@ export const ExamService = {
   getExams,
   getExamById,
   updateExam,
-  deleteExam,
   addClasses,
-  removeClass,
   getRoutine,
   setRoutine,
   setStatus,

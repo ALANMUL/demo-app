@@ -2,7 +2,9 @@ import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
+import type { OptionalReasonQuery } from "../../shared/deleteSchemas";
 import { AcademicYearService } from "./academicYear.service";
+import { AcademicYearDeleteService } from "./academicYearDelete.service";
 
 const createAcademicYear = catchAsync(async (req: Request, res: Response) => {
   const result = await AcademicYearService.createAcademicYear(req.auth!.schoolId!, req.body);
@@ -43,7 +45,23 @@ const setCurrentAcademicYear = catchAsync(async (req: Request, res: Response) =>
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Current academic year changed", data: result });
 });
 
+const deleteCheck = catchAsync(async (req: Request, res: Response) => {
+  const data = await AcademicYearDeleteService.deleteCheck(req.auth!.schoolId!, req.params.academicYearId as string);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Delete check done", data });
+});
+
+const deleteAcademicYear = catchAsync(async (req: Request, res: Response) => {
+  const data = await AcademicYearDeleteService.deleteAcademicYear(
+    req.auth!,
+    req.params.academicYearId as string,
+    req.query as OptionalReasonQuery,
+  );
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Academic year deleted", data });
+});
+
 export const AcademicYearController = {
+  deleteCheck,
+  deleteAcademicYear,
   createAcademicYear,
   getAcademicYears,
   getAcademicYearById,

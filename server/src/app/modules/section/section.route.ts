@@ -1,7 +1,9 @@
 import express from 'express'
 import validateRequest from '../../errorHandler/validateRequest';
 import authenticate from '../../middlewares/auth';
-import authorize from '../../middlewares/authorize';
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
+import { optionalReasonQuery } from "../../shared/deleteSchemas";
+import { DeleteController } from "../deletes/delete.controller";
 import { SectionValidation } from './section.validation';
 import { SectionController } from './section.controller';
 
@@ -37,11 +39,21 @@ router.patch(
     SectionController.updateSection,
 );
 
+// a section with what was done in it; its students stay, unplaced
+router.get(
+    '/:sectionId/delete-check',
+    authorize("section:view"),
+    superAdminOnly,
+    validateRequest({ params: SectionValidation.sectionIdParams }),
+    DeleteController.sectionDeleteCheck,
+);
+
 router.delete(
     '/:sectionId',
-    authorize("section:delete"),
-    validateRequest({params: SectionValidation.sectionIdParams}),
-    SectionController.deleteSection,
+    authorize("section:view"),
+    superAdminOnly,
+    validateRequest({ params: SectionValidation.sectionIdParams, query: optionalReasonQuery }),
+    DeleteController.deleteSection,
 );
 
 // class teacher and capacity of a section for one academic year

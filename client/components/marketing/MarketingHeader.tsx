@@ -1,16 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { BrandMark } from "./BrandMark";
+import { PAGE } from "./Margin";
 import { MarketingNav } from "./MarketingNav";
 
-/** The marketing site's bar: white, a hairline under it, staying at the top over the navy hero. */
+/** The marketing site's bar: white with a ruled line under it, staying at the top. */
 export async function MarketingHeader() {
   const t = await getTranslations("common");
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-[0_1px_12px_rgb(15_23_42/0.06)] backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" aria-label={t("appName")} className="min-w-0">
+    <header className="sticky top-0 z-40 border-b border-mk-rule bg-white/95 backdrop-blur-md">
+      <div className={`${PAGE} flex h-16 items-center justify-between gap-4`}>
+        <Link href="/" aria-label={t("appName")} className="min-w-0 rounded-md focus-visible:ring-2 focus-visible:ring-mk-ink focus-visible:outline-none">
           <BrandMark name={t("appName")} onWhite />
         </Link>
         <MarketingNav />

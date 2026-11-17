@@ -27,6 +27,13 @@ export const useSchoolMe = (): SchoolMe | undefined => {
   return data?.sessionType === "SCHOOL" ? (data as SchoolMe) : undefined;
 };
 
+/**
+ * Deleting records and reversing money (cancel a payment, void an expense, deposit or
+ * transfer): the school super admin only, whatever other roles hold. The server checks too.
+ */
+export const useIsSuperAdmin = () => !!useSchoolMe()?.isSuperAdmin;
+export const useCanReverseMoney = useIsSuperAdmin;
+
 /** `can("exam:view")`, `can(["a", "b"])` (all), `can(["a", "b"], { any: true })`. */
 export const useCan = () => {
   const { data } = useMe();

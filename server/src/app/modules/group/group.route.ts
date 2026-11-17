@@ -1,7 +1,7 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
 import { GroupController } from "./group.controller";
 import { GroupValidation } from "./group.validation";
 
@@ -39,7 +39,9 @@ router.patch(
 
 router.delete(
   "/:groupId",
+  // still only while unused; the super admin only
   authorize("group:delete"),
+  superAdminOnly,
   validateRequest({ params: GroupValidation.groupIdParams }),
   GroupController.deleteGroup,
 );

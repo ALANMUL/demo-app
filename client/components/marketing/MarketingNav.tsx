@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Menu, Smartphone, X } from "lucide-react";
+import { Menu, Smartphone, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 /*
  * The marketing header's menu, on white: the sections in a row from lg with the language and the
  * call to action at the end; below lg a button opens them as a panel under the bar. A link scrolls to its
- * section and the gold mark follows the section in view.
+ * section and a navy underline follows the section in view.
  */
 export function MarketingNav() {
   const t = useTranslations("marketing.nav");
@@ -37,13 +37,13 @@ export function MarketingNav() {
       }}
       aria-current={active === section ? "location" : undefined}
       className={cn(
-        "relative text-[15px] font-medium transition-colors",
-        // a row from lg: a gold dot under the current one; the panel: a bar on the left
+        "relative text-base transition-colors focus-visible:ring-2 focus-visible:ring-mk-ink focus-visible:outline-none",
+        // a row from lg: a navy line under the current one; the panel: a bar on the left
         "max-lg:border-l-2 max-lg:px-3 max-lg:py-2.5",
-        "lg:px-3.5 lg:py-2 lg:after:absolute lg:after:-bottom-0.5 lg:after:left-1/2 lg:after:size-1 lg:after:-translate-x-1/2 lg:after:rounded-full",
+        "lg:px-3 lg:py-2 lg:after:absolute lg:after:inset-x-3 lg:after:bottom-0.5 lg:after:h-0.5",
         active === section
-          ? "font-semibold text-mk-ink max-lg:border-mk-gold lg:after:bg-mk-gold"
-          : "text-slate-600 hover:text-mk-ink max-lg:border-transparent",
+          ? "font-semibold text-mk-ink max-lg:border-mk-ink lg:after:bg-mk-ink"
+          : "text-mk-slate hover:text-mk-ink max-lg:border-transparent",
       )}
     >
       {t(section)}
@@ -57,10 +57,9 @@ export function MarketingNav() {
         setOpen(false);
         jumpToSection("contact", "/", e);
       }}
-      className="group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-mk-gold px-4 text-sm font-semibold text-mk-ink transition-colors hover:bg-mk-ink hover:text-white"
+      className="inline-flex h-10 shrink-0 items-center rounded-md bg-mk-ink px-4 text-[15px] font-semibold text-white transition-colors hover:bg-mk-ink-2 focus-visible:ring-2 focus-visible:ring-mk-ink focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       {t("start")}
-      <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
     </a>
   );
 
@@ -70,8 +69,8 @@ export function MarketingNav() {
       href="/app"
       onClick={() => setOpen(false)}
       className={cn(
-        "inline-flex items-center gap-1.5 text-[15px] font-medium text-slate-600 transition-colors hover:text-mk-ink",
-        "max-lg:border-l-2 max-lg:border-transparent max-lg:px-3 max-lg:py-2.5 lg:px-3.5 lg:py-2",
+        "inline-flex items-center gap-1.5 text-base text-mk-slate transition-colors hover:text-mk-ink focus-visible:ring-2 focus-visible:ring-mk-ink focus-visible:outline-none",
+        "max-lg:border-l-2 max-lg:border-transparent max-lg:px-3 max-lg:py-2.5 lg:px-3 lg:py-2",
       )}
     >
       <Smartphone className="size-4" />
@@ -81,13 +80,13 @@ export function MarketingNav() {
 
   return (
     <>
-      <nav className="hidden items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 lg:flex">
+      <nav className="hidden items-center gap-1 lg:flex">
         {links}
         {appLink}
       </nav>
 
       <div className="hidden items-center gap-3 lg:flex">
-        <LanguageSwitcher className="rounded-full border-slate-200 bg-white [&_button]:rounded-full [&_button]:text-slate-500 [&_button[aria-pressed=false]:hover]:text-mk-ink [&_button[aria-pressed=true]]:bg-mk-ink [&_button[aria-pressed=true]]:text-white" />
+        <LanguageSwitcher className="rounded-md border-mk-rule bg-white [&_button]:rounded-[5px] [&_button]:text-mk-slate [&_button[aria-pressed=false]:hover]:text-mk-ink [&_button[aria-pressed=true]]:bg-mk-ink [&_button[aria-pressed=true]]:text-white" />
         {cta}
       </div>
 
@@ -97,19 +96,19 @@ export function MarketingNav() {
         aria-expanded={open}
         aria-controls="marketing-menu"
         aria-label={open ? t("close") : t("menu")}
-        className="flex size-10 shrink-0 items-center justify-center rounded-full text-mk-ink hover:bg-slate-100 lg:hidden"
+        className="flex size-10 shrink-0 items-center justify-center rounded-md text-mk-ink hover:bg-mk-wash lg:hidden"
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
 
       {open && (
-        <div id="marketing-menu" className="absolute inset-x-0 top-full border-t border-slate-200 bg-white shadow-2xl lg:hidden">
+        <div id="marketing-menu" className="absolute inset-x-0 top-full border-y border-mk-rule bg-white shadow-[0_20px_40px_-24px_rgb(10_36_95/0.3)] lg:hidden">
           <nav className="mx-auto flex max-w-6xl flex-col px-4 py-2">
             {links}
             {appLink}
           </nav>
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 border-t border-slate-200 px-4 py-3">
-            <LanguageSwitcher className="rounded-full border-slate-200 bg-white [&_button]:rounded-full [&_button]:text-slate-500 [&_button[aria-pressed=false]:hover]:text-mk-ink [&_button[aria-pressed=true]]:bg-mk-ink [&_button[aria-pressed=true]]:text-white" />
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 border-t border-mk-rule px-4 py-3">
+            <LanguageSwitcher className="rounded-md border-mk-rule bg-white [&_button]:rounded-[5px] [&_button]:text-mk-slate [&_button[aria-pressed=false]:hover]:text-mk-ink [&_button[aria-pressed=true]]:bg-mk-ink [&_button[aria-pressed=true]]:text-white" />
             {cta}
           </div>
         </div>

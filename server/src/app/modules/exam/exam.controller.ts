@@ -3,7 +3,8 @@ import httpStatus from "http-status";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import { ExamService } from "./exam.service";
-import type { ListExamsQuery, OptionalQuery } from "./exam.validation";
+import type { DeleteExamQuery, ListExamsQuery, OptionalQuery } from "./exam.validation";
+import { ExamDeleteService } from "./examDelete.service";
 import { OptionalSubjectService } from "./optionalSubject.service";
 
 const reply = (res: Response, statusCode: number, message: string, data: unknown) =>
@@ -33,8 +34,18 @@ const updateExam = catchAsync(async (req: Request, res: Response) => {
   reply(res, httpStatus.OK, "Exam updated successfully!", await ExamService.updateExam(schoolOf(req), examIdOf(req), req.body));
 });
 
+const deleteCheck = catchAsync(async (req: Request, res: Response) => {
+  const result = await ExamDeleteService.deleteCheck(schoolOf(req), { examId: examIdOf(req) });
+  reply(res, httpStatus.OK, "Delete check done", result);
+});
+
+const classDeleteCheck = catchAsync(async (req: Request, res: Response) => {
+  const result = await ExamDeleteService.deleteCheck(schoolOf(req), { examId: examIdOf(req), classId: classIdOf(req) });
+  reply(res, httpStatus.OK, "Delete check done", result);
+});
+
 const deleteExam = catchAsync(async (req: Request, res: Response) => {
-  await ExamService.deleteExam(schoolOf(req), examIdOf(req));
+  await ExamDeleteService.deleteExam(req.auth!, examIdOf(req), req.query as DeleteExamQuery);
   reply(res, httpStatus.OK, "Exam deleted successfully!", null);
 });
 
@@ -43,7 +54,7 @@ const addClasses = catchAsync(async (req: Request, res: Response) => {
 });
 
 const removeClass = catchAsync(async (req: Request, res: Response) => {
-  await ExamService.removeClass(schoolOf(req), examIdOf(req), classIdOf(req));
+  await ExamDeleteService.removeClass(req.auth!, examIdOf(req), classIdOf(req), req.query as DeleteExamQuery);
   reply(res, httpStatus.OK, "Class removed from the exam!", null);
 });
 
@@ -81,6 +92,8 @@ export const ExamController = {
   getExams,
   getExamById,
   updateExam,
+  deleteCheck,
+  classDeleteCheck,
   deleteExam,
   addClasses,
   removeClass,

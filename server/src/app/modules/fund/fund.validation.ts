@@ -41,6 +41,14 @@ const fundIdParams = z.object({
   fundId: z.string().trim().min(1, "Fund id is required!"),
 });
 
+const transactionIdParams = z.object({
+  transactionId: z.string().trim().min(1, "Transaction id is required!"),
+});
+
+const transferIdParams = z.object({
+  transferId: z.string().trim().min(1, "Transfer id is required!"),
+});
+
 const listFundsQuery = z.object({
   includeInactive: z.enum(["true", "false"]).optional(),
 });
@@ -79,6 +87,8 @@ export const FundValidation = {
   createFund,
   updateFund,
   fundIdParams,
+  transactionIdParams,
+  transferIdParams,
   listFundsQuery,
   deposit,
   transfer,

@@ -87,23 +87,30 @@ const authorize = (permissionCode: string) => {
 };
 
 /*
+ * The school super admin, or the platform owner working inside the school. Also used inside
+ * services for rules that depend on the record.
+ */
+export const isSchoolSuperAdmin = async (auth: Auth): Promise<boolean> => {
+  const { userId, sessionType, schoolId, membershipId, isPlatformAdmin } = auth;
+  if (isPlatformAdmin && sessionType === "SCHOOL" && schoolId) return true;
+  if (sessionType !== "SCHOOL" || !schoolId || !membershipId) return false;
+
+  const superAdmin = await prisma.userRole.findFirst({
+    where: { userId, membershipId, role: { scope: "SCHOOL", schoolId, name: "SCHOOL_SUPER_ADMIN", isSystem: true } },
+    select: { id: true },
+  });
+  return !!superAdmin;
+};
+
+/*
  * The school super admin only (and the platform owner working inside the school): for
- * roles and staff, where a role able to edit roles could give itself everything.
+ * roles and staff, where a role able to edit roles could give itself everything, and for
+ * deleting records and reversing money (shared/superAdminPermissions.ts).
  */
 export const superAdminOnly = async (req: Request, _res: Response, next: NextFunction) => {
   try {
     if (!req.auth) throw new AppError("You are not authenticated", httpStatus.UNAUTHORIZED);
-    const { userId, sessionType, schoolId, membershipId, isPlatformAdmin } = req.auth;
-    if (isPlatformAdmin && sessionType === "SCHOOL" && schoolId) return next();
-
-    const superAdmin =
-      sessionType === "SCHOOL" && schoolId && membershipId
-        ? await prisma.userRole.findFirst({
-            where: { userId, membershipId, role: { scope: "SCHOOL", schoolId, name: "SCHOOL_SUPER_ADMIN", isSystem: true } },
-            select: { id: true },
-          })
-        : null;
-    if (!superAdmin) throw new AppError("Only the school super admin can do this", httpStatus.FORBIDDEN);
+    if (!(await isSchoolSuperAdmin(req.auth))) throw new AppError("Only the school super admin can do this", httpStatus.FORBIDDEN);
     return next();
   } catch (error) {
     next(error);

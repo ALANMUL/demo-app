@@ -10,6 +10,7 @@ import {
   CreditCard,
   FileText,
   GraduationCap,
+  History,
   IdCard,
   LayoutDashboard,
   Layers,
@@ -97,6 +98,8 @@ export const schoolMenu: MenuGroup[] = [
       { href: "/settings", label: "schoolSettings", icon: Settings, superAdminOnly: true },
       // the school's plan and its payments to the platform
       { href: "/subscription", label: "subscription", icon: CreditCard, superAdminOnly: true },
+      // what was deleted or reversed (money), by whom and why
+      { href: "/activity-log", label: "activityLog", icon: History, superAdminOnly: true },
     ],
   },
 ];

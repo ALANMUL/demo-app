@@ -2,8 +2,7 @@ import httpStatus from "http-status";
 import type { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "../../../../lib/prisma";
 import { AppError } from "../../errorHandler/AppError";
-import { isForeignKeyViolation, isUniqueViolation } from "../../utils/prismaError";
-import { DEFAULT_SECTION_NAME } from "../class/class.service";
+import { isUniqueViolation } from "../../utils/prismaError";
 import type {
   CreateSectionPayload,
   ListSectionsQuery,
@@ -250,39 +249,6 @@ const updateSection = async (schoolId: string, sectionId: string, data: UpdateSe
 
 // -------------------------------------------------------------------- delete
 
-/*
- * Hard delete, allowed only while no student has ever been enrolled in the section. A class
- * is never left without a section: deleting its last one brings back the automatic one.
- */
-const deleteSection = async (schoolId: string, sectionId: string) => {
-  const section = await findSection(schoolId, sectionId);
-
-  const enrollments = await prisma.enrollment.count({ where: { sectionId } });
-  if (enrollments > 0) {
-    throw new AppError(
-      `This section has ${enrollments} enrollment record(s) and cannot be deleted`,
-      httpStatus.CONFLICT,
-    );
-  }
-
-  try {
-    await prisma.$transaction(async (tx) => {
-      // its year configs (teacher, capacity, class hours) go with it
-      await tx.section.delete({ where: { id: sectionId } });
-      const left = await tx.section.count({ where: { schoolId, classId: section.classId } });
-      if (left === 0) {
-        await tx.section.create({ data: { schoolId, classId: section.classId, name: DEFAULT_SECTION_NAME, isDefault: true } });
-      }
-    });
-  } catch (e) {
-    // a student was enrolled between the check and the delete
-    if (isForeignKeyViolation(e)) {
-      throw new AppError("This section is in use and cannot be deleted", httpStatus.CONFLICT);
-    }
-    throw e;
-  }
-};
-
 // --------------------------------------------------------------- year config
 
 /*
@@ -402,7 +368,6 @@ export const SectionService = {
   getSections,
   getSectionById,
   updateSection,
-  deleteSection,
   setYearConfig,
   getYearConfig,
 };

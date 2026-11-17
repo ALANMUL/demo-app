@@ -3,16 +3,7 @@
 import { AlertTriangle, MoreHorizontal, Pencil, Plus, Settings2, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
-import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteRecordDialog } from "@/components/data/DeleteRecordDialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,7 +14,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/lib/auth/hooks";
+import { useCan, useIsSuperAdmin } from "@/lib/auth/hooks";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useClasses } from "@/lib/school/classes";
@@ -57,7 +48,8 @@ export function SectionsList() {
   const permissions = {
     configure: can("section:configure") && !!year,
     rename: can("section:update"),
-    delete: can("section:delete"),
+    // the super admin only: with what was done in it (the dialog lists it)
+    delete: useIsSuperAdmin(),
   };
 
   return (
@@ -251,39 +243,25 @@ function SectionRow({
   );
 }
 
+/* A section with what was done in it; its students stay, unplaced. */
 function DeleteSectionDialog({ section, onClose }: { section: Section | null; onClose: () => void }) {
   const t = useTranslations("school.sections");
-  const tDialog = useTranslations("school.sections.deleteDialog");
-  const tCommon = useTranslations("common");
-  const describeError = useErrorMessage();
+  const tDelete = useTranslations("deletes.section");
   const remove = useDeleteSection();
   const label = section ? `${section.class.name} ${section.isDefault ? t("wholeClass") : section.name}` : "";
-
-  const confirm = () => {
-    if (!section) return;
-    remove.mutate(section.id, {
-      onSuccess: () => {
-        toast.success(tDialog("deleted", { name: label }));
-        onClose();
-      },
-      onError: (error) => toast.error(describeError(error)),
-    });
-  };
-
   return (
-    <AlertDialog open={!!section} onOpenChange={(open) => !open && !remove.isPending && onClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{tDialog("title", { name: label })}</AlertDialogTitle>
-          <AlertDialogDescription>{tDialog("description")}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={remove.isPending}>{tCommon("cancel")}</AlertDialogCancel>
-          <Button variant="destructive" onClick={confirm} disabled={remove.isPending}>
-            {remove.isPending ? tDialog("deleting") : tDialog("confirm")}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <DeleteRecordDialog
+      target={
+        section && {
+          title: tDelete("title", { name: label }),
+          description: tDelete("description"),
+          checkPath: `/section/${section.id}/delete-check`,
+          confirmText: section.isDefault ? section.class.name : section.name,
+          done: tDelete("done", { name: label }),
+          run: (reason) => remove.mutateAsync({ sectionId: section.id, reason }),
+        }
+      }
+      onClose={onClose}
+    />
   );
 }

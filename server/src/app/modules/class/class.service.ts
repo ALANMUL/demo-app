@@ -1,7 +1,7 @@
 import httpStatus from "http-status";
 import { prisma } from "../../../../lib/prisma";
 import { AppError } from "../../errorHandler/AppError";
-import { isForeignKeyViolation, isUniqueViolation } from "../../utils/prismaError";
+import { isUniqueViolation } from "../../utils/prismaError";
 import type { ClassQuery, CreateClassPayload, UpdateClassPayload } from "./class.type";
 
 export const DEFAULT_SECTION_NAME = "Default";
@@ -124,54 +124,6 @@ const updateClass = async (schoolId: string, classId: string, data: UpdateClassP
   }
 };
 
-// -------------------------------------------------------------------- delete
+// deleting a class: classDelete.service.ts
 
-/*
- * Hard delete, only while nothing uses the class: no student was ever enrolled in it and
- * no subjects, exams, fees, result settings or routine were set up for it. Its sections
- * go with it.
- */
-const deleteClass = async (schoolId: string, classId: string) => {
-  await findClass(schoolId, classId);
-
-  const { _count: used } = await prisma.schoolClass.findUniqueOrThrow({
-    where: { id: classId },
-    select: {
-      _count: {
-        select: {
-          enrollments: true,
-          classSubjects: true,
-          examClasses: true,
-          feeStructures: true,
-          studentFees: true,
-          resultSettings: true,
-          finalFormulas: true,
-          routineEntries: true,
-        },
-      },
-    },
-  });
-
-  if (used.enrollments > 0) {
-    throw new AppError("Students have been enrolled in this class, so it cannot be deleted", httpStatus.CONFLICT);
-  }
-  const setUp = Object.entries(used).filter(([, count]) => count > 0);
-  if (setUp.length > 0) {
-    throw new AppError(
-      "This class already has subjects, exams, fees or a routine set up. Remove them first",
-      httpStatus.CONFLICT,
-    );
-  }
-
-  try {
-    await prisma.schoolClass.delete({ where: { id: classId } });
-  } catch (e) {
-    // used between the check and the delete
-    if (isForeignKeyViolation(e)) {
-      throw new AppError("This class is in use and cannot be deleted", httpStatus.CONFLICT);
-    }
-    throw e;
-  }
-};
-
-export const ClassService = { createClass, getClasses, getClassById, updateClass, deleteClass };
+export const ClassService = { createClass, getClasses, getClassById, updateClass };

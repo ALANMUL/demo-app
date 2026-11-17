@@ -11,8 +11,11 @@ import { dayStatus, eachDay, loadCalendar } from "../calendar/calendar.resolver"
 import { NotificationService, notifyInBackground } from "../notification/notification.service";
 import { resolveSectionHours } from "../schedule/schedule.service";
 import { WORKING_STATUSES } from "../teacher/teacher.service";
+import { writeAuditLog } from "../../shared/auditLog";
 import type {
   DayQuery,
+  DeleteStudentSheetQuery,
+  DeleteTeacherSheetQuery,
   RangeQuery,
   RegisterQuery,
   SaveStudentSheetPayload,
@@ -645,6 +648,54 @@ const getTeacherReport = async (schoolId: string, teacherId: string, query: Rang
   };
 };
 
+// --------------------------------------------------------------- deleting
+
+/* Deletes a section's roll call of one day (taken by mistake), as if it was never taken. */
+const deleteStudentSheet = async (auth: Auth, query: DeleteStudentSheetQuery) => {
+  const schoolId = auth.schoolId!;
+  const section = await findSection(schoolId, query.sectionId);
+
+  return prisma.$transaction(async (tx) => {
+    const session = await tx.attendanceSession.findFirst({
+      where: { schoolId, sectionId: section.id, date: query.date },
+      include: { records: { select: { studentId: true, status: true, note: true, source: true, checkInAt: true } } },
+    });
+    if (!session) throw new AppError("No attendance was taken for this section on this day", httpStatus.NOT_FOUND);
+
+    await tx.attendanceSession.delete({ where: { id: session.id } });
+    const sectionName = section.isDefault ? section.class.name : `${section.class.name} ${section.name}`;
+    await writeAuditLog(tx, auth, {
+      action: "attendance.students.delete",
+      entityType: "AttendanceSession",
+      entityId: session.id,
+      summary: `${sectionName} · ${dayKey(query.date)} · ${session.records.length} students`,
+      reason: query.reason,
+      snapshot: session,
+    });
+    return { date: dayKey(query.date), sectionId: section.id, removed: session.records.length };
+  }, TX_OPTIONS);
+};
+
+/* Deletes the teachers' attendance of one day. */
+const deleteTeacherSheet = async (auth: Auth, query: DeleteTeacherSheetQuery) => {
+  const schoolId = auth.schoolId!;
+  return prisma.$transaction(async (tx) => {
+    const records = await tx.teacherAttendance.findMany({ where: { schoolId, date: query.date } });
+    if (records.length === 0) throw new AppError("No teacher attendance was taken on this day", httpStatus.NOT_FOUND);
+
+    await tx.teacherAttendance.deleteMany({ where: { schoolId, date: query.date } });
+    await writeAuditLog(tx, auth, {
+      action: "attendance.teachers.delete",
+      entityType: "TeacherAttendanceDay",
+      entityId: dayKey(query.date),
+      summary: `Teachers · ${dayKey(query.date)} · ${records.length} teachers`,
+      reason: query.reason,
+      snapshot: records,
+    });
+    return { date: dayKey(query.date), removed: records.length };
+  }, TX_OPTIONS);
+};
+
 export const AttendanceService = {
   getStudentSheet,
   saveStudentSheet,
@@ -655,4 +706,6 @@ export const AttendanceService = {
   getTeacherSheet,
   saveTeacherSheet,
   getTeacherReport,
+  deleteStudentSheet,
+  deleteTeacherSheet,
 };

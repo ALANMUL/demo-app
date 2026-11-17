@@ -3,7 +3,15 @@ import httpStatus from "http-status";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
 import { AttendanceService } from "./attendance.service";
-import type { DayQuery, RangeQuery, RegisterQuery, StudentSheetQuery, TeacherSheetQuery } from "./attendance.validation";
+import type {
+  DayQuery,
+  DeleteStudentSheetQuery,
+  DeleteTeacherSheetQuery,
+  RangeQuery,
+  RegisterQuery,
+  StudentSheetQuery,
+  TeacherSheetQuery,
+} from "./attendance.validation";
 
 const reply = (res: Response, message: string, data: unknown) =>
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message, data });
@@ -69,7 +77,19 @@ const getTeacherReport = catchAsync(async (req: Request, res: Response) => {
   reply(res, "Teacher attendance retrieved successfully!", result);
 });
 
+const deleteStudentSheet = catchAsync(async (req: Request, res: Response) => {
+  const result = await AttendanceService.deleteStudentSheet(req.auth!, req.query as unknown as DeleteStudentSheetQuery);
+  reply(res, "Attendance deleted successfully!", result);
+});
+
+const deleteTeacherSheet = catchAsync(async (req: Request, res: Response) => {
+  const result = await AttendanceService.deleteTeacherSheet(req.auth!, req.query as unknown as DeleteTeacherSheetQuery);
+  reply(res, "Teacher attendance deleted successfully!", result);
+});
+
 export const AttendanceController = {
+  deleteStudentSheet,
+  deleteTeacherSheet,
   getStudentSheet,
   saveStudentSheet,
   getDaySummary,

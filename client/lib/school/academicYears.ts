@@ -36,6 +36,11 @@ export const academicYearsApi = {
 
   makeCurrent: async (yearId: string) =>
     (await httpClient.patch<ApiResponse<AcademicYear>>(`/academic-year/${yearId}/current`)).data.data,
+
+  // a year made by mistake: never the current one, nothing enrolled or done in it
+  remove: async ({ yearId, reason }: { yearId: string; reason?: string }) => {
+    await httpClient.delete(`/academic-year/${yearId}`, { params: { reason } });
+  },
 };
 
 const yearsKey = ["school", "academic-years"] as const;
@@ -54,3 +59,4 @@ const useYearMutation = <TArgs, TResult>(mutationFn: (args: TArgs) => Promise<TR
 export const useCreateAcademicYear = () => useYearMutation(academicYearsApi.create);
 export const useUpdateAcademicYear = () => useYearMutation(academicYearsApi.update);
 export const useMakeAcademicYearCurrent = () => useYearMutation(academicYearsApi.makeCurrent);
+export const useDeleteAcademicYear = () => useYearMutation(academicYearsApi.remove);

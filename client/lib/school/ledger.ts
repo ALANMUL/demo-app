@@ -31,14 +31,23 @@ export type LedgerEntry = {
 };
 
 export type Ledger = {
-  items: LedgerEntry[];
+  items: LedgerRow[];
   meta: Meta;
   summary: { totalIn: string; totalOut: string; net: string; byType: Partial<Record<LedgerType, string>> };
 };
 
 export type LedgerQuery = { fundId?: string; type?: LedgerType; source?: LedgerSource; from?: string; to?: string; page: number; limit: number };
 
-export type Expense = LedgerEntry & { reversedBy: { id: string; description: string | null; createdAt: string } | null };
+type Reversal = { id: string; description: string | null; createdAt: string } | null;
+
+export type Expense = LedgerEntry & { reversedBy: Reversal };
+
+/* A ledger row also says whether it was voided, and which row it voids. */
+export type LedgerRow = LedgerEntry & {
+  transferId: string | null;
+  reversedBy: Reversal;
+  reverses: { id: string; type: LedgerType; source: LedgerSource } | null;
+};
 
 export type ExpenseList = {
   items: Expense[];
@@ -107,6 +116,11 @@ export const ledgerApi = {
     (await httpClient.post<ApiResponse<{ balance: string }>>("/expense", body)).data.data,
   voidExpense: async ({ expenseId, reason }: { expenseId: string; reason: string }) =>
     (await httpClient.post<ApiResponse<unknown>>(`/expense/${expenseId}/void`, { reason })).data.data,
+  // money reversals: the super admin only
+  voidDeposit: async ({ transactionId, reason }: { transactionId: string; reason: string }) =>
+    (await httpClient.post<ApiResponse<{ balance: string }>>(`/fund/transactions/${transactionId}/void`, { reason })).data.data,
+  voidTransfer: async ({ transferId, reason }: { transferId: string; reason: string }) =>
+    (await httpClient.post<ApiResponse<{ transferId: string }>>(`/fund/transfers/${transferId}/void`, { reason })).data.data,
 
   collection: async (query: { from?: string; to?: string }) =>
     (await httpClient.get<ApiResponse<CollectionReport>>("/finance/reports/collection", { params: query })).data.data,
@@ -134,3 +148,5 @@ export const useDeposit = () => useFinanceMutation(ledgerApi.deposit);
 export const useTransfer = () => useFinanceMutation(ledgerApi.transfer);
 export const useAddExpense = () => useFinanceMutation(ledgerApi.addExpense);
 export const useVoidExpense = () => useFinanceMutation(ledgerApi.voidExpense);
+export const useVoidDeposit = () => useFinanceMutation(ledgerApi.voidDeposit);
+export const useVoidTransfer = () => useFinanceMutation(ledgerApi.voidTransfer);

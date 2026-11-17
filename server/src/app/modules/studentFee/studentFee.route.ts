@@ -1,7 +1,8 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
+import { DeleteController } from "../deletes/delete.controller";
 import { StudentFeeController } from "./studentFee.controller";
 import { StudentFeeValidation } from "./studentFee.validation";
 
@@ -33,11 +34,13 @@ router.post(
   StudentFeeController.createCustomFee,
 );
 
+// a custom fee added by mistake, while nothing was paid or discounted: the super admin only
 router.delete(
   "/custom/:studentFeeId",
   authorize("student_fee:create_custom"),
+  superAdminOnly,
   validateRequest({ params: StudentFeeValidation.studentFeeIdParams }),
-  StudentFeeController.removeCustomFee,
+  DeleteController.deleteCustomFee,
 );
 
 router.post(

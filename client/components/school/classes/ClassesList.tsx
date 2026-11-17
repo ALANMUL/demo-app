@@ -3,16 +3,7 @@
 import { MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
-import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteRecordDialog } from "@/components/data/DeleteRecordDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/lib/auth/hooks";
+import { useCan, useIsSuperAdmin } from "@/lib/auth/hooks";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useClasses, useDeleteClass, type SchoolClass } from "@/lib/school/classes";
 import { cn } from "@/lib/utils";
@@ -45,7 +36,8 @@ export function ClassesList() {
   const classes = data?.items ?? [];
   const nextLevel = classes.length ? Math.min(30, Math.max(...classes.map((c) => c.numericLevel)) + 1) : 1;
   const canUpdate = can("class:update");
-  const canDelete = can("class:delete");
+  // the super admin only: with everything in it (the dialog lists it)
+  const canDelete = useIsSuperAdmin();
 
   return (
     <div className="space-y-4">
@@ -204,37 +196,23 @@ function ClassRow({
   );
 }
 
+/* A class with everything set up for it and done in it; its students stay, unplaced. */
 function DeleteClassDialog({ schoolClass, onClose }: { schoolClass: SchoolClass | null; onClose: () => void }) {
-  const t = useTranslations("school.classes.deleteDialog");
-  const tCommon = useTranslations("common");
-  const describeError = useErrorMessage();
+  const t = useTranslations("deletes.class");
   const remove = useDeleteClass();
-
-  const confirm = () => {
-    if (!schoolClass) return;
-    remove.mutate(schoolClass.id, {
-      onSuccess: () => {
-        toast.success(t("deleted", { name: schoolClass.name }));
-        onClose();
-      },
-      onError: (error) => toast.error(describeError(error)),
-    });
-  };
-
   return (
-    <AlertDialog open={!!schoolClass} onOpenChange={(open) => !open && !remove.isPending && onClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("title", { name: schoolClass?.name ?? "" })}</AlertDialogTitle>
-          <AlertDialogDescription>{t("description")}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={remove.isPending}>{tCommon("cancel")}</AlertDialogCancel>
-          <Button variant="destructive" onClick={confirm} disabled={remove.isPending}>
-            {remove.isPending ? t("deleting") : t("confirm")}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <DeleteRecordDialog
+      target={
+        schoolClass && {
+          title: t("title", { name: schoolClass.name }),
+          description: t("description"),
+          checkPath: `/class/${schoolClass.id}/delete-check`,
+          confirmText: schoolClass.name,
+          done: t("done", { name: schoolClass.name }),
+          run: (reason) => remove.mutateAsync({ classId: schoolClass.id, reason }),
+        }
+      }
+      onClose={onClose}
+    />
   );
 }

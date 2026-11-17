@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, MoreHorizontal, Pencil, Plus } from "lucide-react";
+import { CheckCircle2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -19,15 +19,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/lib/auth/hooks";
+import { useCan, useIsSuperAdmin } from "@/lib/auth/hooks";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useAcademicYears, useMakeAcademicYearCurrent, type AcademicYear } from "@/lib/school/academicYears";
 import { cn } from "@/lib/utils";
 import { AcademicYearFormDialog } from "./AcademicYearFormDialog";
+import { DeleteAcademicYearDialog } from "./DeleteAcademicYearDialog";
 
 const COLUMNS = ["name", "dates", "students", "exams"] as const;
 
@@ -41,9 +43,12 @@ export function AcademicYearsList() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<AcademicYear | null>(null);
   const [makingCurrent, setMakingCurrent] = useState<AcademicYear | null>(null);
+  const [deleting, setDeleting] = useState<AcademicYear | null>(null);
 
   const years = data ?? [];
   const canUpdate = can("academic_year:update");
+  // the super admin only, and only a year with nothing in it (the dialog says why not)
+  const canDelete = useIsSuperAdmin();
 
   return (
     <div className="space-y-4">
@@ -100,8 +105,10 @@ export function AcademicYearsList() {
                   key={year.id}
                   year={year}
                   canUpdate={canUpdate}
+                  canDelete={canDelete}
                   onEdit={() => setEditing(year)}
                   onMakeCurrent={() => setMakingCurrent(year)}
+                  onDelete={() => setDeleting(year)}
                 />
               ))
             )}
@@ -119,6 +126,7 @@ export function AcademicYearsList() {
         }}
       />
       <MakeCurrentDialog year={makingCurrent} onClose={() => setMakingCurrent(null)} />
+      <DeleteAcademicYearDialog year={deleting} onClose={() => setDeleting(null)} />
     </div>
   );
 }
@@ -138,15 +146,20 @@ function MessageRow({ children }: { children: React.ReactNode }) {
 function YearRow({
   year,
   canUpdate,
+  canDelete,
   onEdit,
   onMakeCurrent,
+  onDelete,
 }: {
   year: AcademicYear;
   canUpdate: boolean;
+  canDelete: boolean;
   onEdit: () => void;
   onMakeCurrent: () => void;
+  onDelete: () => void;
 }) {
   const t = useTranslations("school.years");
+  const tDelete = useTranslations("deletes.year");
   const format = useFormatter();
   // calendar dates: format them as the UTC day the server stored
   const dateOptions = { dateStyle: "medium", timeZone: "UTC" } as const;
@@ -165,7 +178,7 @@ function YearRow({
       <TableCell>{format.number(year._count.enrollments)}</TableCell>
       <TableCell>{format.number(year._count.exams)}</TableCell>
       <TableCell>
-        {canUpdate && (
+        {(canUpdate || canDelete) && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="size-8" aria-label={t("columns.actions")}>
@@ -173,13 +186,23 @@ function YearRow({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={onEdit}>
-                <Pencil /> {t("edit")}
-              </DropdownMenuItem>
-              {!year.isCurrent && (
+              {canUpdate && (
+                <DropdownMenuItem onSelect={onEdit}>
+                  <Pencil /> {t("edit")}
+                </DropdownMenuItem>
+              )}
+              {canUpdate && !year.isCurrent && (
                 <DropdownMenuItem onSelect={onMakeCurrent}>
                   <CheckCircle2 /> {t("makeCurrent")}
                 </DropdownMenuItem>
+              )}
+              {canDelete && (
+                <>
+                  {canUpdate && <DropdownMenuSeparator />}
+                  <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+                    <Trash2 /> {tDelete("action")}
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>

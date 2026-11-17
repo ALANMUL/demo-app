@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "../../../../lib/prisma";
 import { AppError } from "../../errorHandler/AppError";
+import { writeAuditLog } from "../../shared/auditLog";
 import { displayName, type Names } from "../../shared/names";
 import { fileUrl } from "../../shared/storage";
 import { getFundBalance, lockFund } from "../fund/fund.ledger";
@@ -14,6 +15,7 @@ import type {
 } from "./payment.type";
 
 type Db = Prisma.TransactionClient;
+type Auth = NonNullable<Express.Request["auth"]>;
 
 const ZERO = new Prisma.Decimal(0);
 const TX_OPTIONS = { maxWait: 10_000, timeout: 20_000 };
@@ -295,12 +297,9 @@ const recordPayment = async (schoolId: string, userId: string, data: RecordPayme
  * It is refused if a fund no longer holds the money (already spent or transferred),
  * because the balance would go negative.
  */
-const cancelPayment = async (
-  schoolId: string,
-  userId: string,
-  paymentId: string,
-  data: CancelPaymentPayload,
-) => {
+const cancelPayment = async (auth: Auth, paymentId: string, data: CancelPaymentPayload) => {
+  const schoolId = auth.schoolId!;
+  const userId = auth.userId;
   const result = await prisma.$transaction(async (tx) => {
     // lock the payment so two simultaneous cancels can't both go through
     const locked = await tx.$queryRaw<{ id: string }[]>`
@@ -417,6 +416,15 @@ const cancelPayment = async (
         paymentAllocationId: o.paymentAllocationId,
         createdBy: userId,
       })),
+    });
+
+    await writeAuditLog(tx, auth, {
+      action: "payment.cancel",
+      entityType: "Payment",
+      entityId: paymentId,
+      summary: `Receipt ${payment.receiptNo} · ${payment.amount.toFixed(2)}`,
+      reason: data.reason,
+      snapshot: { payment, ledger: originals },
     });
 
     return getPaymentDetail(tx, schoolId, paymentId);

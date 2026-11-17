@@ -43,20 +43,6 @@ const createCustomFee = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const removeCustomFee = catchAsync(async (req: Request, res: Response) => {
-  const result = await StudentFeeService.removeCustomStudentFee(
-    req.auth!.schoolId!,
-    req.params.studentFeeId as string,
-  );
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Custom fee removed successfully!",
-    data: result,
-  });
-});
-
 const applyDiscount = catchAsync(async (req: Request, res: Response) => {
   const result = await StudentFeeService.applyDiscount(
     req.auth!.schoolId!,
@@ -92,7 +78,6 @@ export const StudentFeeController = {
   listFees,
   listStudentFees,
   createCustomFee,
-  removeCustomFee,
   applyDiscount,
   applyBulkDiscount,
 };

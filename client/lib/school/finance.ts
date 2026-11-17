@@ -124,6 +124,17 @@ export const financeApi = {
     ).data.data,
   syncFeeStructure: async (feeStructureId: string) =>
     (await httpClient.post<ApiResponse<StructureSync>>(`/fee-structure/${feeStructureId}/sync`)).data.data,
+
+  // fee setup where no money moved (the super admin only): with its unpaid fees
+  deleteFeeStructure: async ({ feeStructureId, reason }: { feeStructureId: string; reason?: string }) => {
+    await httpClient.delete(`/fee-structure/${feeStructureId}`, { params: { reason } });
+  },
+  deleteFeeType: async ({ feeTypeId, reason }: { feeTypeId: string; reason?: string }) => {
+    await httpClient.delete(`/fee-type/${feeTypeId}`, { params: { reason } });
+  },
+  deleteFund: async ({ fundId, reason }: { fundId: string; reason?: string }) => {
+    await httpClient.delete(`/fund/${fundId}`, { params: { reason } });
+  },
 };
 
 // ------------------------------------------------------------------- hooks
@@ -154,6 +165,9 @@ export const useUpdateFeeType = () => useFinanceMutation(financeApi.updateFeeTyp
 export const useSaveFeeStructure = () => useFinanceMutation(financeApi.saveFeeStructure);
 export const useSyncFeeStructure = () => useFinanceMutation(financeApi.syncFeeStructure);
 export const useCopyFeeStructures = () => useFinanceMutation(financeApi.copyFeeStructures);
+export const useDeleteFeeStructure = () => useFinanceMutation(financeApi.deleteFeeStructure);
+export const useDeleteFeeType = () => useFinanceMutation(financeApi.deleteFeeType);
+export const useDeleteFund = () => useFinanceMutation(financeApi.deleteFund);
 
 /** An academic year's months in order, each with its calendar year: a July year gives Jul 2026 … Jun 2027. */
 export const academicMonths = (year: { startDate: string; endDate: string }) => {

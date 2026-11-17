@@ -34,12 +34,7 @@ const recordPayment = catchAsync(async (req: Request, res: Response) => {
 });
 
 const cancelPayment = catchAsync(async (req: Request, res: Response) => {
-  const result = await PaymentService.cancelPayment(
-    req.auth!.schoolId!,
-    req.auth!.userId,
-    req.params.paymentId as string,
-    req.body,
-  );
+  const result = await PaymentService.cancelPayment(req.auth!, req.params.paymentId as string, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

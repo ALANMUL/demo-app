@@ -42,12 +42,7 @@ const getCategories = catchAsync(async (req: Request, res: Response) => {
 });
 
 const voidExpense = catchAsync(async (req: Request, res: Response) => {
-  const result = await ExpenseService.voidExpense(
-    req.auth!.schoolId!,
-    req.auth!.userId,
-    req.params.expenseId as string,
-    req.body,
-  );
+  const result = await ExpenseService.voidExpense(req.auth!, req.params.expenseId as string, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

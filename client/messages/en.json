@@ -258,7 +258,8 @@
     "idCards": "ID cards",
     "fees": "Fees",
     "packages": "Packages",
-    "announcements": "Announcements"
+    "announcements": "Announcements",
+    "activityLog": "Activity log"
   },
   "platform": {
     "welcome": "Welcome, {name}",
@@ -842,13 +843,6 @@
         "saving": "Saving…",
         "created": "{name} created.",
         "updated": "{name} updated."
-      },
-      "deleteDialog": {
-        "title": "Delete {name}?",
-        "description": "Only possible while no student was ever enrolled in it and nothing is set up for it. Its sections are deleted too.",
-        "confirm": "Delete",
-        "deleting": "Deleting…",
-        "deleted": "{name} deleted."
       }
     },
     "sections": {
@@ -916,13 +910,6 @@
         "save": "Save",
         "saving": "Saving…",
         "saved": "Settings saved."
-      },
-      "deleteDialog": {
-        "title": "Delete {name}?",
-        "description": "Only possible while no student was ever enrolled in it. Its year settings are deleted too.",
-        "confirm": "Delete",
-        "deleting": "Deleting…",
-        "deleted": "{name} deleted."
       }
     },
     "groups": {
@@ -2366,7 +2353,6 @@
         "actions": "Actions",
         "edit": "Edit",
         "delete": "Delete exam",
-        "deleteLocked": "Can't delete: marks entry started",
         "columns": {
           "class": "Class",
           "stage": "Stage",
@@ -2380,7 +2366,6 @@
         "removeClass": "Remove from the exam",
         "marksOpened": "Marks entry is open for {class}.",
         "backToRoutine": "{class} is back at the routine stage.",
-        "classRemoved": "{class} removed from the exam.",
         "stagesHint": "Routine: set the subjects, days and marks. Marks entry: teachers enter marks (the routine can still be edited). Published: the result is out and marks are locked.",
         "addDialog": {
           "title": "Add classes",
@@ -2389,13 +2374,6 @@
           "cancel": "Cancel",
           "confirm": "Add",
           "done": "{count, plural, one {# class added.} other {# classes added.}}"
-        },
-        "deleteDialog": {
-          "title": "Delete {name}?",
-          "description": "Its classes and their routines go too. Nothing has been marked yet.",
-          "confirm": "Delete",
-          "working": "Deleting…",
-          "done": "{name} deleted."
         },
         "enterMarks": "Enter marks"
       },
@@ -3449,7 +3427,7 @@
           "PAYMENT_REVERSAL": "Payment cancelled",
           "MANUAL_DEPOSIT": "Money added",
           "EXPENSE": "Expense",
-          "ADJUSTMENT": "Expense voided",
+          "ADJUSTMENT": "Voided entry",
           "TRANSFER": "Transfer"
         },
         "transferIn": "Transfer in",
@@ -3464,6 +3442,16 @@
           "what": "What",
           "in": "In",
           "out": "Out"
+        },
+        "voided": "Voided",
+        "void": {
+          "action": "Void",
+          "titleDeposit": "Void this deposit of {amount}?",
+          "titleTransfer": "Reverse this transfer of {amount}?",
+          "descriptionDeposit": "The money is taken back out of the fund with an opposite entry; nothing is erased. It is refused if the fund no longer holds it.",
+          "descriptionTransfer": "The money goes back to the fund it came from, with opposite entries; nothing is erased. It is refused if the receiving fund no longer holds it.",
+          "doneDeposit": "Deposit voided.",
+          "doneTransfer": "Transfer reversed."
         }
       },
       "expenses": {
@@ -4717,124 +4705,172 @@
       "app": "App"
     },
     "hero": {
-      "badge": "New",
-      "eyebrow": "Made for schools & colleges in Bangladesh, in English and বাংলা",
-      "titleStart": "Run your school or college",
-      "titleHighlight": "from one calm place.",
+      "note": "For schools and colleges across Bangladesh",
+      "title": "Run your school or college from one calm place.",
       "subtitle": "Students, attendance, exams, results, fees, SMS and your own website: one system for the office, the teachers and every guardian.",
       "primary": "See packages",
       "secondary": "Ask for a demo",
       "proof1": "Your own web address",
       "proof2": "Guardian & teacher app",
       "proof3": "We set it up with you",
-      "float": {
-        "attendance": "Attendance today",
-        "attendanceValue": "1,198 of 1,248 present",
-        "fee": "Fee received · TK 2,500",
-        "feeSms": "SMS sent to guardian",
-        "result": "Result published",
-        "resultValue": "Class 10 · 42 got GPA 5.00"
+      "dashboard": {
+        "caption": "A sample school dashboard: today's attendance, this month's fees, attendance through the week and the latest payments.",
+        "address": "yourschool.sncmt.com",
+        "school": "Your School",
+        "menu": {
+          "dashboard": "Dashboard",
+          "students": "Students",
+          "attendance": "Attendance",
+          "exams": "Exams",
+          "fees": "Fees",
+          "messages": "Messages"
+        },
+        "greeting": "Good morning, Principal",
+        "date": "Thursday, 12 November",
+        "stats": {
+          "students": "Students",
+          "present": "Present today",
+          "fees": "Fees this month",
+          "teachers": "Teachers"
+        },
+        "chart": "Attendance this week",
+        "days": {
+          "sun": "Sun",
+          "mon": "Mon",
+          "tue": "Tue",
+          "wed": "Wed",
+          "thu": "Thu"
+        },
+        "payments": "Latest payments",
+        "paid": "Paid",
+        "people": {
+          "p1": {
+            "name": "Ayesha Siddiqua",
+            "class": "Class 7"
+          },
+          "p2": {
+            "name": "Tanvir Ahmed",
+            "class": "Class 9"
+          },
+          "p3": {
+            "name": "Nusrat Jahan",
+            "class": "Class 10"
+          }
+        }
       }
-    },
-    "preview": {
-      "url": "yourschool.sncmt.com",
-      "greeting": "Good morning, Principal",
-      "today": "Sunday, a regular school day",
-      "statStudents": "Students",
-      "statPresent": "Present today",
-      "statFees": "Fees this month",
-      "statTeachers": "Teachers",
-      "trend": "▲ this week",
-      "chart": "Attendance this week",
-      "payments": "Latest payments",
-      "days": {
-        "sat": "Sat",
-        "sun": "Sun",
-        "mon": "Mon",
-        "tue": "Tue",
-        "wed": "Wed",
-        "thu": "Thu"
-      },
-      "menu": {
-        "dashboard": "Dashboard",
-        "students": "Students",
-        "attendance": "Attendance",
-        "exams": "Exams",
-        "fees": "Fees",
-        "messages": "Messages",
-        "settings": "Settings"
-      }
-    },
-    "modules": {
-      "label": "Everything a school or college runs on",
-      "students": "Students",
-      "teachers": "Teachers",
-      "attendance": "Attendance",
-      "routine": "Class routine",
-      "exams": "Exams",
-      "results": "Results",
-      "fees": "Fees",
-      "payments": "Online payment",
-      "sms": "SMS",
-      "notices": "Notices",
-      "homework": "Homework",
-      "admitCards": "Admit cards",
-      "idCards": "ID cards",
-      "seatPlans": "Seat plans",
-      "promotion": "Promotion",
-      "expenses": "Expenses",
-      "website": "Your own website",
-      "app": "Mobile app"
     },
     "features": {
       "eyebrow": "Features",
-      "title": "Everything your school or college runs on, in one place",
-      "subtitle": "No more registers, spreadsheets and phone calls. Each part of the day has its place, and they all talk to each other.",
-      "attendance": {
-        "title": "Attendance that takes itself",
-        "body": "Fingerprint and card machines mark students as they walk in, or teachers tick a class in seconds. Guardians get an SMS when a child is absent.",
-        "sms": "Absent SMS sent to guardian"
+      "title": "Everything your school or college runs on",
+      "subtitle": "Every feature below is in every package. Each part knows about the others, so a mark made in class or a fee paid in the office shows up everywhere it should.",
+      "groups": {
+        "students": "Students & classes",
+        "attendance": "Attendance",
+        "exams": "Exams & results",
+        "fees": "Fees & accounts",
+        "guardians": "Guardians & messages",
+        "online": "Your institution online"
       },
-      "results": {
-        "title": "Exams & results",
-        "body": "Marks entry, GPA or percentage grading, merit positions and printed result cards.",
-        "gpa": "GPA"
-      },
-      "fees": {
-        "title": "Fees without the ledger",
-        "body": "Fee structures, dues, receipts and accounts. Guardians can pay online too.",
-        "receipt": "Receipt",
-        "total": "Total",
-        "paid": "Paid"
-      },
-      "sms": {
-        "title": "SMS & notices",
-        "body": "Reach every guardian in seconds: fee reminders, results, holidays and notices.",
-        "first": "Dear guardian, the half-yearly exam starts on Sunday at 10 am.",
-        "second": "Fee received: TK 1,500 for October. Thank you!"
-      },
-      "app": {
-        "title": "Guardian & teacher app",
-        "body": "Attendance, homework, results and fees on every phone."
-      },
-      "website": {
-        "title": "Your institution's own website",
-        "body": "A homepage on its own address with your photos, admission details and notices, all changed from settings.",
-        "url": "yourschool.sncmt.com"
-      },
-      "more": {
-        "title": "And the rest of the day's work",
-        "body": "The small jobs that eat up the office's week, done in a few clicks.",
-        "items": {
-          "routine": "Class routine",
-          "homework": "Homework",
-          "admit": "Admit cards",
-          "idCard": "ID cards",
-          "seatPlan": "Seat plans",
-          "promotion": "Promotion",
-          "expense": "Expenses",
-          "roles": "Roles & permissions",
-          "bangla": "Bangla & English"
+      "items": {
+        "students": {
+          "title": "Student records",
+          "body": "Admission, profile, guardians and class history for every student."
+        },
+        "teachers": {
+          "title": "Teachers & staff",
+          "body": "Staff profiles, the subjects they teach and their classes."
+        },
+        "routine": {
+          "title": "Class routine",
+          "body": "Build the routine once; teachers and guardians see it on their phones."
+        },
+        "calendar": {
+          "title": "Academic calendar",
+          "body": "Holidays, exams and events for the whole year in one place."
+        },
+        "promotion": {
+          "title": "Promotion",
+          "body": "Move a whole class to the next year in one step."
+        },
+        "idCards": {
+          "title": "ID cards",
+          "body": "Student ID cards in five designs, ready to print."
+        },
+        "classAttendance": {
+          "title": "Class attendance",
+          "body": "A teacher marks the whole class in a minute, on the web or in the app."
+        },
+        "devices": {
+          "title": "Fingerprint & card machines",
+          "body": "Students are marked present as they walk in through the gate."
+        },
+        "teacherAttendance": {
+          "title": "Teacher attendance",
+          "body": "Know who is in today, with monthly reports for the office."
+        },
+        "absentSms": {
+          "title": "Absence SMS",
+          "body": "Guardians get an SMS the moment their child is marked absent."
+        },
+        "exams": {
+          "title": "Exams",
+          "body": "Exam schedules, subjects and full marks for every class."
+        },
+        "marks": {
+          "title": "Marks & grading",
+          "body": "Teachers enter marks once; GPA or percentage grades follow."
+        },
+        "results": {
+          "title": "Result cards",
+          "body": "Result cards, merit positions and tabulation sheets, ready to print."
+        },
+        "admitCards": {
+          "title": "Admit cards & seat plans",
+          "body": "Print admit cards and seat plans for every exam hall."
+        },
+        "feeSetup": {
+          "title": "Fee structures & dues",
+          "body": "Set fees per class once; every student's dues follow."
+        },
+        "receipts": {
+          "title": "Money receipts",
+          "body": "Take a payment at the counter and print the receipt."
+        },
+        "onlinePayment": {
+          "title": "Online payment",
+          "body": "Guardians pay fees online by card or mobile banking."
+        },
+        "accounts": {
+          "title": "Income & expenses",
+          "body": "Expenses, funds and a ledger kept up to date by every payment."
+        },
+        "sms": {
+          "title": "SMS to guardians",
+          "body": "Reminders, results and notices, through your own SMS account."
+        },
+        "notices": {
+          "title": "Notices",
+          "body": "Send a notice to every guardian, the teachers or a single class."
+        },
+        "homework": {
+          "title": "Homework",
+          "body": "Teachers post homework; students and guardians see it at home."
+        },
+        "app": {
+          "title": "Guardian & teacher app",
+          "body": "Attendance, homework, results and fees on every Android phone."
+        },
+        "website": {
+          "title": "Your own website",
+          "body": "A homepage on your own address with photos, admissions and notices."
+        },
+        "roles": {
+          "title": "Roles & permissions",
+          "body": "Decide what each member of staff can see and change."
+        },
+        "bangla": {
+          "title": "Bangla & English",
+          "body": "Every page and every printout in either language."
         }
       }
     },
@@ -5203,5 +5239,223 @@
     "made": "Made on {date}",
     "count": "{count, plural, one {# row} other {# rows}}",
     "filtered": "Filtered list"
+  },
+  "deletes": {
+    "checking": "Checking what this affects…",
+    "checkFailed": "Couldn't check what this affects: {error}",
+    "cannotTitle": "This can't be deleted",
+    "blockersIntro": "It has money records, which are never deleted:",
+    "removesIntro": "These are deleted with it:",
+    "staysIntro": "These stay:",
+    "reason": "Reason",
+    "reasonPlaceholder": "Why? It is kept in the activity log",
+    "reasonRequired": "Write a reason (at least 3 characters).",
+    "typeToConfirm": "Type <b>{text}</b> to confirm",
+    "typeMismatch": "What you typed doesn't match.",
+    "delete": "Delete",
+    "void": "Void",
+    "working": "Working…",
+    "blockers": {
+      "payments": "{count, plural, one {# payment (cancelled ones count too)} other {# payments (cancelled ones count too)}}",
+      "onlinePayments": "{count, plural, one {# online payment} other {# online payments}}",
+      "paidFees": "{count, plural, one {# fee paid or discounted} other {# fees paid or discounted}}",
+      "ledger": "{count, plural, one {# money entry in its ledger} other {# money entries in its ledger}}",
+      "enrollments": "{count, plural, one {# student enrolled} other {# students enrolled}}",
+      "studentFees": "{count, plural, one {# student fee} other {# student fees}}",
+      "attendanceDays": "{count, plural, one {# day of attendance} other {# days of attendance}}",
+      "exams": "{count, plural, one {# exam} other {# exams}}",
+      "finalFormulas": "{count, plural, one {# final result setup} other {# final result setups}}",
+      "homework": "{count, plural, one {# homework} other {# homework}}",
+      "superAdminOnly": "It has marks or a result, so only the school super admin can delete it."
+    },
+    "removes": {
+      "unpaidFees": "{count, plural, one {# unpaid fee} other {# unpaid fees}}",
+      "enrollments": "{count, plural, one {# class placement} other {# class placements}}",
+      "attendance": "{count, plural, one {# attendance record} other {# attendance records}}",
+      "attendanceDays": "{count, plural, one {# day of attendance} other {# days of attendance}}",
+      "marks": "{count, plural, one {# exam mark} other {# exam marks}}",
+      "results": "{count, plural, one {# exam result} other {# exam results}}",
+      "finalResults": "{count, plural, one {its place in # final result (which goes back to draft)} other {its place in # final results (they go back to draft)}}",
+      "subjectAssignments": "{count, plural, one {# subject they teach} other {# subjects they teach}}",
+      "substitutions": "{count, plural, one {# substitution} other {# substitutions}}",
+      "duties": "{count, plural, one {# exam duty} other {# exam duties}}",
+      "sections": "{count, plural, one {# section} other {# sections}}",
+      "examClasses": "{count, plural, one {its place in # exam (with marks and results)} other {its place in # exams (with marks and results)}}",
+      "finalSetups": "{count, plural, one {# final result setup} other {# final result setups}}",
+      "feeStructures": "{count, plural, one {# class fee} other {# class fees}}",
+      "feeTypes": "{count, plural, one {# fee type} other {# fee types}}",
+      "classSubjects": "{count, plural, one {# class subject} other {# class subjects}}",
+      "subjectTeachers": "{count, plural, one {# subject teacher} other {# subject teachers}}",
+      "routine": "{count, plural, one {# routine period} other {# routine periods}}",
+      "calendarEntries": "{count, plural, one {# calendar entry} other {# calendar entries}}",
+      "sectionConfigs": "{count, plural, one {# section setting} other {# section settings}}",
+      "homework": "{count, plural, one {# homework} other {# homework}}",
+      "classes": "{count, plural, one {# class} other {# classes}}",
+      "publishedClasses": "{count, plural, one {# published result guardians can see} other {# published results guardians can see}}",
+      "subjects": "{count, plural, one {# subject in the routine} other {# subjects in the routine}}",
+      "remarks": "{count, plural, one {# class teacher remark} other {# class teacher remarks}}",
+      "seatPlans": "The seat plan",
+      "studentsUnplaced": "{count, plural, one {# student, without a class (place them again from their page)} other {# students, without a class (place them again from their page)}}",
+      "feesKept": "{count, plural, one {# fee paid or discounted, with the student} other {# fees paid or discounted, with the students}}",
+      "routineCleared": "{count, plural, one {# routine period, without this teacher} other {# routine periods, without this teacher}}",
+      "classTeacherCleared": "{count, plural, one {# section, without its class teacher} other {# sections, without their class teacher}}"
+    },
+    "student": {
+      "action": "Delete student",
+      "title": "Delete {name}?",
+      "description": "Everything of theirs goes too. A student with any payment, online payment, paid or discounted fee can't be deleted.",
+      "done": "{name} deleted."
+    },
+    "teacher": {
+      "action": "Delete teacher",
+      "title": "Delete {name}?",
+      "description": "Their history goes too. Their login keeps working at other schools.",
+      "done": "{name} deleted."
+    },
+    "year": {
+      "action": "Delete year",
+      "title": "Delete {name}?",
+      "description": "Only a year nobody was enrolled in and nothing was done in. The setup copied into it goes too.",
+      "done": "{name} deleted."
+    },
+    "class": {
+      "title": "Delete {name}?",
+      "description": "Everything set up for the class and done in it goes. Its students stay, without a class.",
+      "done": "{name} deleted."
+    },
+    "section": {
+      "title": "Delete {name}?",
+      "description": "What was done in the section goes. Its students stay, without a class.",
+      "done": "{name} deleted."
+    },
+    "feeType": {
+      "action": "Delete",
+      "title": "Delete {name}?",
+      "description": "Its class fees and the fees nobody paid go too. Refused once any of its fees was paid or discounted.",
+      "done": "{name} deleted."
+    },
+    "feeStructure": {
+      "action": "Delete",
+      "title": "Delete the class fee {name}?",
+      "description": "The fees it gave students go too, while nobody paid them. Refused once any was paid or discounted.",
+      "done": "{name} deleted."
+    },
+    "fund": {
+      "action": "Delete",
+      "title": "Delete {name}?",
+      "description": "Only a fund no money went through. Its fee types go too.",
+      "done": "{name} deleted."
+    },
+    "exam": {
+      "title": "Delete {name}?",
+      "classTitle": "Take {class} out of {name}?",
+      "description": "Nothing has been entered yet. Its routine goes with it.",
+      "warning": "{marks, plural, one {# mark} other {# marks}} and the results will be deleted{published, plural, =0 {} other {, including a published result guardians can see}}. A copy is kept in the activity log.",
+      "done": "{name} deleted.",
+      "classDone": "{class} taken out of the exam."
+    },
+    "attendance": {
+      "action": "Delete",
+      "titleStudents": "Delete this section's attendance of {date}?",
+      "titleTeachers": "Delete the teachers' attendance of {date}?",
+      "description": "For a roll call taken by mistake: the day goes back to not taken, and you can take it again.",
+      "done": "{count, plural, one {Attendance of # person deleted.} other {Attendance of # people deleted.}}"
+    },
+    "place": {
+      "action": "Place in a class",
+      "title": "Place in a class",
+      "description": "This student has no class this year. The fees set up for the class are given to them.",
+      "confirm": "Place",
+      "working": "Placing…",
+      "done": "Placed in {class}."
+    }
+  },
+  "activityLog": {
+    "title": "Activity log",
+    "description": "Everything deleted, and every money entry cancelled or voided: when, by whom and why.",
+    "superAdminOnly": "Only the school super admin can see the activity log.",
+    "kind": "Kind",
+    "allKinds": "All",
+    "kinds": {
+      "payment": "Payments",
+      "expense": "Expenses",
+      "fund": "Funds, deposits and transfers",
+      "fee_type": "Fee types",
+      "fee_structure": "Class fees",
+      "student_fee": "Student fees",
+      "student": "Students",
+      "teacher": "Teachers",
+      "class": "Classes",
+      "section": "Sections",
+      "attendance": "Attendance",
+      "academic_year": "Academic years",
+      "exam": "Exams"
+    },
+    "empty": "Nothing has been deleted or reversed yet.",
+    "columns": {
+      "when": "When",
+      "what": "What",
+      "who": "Who",
+      "reason": "Reason"
+    },
+    "platform": "Platform",
+    "money": "Money",
+    "detailTitle": "Log entry",
+    "snapshot": "The record as it was:",
+    "actions": {
+      "payment": {
+        "cancel": "Payment cancelled"
+      },
+      "expense": {
+        "void": "Expense voided"
+      },
+      "fund": {
+        "deposit": {
+          "void": "Deposit voided"
+        },
+        "transfer": {
+          "void": "Transfer reversed"
+        },
+        "delete": "Fund deleted"
+      },
+      "student_fee": {
+        "delete": "Student fee removed"
+      },
+      "fee_structure": {
+        "delete": "Class fee deleted"
+      },
+      "fee_type": {
+        "delete": "Fee type deleted"
+      },
+      "student": {
+        "delete": "Student deleted"
+      },
+      "teacher": {
+        "delete": "Teacher deleted"
+      },
+      "class": {
+        "delete": "Class deleted"
+      },
+      "section": {
+        "delete": "Section deleted"
+      },
+      "attendance": {
+        "students": {
+          "delete": "Attendance deleted"
+        },
+        "teachers": {
+          "delete": "Teacher attendance deleted"
+        }
+      },
+      "academic_year": {
+        "delete": "Academic year deleted"
+      },
+      "exam": {
+        "delete": "Exam deleted",
+        "class": {
+          "remove": "Class taken out of an exam"
+        }
+      }
+    }
   }
 }

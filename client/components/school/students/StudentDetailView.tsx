@@ -13,9 +13,12 @@ import {
   Pencil,
   RotateCcw,
   Shuffle,
+  Trash2,
+  UserPlus,
 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useForm, type FieldPath } from "react-hook-form";
 import { toast } from "sonner";
@@ -54,7 +57,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SetPasswordDialog } from "@/components/auth/SetPasswordDialog";
-import { useCan, useSchoolMe } from "@/lib/auth/hooks";
+import { useCan, useIsSuperAdmin, useSchoolMe } from "@/lib/auth/hooks";
 import { applyServerErrors } from "@/lib/auth/formErrors";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
@@ -73,6 +76,8 @@ import {
 } from "@/lib/school/students";
 import { placementSchema, type PlacementInput, type PlacementValues } from "@/zod/student";
 import { AdmissionTypeField } from "./AdmissionTypeField";
+import { DeleteStudentDialog } from "./DeleteStudentDialog";
+import { PlaceStudentDialog } from "./PlaceStudentDialog";
 import { StudentIdCardDialog } from "./idCards/StudentIdCardDialog";
 import { StudentStatusBadge } from "./StudentStatusBadge";
 import { usePlacementLabel } from "./placement";
@@ -147,7 +152,12 @@ function Detail({ student }: { student: StudentDetail }) {
   const setPhoto = useSetStudentPhoto();
   const removePhoto = useRemoveStudentPhoto();
 
+  const tDelete = useTranslations("deletes");
+  const router = useRouter();
+  const isSuperAdmin = useIsSuperAdmin();
   const [moving, setMoving] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [statusTo, setStatusTo] = useState<StudentStatus | null>(null);
   const me = useSchoolMe();
   const [settingPassword, setSettingPassword] = useState(false);
@@ -170,8 +180,12 @@ function Detail({ student }: { student: StudentDetail }) {
     // only the school super admin changes a family's password
     reset: !!me?.isSuperAdmin && !!student.account.userId,
     status: canUpdate ? STATUS_ACTIONS.filter((a) => a.from.includes(student.status)) : [],
+    // no class this year (their class or section was deleted): place them in one
+    place: canUpdate && student.status === "ACTIVE" && !!currentYearId && !current,
+    // the super admin only; refused while the student has money records
+    remove: isSuperAdmin,
   };
-  const anyMenuAction = actions.move || actions.reset || actions.status.length > 0;
+  const anyMenuAction = actions.move || actions.reset || actions.status.length > 0 || actions.place || actions.remove;
 
   return (
     <div className="space-y-6">
@@ -235,6 +249,11 @@ function Detail({ student }: { student: StudentDetail }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60">
+                {actions.place && (
+                  <DropdownMenuItem onSelect={() => setPlacing(true)}>
+                    <UserPlus /> {tDelete("place.action")}
+                  </DropdownMenuItem>
+                )}
                 {actions.move && (
                   <DropdownMenuItem onSelect={() => setMoving(true)}>
                     <Shuffle /> {t("actions.move")}
@@ -255,6 +274,14 @@ function Detail({ student }: { student: StudentDetail }) {
                     <Icon /> {t(`statusActions.${to}`)}
                   </DropdownMenuItem>
                 ))}
+                {actions.remove && (
+                  <>
+                    {(actions.move || actions.reset || actions.status.length > 0 || actions.place) && <DropdownMenuSeparator />}
+                    <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(true)}>
+                      <Trash2 /> {tDelete("student.action")}
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -355,6 +382,8 @@ function Detail({ student }: { student: StudentDetail }) {
 
       <PlacementDialog student={student} enrollment={moving ? current : null} onClose={() => setMoving(false)} />
       <StatusDialog student={student} to={statusTo} onClose={() => setStatusTo(null)} />
+      <PlaceStudentDialog student={student} open={placing} onClose={() => setPlacing(false)} />
+      <DeleteStudentDialog student={student} open={deleting} onClose={() => setDeleting(false)} onDeleted={() => router.replace("/students")} />
       <SetPasswordDialog
         account={
           settingPassword && student.account.userId && student.account.loginPhone

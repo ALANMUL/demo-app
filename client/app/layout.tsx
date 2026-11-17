@@ -18,6 +18,8 @@ const tinos = Tinos({
   variable: "--font-tinos",
   subsets: ["latin"],
   weight: ["400", "700"],
+  // the homepage's margin notes are italic
+  style: ["normal", "italic"],
   preload: false,
 });
 

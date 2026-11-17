@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MoreHorizontal, Pencil, Plus, Power, PowerOff } from "lucide-react";
+import { MoreHorizontal, Pencil, Plus, Power, PowerOff, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,9 @@ import { FormError } from "@/components/auth/AuthCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DeleteRecordDialog } from "@/components/data/DeleteRecordDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useIsSuperAdmin } from "@/lib/auth/hooks";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { applyServerErrors } from "@/lib/auth/formErrors";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
-import { useCreateFeeType, useFeeTypes, useFunds, useUpdateFeeType, type FeeType } from "@/lib/school/finance";
+import { useCreateFeeType, useDeleteFeeType, useFeeTypes, useFunds, useUpdateFeeType, type FeeType } from "@/lib/school/finance";
 import { cn } from "@/lib/utils";
 import { feeTypeFormSchema, type FeeTypeFormInput, type FeeTypeFormValues } from "@/zod/finance";
 import { NameFields, useSchoolLanguage } from "../NameFields";
@@ -33,6 +35,11 @@ export function FeeTypesTab({ canCreate, canUpdate }: { canCreate: boolean; canU
   const funds = useFunds();
   const update = useUpdateFeeType();
   const [editing, setEditing] = useState<FeeType | null | undefined>();
+  // the super admin only, while none of its fees was paid or discounted
+  const canDelete = useIsSuperAdmin();
+  const tDelete = useTranslations("deletes.feeType");
+  const remove = useDeleteFeeType();
+  const [deleting, setDeleting] = useState<FeeType | null>(null);
   const noFund = funds.data && !funds.data.some((f) => f.isActive);
 
   const setActive = (feeType: FeeType, isActive: boolean) =>
@@ -104,6 +111,14 @@ export function FeeTypesTab({ canCreate, canUpdate }: { canCreate: boolean; canU
                               <Power /> {t("activate")}
                             </DropdownMenuItem>
                           )}
+                          {canDelete && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(feeType)}>
+                                <Trash2 /> {tDelete("action")}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -116,6 +131,19 @@ export function FeeTypesTab({ canCreate, canUpdate }: { canCreate: boolean; canU
       </ListState>
 
       <FeeTypeFormDialog feeType={editing} onClose={() => setEditing(undefined)} />
+      <DeleteRecordDialog
+        target={
+          deleting && {
+            title: tDelete("title", { name: name(deleting) }),
+            description: tDelete("description"),
+            checkPath: `/fee-type/${deleting.id}/delete-check`,
+            confirmText: name(deleting),
+            done: tDelete("done", { name: name(deleting) }),
+            run: (reason) => remove.mutateAsync({ feeTypeId: deleting.id, reason }),
+          }
+        }
+        onClose={() => setDeleting(null)}
+      />
     </div>
   );
 }

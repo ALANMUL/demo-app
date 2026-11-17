@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/lib/auth/hooks";
+import { useCanReverseMoney } from "@/lib/auth/hooks";
 import { bangladeshDay } from "@/lib/dates";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
@@ -134,7 +134,8 @@ export function PaymentsTable({
   const format = useFormatter();
   const name = useLocalizedName();
   const money = useMoney();
-  const can = useCan();
+  // cancelling is a money reversal: the super admin only
+  const canCancel = useCanReverseMoney();
   const [receiptId, setReceiptId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<PaymentList["items"][number] | null>(null);
 
@@ -193,7 +194,7 @@ export function PaymentsTable({
                           <DropdownMenuItem onSelect={() => setReceiptId(p.id)}>
                             <ReceiptText /> {t("receipt")}
                           </DropdownMenuItem>
-                          {!cancelled && can("payment:cancel") && (
+                          {!cancelled && canCancel && (
                             <DropdownMenuItem variant="destructive" onSelect={() => setCancelling(p)}>
                               <Ban /> {t("cancel")}
                             </DropdownMenuItem>

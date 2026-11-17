@@ -16,6 +16,7 @@ import type {
   ListStudentsQuery,
   UpdateStudentPayload,
 } from "./student.type";
+import type { PlaceStudentPayload } from "./student.validation";
 import { isUniqueViolation } from "../../utils/prismaError";
 import { DEFAULT_SECTION_NAME } from "../class/class.service";
 import { NotificationService, notifyInBackground } from "../notification/notification.service";
@@ -797,6 +798,45 @@ const studentsByRoll = async <I extends Prisma.StudentInclude>(
 
 // ------------------------------------------------------------------- photo
 
+/*
+ * Places a student who has no class in the year (their class or section was deleted) into
+ * one, with the fees set up for it. A student already placed that year moves by promotion or
+ * a placement change instead.
+ */
+const placeStudent = async (schoolId: string, studentId: string, enr: PlaceStudentPayload) =>
+  prisma.$transaction(async (tx) => {
+    const student = await tx.student.findFirst({ where: { id: studentId, schoolId }, select: { id: true } });
+    if (!student) throw new AppError("Student not found", httpStatus.NOT_FOUND);
+    const academicYear = await resolveAcademicYear(tx, schoolId, enr.academicYearId);
+    const placed = await tx.enrollment.findFirst({ where: { studentId, academicYearId: academicYear.id }, select: { id: true } });
+    if (placed) throw new AppError("This student already has a class in this year", httpStatus.CONFLICT);
+
+    const sectionId = enr.sectionId ?? (await wholeClassSection(tx, schoolId, enr.classId));
+    await assertPlacement(tx, schoolId, { ...enr, sectionId });
+    if (enr.rollNumber) {
+      const taken = await tx.enrollment.findFirst({
+        where: { academicYearId: academicYear.id, sectionId, rollNumber: enr.rollNumber, status: "ACTIVE" },
+        select: { id: true },
+      });
+      if (taken) throw new AppError(`Roll number ${enr.rollNumber} is already used in this section`, httpStatus.CONFLICT);
+    }
+
+    await tx.enrollment.create({
+      data: {
+        studentId,
+        academicYearId: academicYear.id,
+        classId: enr.classId,
+        sectionId,
+        groupId: enr.groupId,
+        rollNumber: enr.rollNumber,
+        admissionType: enr.admissionType,
+        enrolledAt: firstEnrollmentStart(academicYear, new Date()),
+      },
+    });
+    await generateStudentFees(tx, { schoolId, studentIds: [studentId], academicYearId: academicYear.id, classId: enr.classId });
+    return tx.student.findUniqueOrThrow({ where: { id: studentId }, include: withEnrollments });
+  }, TX_OPTIONS);
+
 const findStudent = async (schoolId: string, studentId: string) => {
   const student = await prisma.student.findFirst({ where: { id: studentId, schoolId }, select: { id: true, photo: true } });
   if (!student) throw new AppError("Student not found", httpStatus.NOT_FOUND);
@@ -823,6 +863,7 @@ const removePhoto = async (schoolId: string, studentId: string) => {
 };
 
 export const StudentService = {
+  placeStudent,
   changePlacement,
   setPhoto,
   removePhoto,

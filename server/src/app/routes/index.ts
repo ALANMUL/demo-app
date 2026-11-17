@@ -45,6 +45,7 @@ import { platformSubscriptionRoutes, schoolSubscriptionRoutes } from '../modules
 import { platformPackageRoutes, publicPackageRoutes } from '../modules/package/package.route';
 import { schoolSettingsRoutes } from '../modules/schoolSettings/schoolSettings.route';
 import { contactRoutes } from '../modules/contact/contact.route';
+import { auditLogRoutes } from '../modules/auditLog/auditLog.route';
 
 
 const router = express.Router();
@@ -205,6 +206,11 @@ const moduleRoutes = [
     {
         path: '/expense',
         route: expenseRoutes
+    },
+    {
+        // what was deleted or reversed (money), by whom and why: the super admin only
+        path: '/audit-log',
+        route: auditLogRoutes
     },
     {
         // school notices: the board, writing and publishing, the public notice page

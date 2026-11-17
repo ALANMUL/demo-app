@@ -1,7 +1,8 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
+import { optionalReasonQuery } from "../../shared/deleteSchemas";
 import { AcademicYearController } from "./academicYear.controller";
 import { AcademicYearValidation } from "./academicYear.validation";
 
@@ -33,6 +34,23 @@ router.patch(
     body: AcademicYearValidation.updateAcademicYear,
   }),
   AcademicYearController.updateAcademicYear,
+);
+
+// a year with nothing enrolled or done in it: the super admin only
+router.get(
+  "/:academicYearId/delete-check",
+  authorize("academic_year:update"),
+  superAdminOnly,
+  validateRequest({ params: AcademicYearValidation.academicYearIdParams }),
+  AcademicYearController.deleteCheck,
+);
+
+router.delete(
+  "/:academicYearId",
+  authorize("academic_year:update"),
+  superAdminOnly,
+  validateRequest({ params: AcademicYearValidation.academicYearIdParams, query: optionalReasonQuery }),
+  AcademicYearController.deleteAcademicYear,
 );
 
 // makes this the school's current year (only one at a time)

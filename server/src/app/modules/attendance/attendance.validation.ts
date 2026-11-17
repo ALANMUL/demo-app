@@ -83,7 +83,14 @@ const saveTeacherSheet = z.strictObject({
 
 const teacherIdParams = z.object({ teacherId: idSchema("Teacher id") });
 
+// deleting a day's roll call: the day is required, the reason optional
+const deleteReason = z.string().trim().max(300).optional();
+const deleteStudentSheetQuery = z.object({ sectionId: idSchema("Section"), date: dateOnlySchema, reason: deleteReason });
+const deleteTeacherSheetQuery = z.object({ date: dateOnlySchema, reason: deleteReason });
+
 export const AttendanceValidation = {
+  deleteStudentSheetQuery,
+  deleteTeacherSheetQuery,
   studentSheetQuery,
   saveStudentSheet,
   dayQuery,
@@ -97,6 +104,8 @@ export const AttendanceValidation = {
 };
 
 export type StudentSheetQuery = z.infer<typeof studentSheetQuery>;
+export type DeleteStudentSheetQuery = z.infer<typeof deleteStudentSheetQuery>;
+export type DeleteTeacherSheetQuery = z.infer<typeof deleteTeacherSheetQuery>;
 export type SaveStudentSheetPayload = z.infer<typeof saveStudentSheet>;
 export type DayQuery = z.infer<typeof dayQuery>;
 export type RangeQuery = z.infer<typeof rangeQuery>;

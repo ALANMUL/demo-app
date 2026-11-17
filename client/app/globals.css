@@ -31,6 +31,13 @@
   --color-mk-blue: var(--mk-blue);
   --color-mk-gold: var(--mk-gold);
   --color-mk-mint: var(--mk-mint);
+  --color-mk-rule: var(--mk-rule);
+  --color-mk-margin: var(--mk-margin);
+  --color-mk-wash: var(--mk-wash);
+  --color-mk-slate: var(--mk-slate);
+  --color-mk-sky: var(--mk-sky);
+  --color-mk-board: var(--mk-board);
+  --color-mk-chalk: var(--mk-chalk);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -137,6 +144,17 @@
   --mk-blue: oklch(0.62 0.16 258);
   --mk-gold: oklch(0.82 0.14 82);
   --mk-mint: oklch(0.86 0.13 168);
+  /* the homepage's exercise book: pale blue ruling, the red margin line, a faint wash, the body text */
+  --mk-rule: oklch(0.915 0.025 255);
+  --mk-margin: oklch(0.55 0.18 15);
+  --mk-wash: oklch(0.977 0.007 255);
+  --mk-slate: oklch(0.44 0.035 262);
+  /* its sections: sky-blue khata paper, a classroom chalkboard and the chalk's yellow */
+  --mk-sky: oklch(0.955 0.018 250);
+  --mk-board: oklch(0.32 0.04 165);
+  --mk-chalk: oklch(0.88 0.11 90);
+  /* the margin line's colour: red on paper; each section may set its own */
+  --mk-line: oklch(0.55 0.18 15);
   /* the faint squared-paper lines on the canvas */
   --canvas-line: oklch(0.5 0.03 260 / 0.055);
   --navy: oklch(0.305 0.1 258);
@@ -447,50 +465,48 @@
   mask-image: radial-gradient(ellipse 60% 55% at 50% 30%, black 20%, transparent 75%);
 }
 
-/* the highlighted words of a heading */
-.mk-gradient-text {
-  background: linear-gradient(100deg, var(--mk-gold) 0%, oklch(0.94 0.06 85) 45%, oklch(0.8 0.1 245) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/*
+ * The homepage (components/marketing): a page of a school exercise book. Headings in regular
+ * weight (Bangla a step heavier: its letters are thinner), margin notes in italic (Bangla has
+ * none, so upright).
+ */
+.mk-display {
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+:lang(bn) .mk-display {
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.22;
+}
+.mk-note {
+  font-style: italic;
+}
+/* the hero's paper: pale blue lines ruled across it, as in a khata (hard lines, no fade) */
+.mk-ruled {
+  background-image: linear-gradient(to bottom, transparent calc(2.5rem - 1px), oklch(0.9 0.03 250) calc(2.5rem - 1px));
+  background-size: 100% 2.5rem;
+}
+:lang(bn) .mk-note {
+  font-style: normal;
 }
 
-/* the product picture, leaning back */
-.mk-tilt {
-  transform: perspective(1800px) rotateX(14deg);
-  transform-origin: center top;
+/*
+ * The hero's dashboard: the week's attendance bars rise one after another as the page opens
+ * (--i is the day). With less motion they are simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .mk-bar {
+    transform-origin: bottom;
+    animation: mk-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(0.5s + var(--i) * 0.12s);
+  }
 }
-
-/* the endless row of modules */
-.mk-marquee {
-  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
-}
-.mk-marquee-track {
-  animation: mk-marquee 40s linear infinite;
-}
-.mk-marquee:hover .mk-marquee-track {
-  animation-play-state: paused;
-}
-@keyframes mk-marquee {
-  to { transform: translateX(-50%); }
-}
-
-/* the cards floating beside the product picture */
-.mk-float {
-  animation: mk-float 6s ease-in-out infinite;
-}
-.mk-float-late {
-  animation: mk-float 7s ease-in-out 1.5s infinite;
-}
-@keyframes mk-float {
-  50% { transform: translateY(-10px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mk-marquee-track,
-  .mk-float,
-  .mk-float-late {
-    animation: none;
+@keyframes mk-grow {
+  from {
+    transform: scaleY(0);
   }
 }
 

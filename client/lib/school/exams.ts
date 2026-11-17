@@ -145,15 +145,16 @@ export const examsApi = {
   update: async ({ examId, body }: { examId: string; body: UpdateExamBody }) =>
     (await httpClient.patch<ApiResponse<Exam>>(`/exam/${examId}`, body)).data.data,
 
-  remove: async (examId: string) => {
-    await httpClient.delete(`/exam/${examId}`);
+  // an exam with marks also needs the reason and its name typed (the super admin only)
+  remove: async ({ examId, reason, confirmName }: { examId: string } & ExamDeleteInput) => {
+    await httpClient.delete(`/exam/${examId}`, { params: { reason, confirmName } });
   },
 
   addClasses: async ({ examId, classIds }: { examId: string; classIds: string[] }) =>
     (await httpClient.post<ApiResponse<Exam>>(`/exam/${examId}/classes`, { classIds })).data.data,
 
-  removeClass: async ({ examId, classId }: { examId: string; classId: string }) => {
-    await httpClient.delete(`/exam/${examId}/classes/${classId}`);
+  removeClass: async ({ examId, classId, reason, confirmName }: { examId: string; classId: string } & ExamDeleteInput) => {
+    await httpClient.delete(`/exam/${examId}/classes/${classId}`, { params: { reason, confirmName } });
   },
 
   routine: async ({ examId, classId }: { examId: string; classId: string }) =>
@@ -175,6 +176,8 @@ export const examsApi = {
 };
 
 // ------------------------------------------------------------------- hooks
+
+export type ExamDeleteInput = { reason?: string; confirmName?: string };
 
 const examsKey = ["school", "exams"] as const;
 

@@ -168,6 +168,13 @@ export const attendanceApi = {
 
   saveTeacherSheet: async (body: { date: string; records: { teacherId: string; status: AttendanceStatus; note?: string }[] }) =>
     (await httpClient.put<ApiResponse<TeacherSheet>>("/attendance/teachers/sheet", body)).data.data,
+
+  // a day's roll call taken by mistake (same 7-day limit as changing it)
+  deleteStudentSheet: async (query: { sectionId: string; date: string; reason?: string }) =>
+    (await httpClient.delete<ApiResponse<{ removed: number }>>("/attendance/students/sheet", { params: query })).data.data,
+
+  deleteTeacherSheet: async (query: { date: string; reason?: string }) =>
+    (await httpClient.delete<ApiResponse<{ removed: number }>>("/attendance/teachers/sheet", { params: query })).data.data,
 };
 
 // ------------------------------------------------------------------- hooks
@@ -221,3 +228,5 @@ const useAttendanceMutation = <TArgs, TResult>(mutationFn: (args: TArgs) => Prom
 
 export const useSaveStudentSheet = () => useAttendanceMutation(attendanceApi.saveStudentSheet);
 export const useSaveTeacherSheet = () => useAttendanceMutation(attendanceApi.saveTeacherSheet);
+export const useDeleteStudentSheet = () => useAttendanceMutation(attendanceApi.deleteStudentSheet);
+export const useDeleteTeacherSheet = () => useAttendanceMutation(attendanceApi.deleteTeacherSheet);

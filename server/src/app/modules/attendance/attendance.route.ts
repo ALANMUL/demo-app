@@ -1,7 +1,7 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
 import { AttendanceController } from "./attendance.controller";
 import { AttendanceValidation } from "./attendance.validation";
 
@@ -24,6 +24,15 @@ router.put(
   authorize("attendance:mark"),
   validateRequest({ body: AttendanceValidation.saveStudentSheet }),
   AttendanceController.saveStudentSheet,
+);
+
+// a day's roll call taken by mistake: the school super admin only
+router.delete(
+  "/students/sheet",
+  authorize("attendance:mark"),
+  superAdminOnly,
+  validateRequest({ query: AttendanceValidation.deleteStudentSheetQuery }),
+  AttendanceController.deleteStudentSheet,
 );
 
 // ------------------------------------------------------------- reports
@@ -70,6 +79,14 @@ router.put(
   authorize("teacher_attendance:mark"),
   validateRequest({ body: AttendanceValidation.saveTeacherSheet }),
   AttendanceController.saveTeacherSheet,
+);
+
+router.delete(
+  "/teachers/sheet",
+  authorize("teacher_attendance:mark"),
+  superAdminOnly,
+  validateRequest({ query: AttendanceValidation.deleteTeacherSheetQuery }),
+  AttendanceController.deleteTeacherSheet,
 );
 
 router.get(

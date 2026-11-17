@@ -1,7 +1,7 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
 import { ExamController, OptionalSubjectController } from "./exam.controller";
 import { ExamValidation } from "./exam.validation";
 
@@ -39,10 +39,20 @@ router.patch(
   ExamController.updateExam,
 );
 
+// deleting an exam at any stage (marks and results go too): the super admin only
+router.get(
+  "/:examId/delete-check",
+  authorize("exam:create"),
+  superAdminOnly,
+  validateRequest({ params: ExamValidation.examIdParams }),
+  ExamController.deleteCheck,
+);
+
 router.delete(
   "/:examId",
   authorize("exam:create"),
-  validateRequest({ params: ExamValidation.examIdParams }),
+  superAdminOnly,
+  validateRequest({ params: ExamValidation.examIdParams, query: ExamValidation.deleteExamQuery }),
   ExamController.deleteExam,
 );
 
@@ -53,10 +63,19 @@ router.post(
   ExamController.addClasses,
 );
 
+router.get(
+  "/:examId/classes/:classId/delete-check",
+  authorize("exam:create"),
+  superAdminOnly,
+  validateRequest({ params: ExamValidation.examClassParams }),
+  ExamController.classDeleteCheck,
+);
+
 router.delete(
   "/:examId/classes/:classId",
   authorize("exam:create"),
-  validateRequest({ params: ExamValidation.examClassParams }),
+  superAdminOnly,
+  validateRequest({ params: ExamValidation.examClassParams, query: ExamValidation.deleteExamQuery }),
   ExamController.removeClass,
 );
 

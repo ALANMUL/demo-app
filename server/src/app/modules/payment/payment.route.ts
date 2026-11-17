@@ -1,7 +1,7 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
 import { PaymentController } from "./payment.controller";
 import { PaymentValidation } from "./payment.validation";
 
@@ -61,7 +61,9 @@ router.get(
 
 router.post(
   "/:paymentId/cancel",
+  // a money reversal: the school super admin only
   authorize("payment:cancel"),
+  superAdminOnly,
   validateRequest({
     params: PaymentValidation.paymentIdParams,
     body: PaymentValidation.cancelPayment,

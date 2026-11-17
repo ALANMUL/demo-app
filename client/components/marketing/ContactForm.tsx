@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, Send } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -214,14 +214,13 @@ export function ContactForm({ packages }: { packages: PublicPackage[] }) {
         </div>
 
         <div className="flex flex-col-reverse items-center gap-4 sm:col-span-2 sm:flex-row sm:justify-between">
-          <p className="text-xs text-muted-foreground">{t("privacy")}</p>
+          <p className="text-sm text-mk-slate">{t("privacy")}</p>
           <Button
             type="submit"
             disabled={send.isPending}
-            className="group h-12 w-full rounded-full bg-mk-ink px-7 text-[15px] text-white hover:bg-mk-blue sm:w-auto dark:bg-mk-gold dark:text-mk-ink dark:hover:bg-white"
+            className="h-12 w-full rounded-md bg-mk-ink px-7 text-base font-semibold text-white hover:bg-mk-ink-2 sm:w-auto"
           >
             {send.isPending ? t("sending") : t("send")}
-            <Send className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Button>
         </div>
       </form>

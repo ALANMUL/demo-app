@@ -1,7 +1,7 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
 import { PlatformSubjectController, SubjectController } from "./subject.controller";
 import { SubjectValidation } from "./subject.validation";
 
@@ -42,7 +42,9 @@ router.patch(
 
 router.delete(
   "/:subjectId",
+  // still only while unused; the super admin only
   authorize("subject:delete"),
+  superAdminOnly,
   validateRequest({ params: SubjectValidation.subjectIdParams }),
   SubjectController.deleteSubject,
 );

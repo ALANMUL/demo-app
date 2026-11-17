@@ -60,17 +60,6 @@ const updateSection = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const deleteSection = catchAsync(async (req: Request, res: Response) => {
-  await SectionService.deleteSection(req.auth!.schoolId!, req.params.sectionId as string);
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Section deleted successfully!",
-    data: null,
-  });
-});
-
 const setYearConfig = catchAsync(async (req: Request, res: Response) => {
   const result = await SectionService.setYearConfig(
     req.auth!.schoolId!,
@@ -106,7 +95,6 @@ export const SectionController = {
   getSections,
   getSectionById,
   updateSection,
-  deleteSection,
   setYearConfig,
   getYearConfig,
 };

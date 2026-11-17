@@ -1,7 +1,6 @@
 import { ContactSection } from "@/components/marketing/ContactSection";
 import { Features } from "@/components/marketing/Features";
 import { Hero } from "@/components/marketing/Hero";
-import { ModuleMarquee } from "@/components/marketing/ModuleMarquee";
 import { Pricing } from "@/components/marketing/Pricing";
 import { getPublicPackages } from "@/lib/marketing/packages.server";
 
@@ -12,7 +11,6 @@ export default async function HomePage() {
   return (
     <>
       <Hero />
-      <ModuleMarquee />
       <Features />
       <Pricing packages={packages} />
       <ContactSection packages={packages} />

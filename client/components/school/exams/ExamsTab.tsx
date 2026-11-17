@@ -4,15 +4,6 @@ import { ArrowLeft, CalendarRange, MoreHorizontal, PencilLine, Pencil, Plus, Tra
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,22 +25,22 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useIsSuperAdmin } from "@/lib/auth/hooks";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useAcademicYears } from "@/lib/school/academicYears";
 import { useClasses } from "@/lib/school/classes";
 import {
   useAddExamClasses,
-  useDeleteExam,
   useExam,
   useExams,
-  useRemoveExamClass,
   useSetExamClassStatus,
   type Exam,
   type ExamClass,
   type ExamClassStatus,
 } from "@/lib/school/exams";
 import { useDateRange } from "../calendar/shared";
+import { DeleteExamDialog, type ExamDeleteTarget } from "./DeleteExamDialog";
 import { ExamFormDialog } from "./ExamFormDialog";
 import { ExamRoutineDialog, type RoutineTarget } from "./ExamRoutineDialog";
 
@@ -176,10 +167,11 @@ function ExamDetail({
   const dateRange = useDateRange();
   const { data: exam, isPending, isError, error, refetch } = useExam(examId);
   const setStatus = useSetExamClassStatus();
-  const removeClass = useRemoveExamClass();
+  // deleting an exam or a class of it: the super admin only, at any stage
+  const isSuperAdmin = useIsSuperAdmin();
   const [editing, setEditing] = useState(false);
   const [addingClasses, setAddingClasses] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting] = useState<ExamDeleteTarget | null>(null);
   const [routine, setRoutine] = useState<RoutineTarget | null>(null);
 
   if (isPending) return <Skeleton className="h-64" />;
@@ -208,13 +200,8 @@ function ExamDetail({
       },
     );
 
-  const remove = (c: ExamClass) =>
-    removeClass.mutate(
-      { examId, classId: c.class.id },
-      { onSuccess: () => toast.success(t("classRemoved", { class: c.class.name })), onError: (e) => toast.error(describeError(e)) },
-    );
-
-  const canDelete = exam.classes.every((c) => c.status === "ROUTINE");
+  // the dialog asks for a reason and the name once marks exist
+  const remove = (c: ExamClass) => setDeleting({ exam, classId: c.class.id, className: c.class.name });
 
   return (
     <div className="space-y-4">
@@ -249,10 +236,14 @@ function ExamDetail({
                 <DropdownMenuItem onSelect={() => setEditing(true)}>
                   <Pencil /> {t("edit")}
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" disabled={!canDelete} onSelect={() => setDeleting(true)}>
-                  <Trash2 /> {canDelete ? t("delete") : t("deleteLocked")}
-                </DropdownMenuItem>
+                {isSuperAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={() => setDeleting({ exam })}>
+                      <Trash2 /> {t("delete")}
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -296,7 +287,7 @@ function ExamDetail({
                         <Unlock /> {t("openMarks")}
                       </Button>
                     )}
-                    {canManage && (c.status !== "PUBLISHED") && (
+                    {canManage && (c.status === "MARKS_ENTRY" || isSuperAdmin) && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="size-8" aria-label={t("actions")}>
@@ -309,9 +300,11 @@ function ExamDetail({
                               <Undo2 /> {t("toRoutine")}
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem variant="destructive" disabled={c.status !== "ROUTINE"} onSelect={() => remove(c)}>
-                            <Trash2 /> {t("removeClass")}
-                          </DropdownMenuItem>
+                          {isSuperAdmin && (
+                            <DropdownMenuItem variant="destructive" onSelect={() => remove(c)}>
+                              <Trash2 /> {t("removeClass")}
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -327,7 +320,7 @@ function ExamDetail({
       <ExamFormDialog open={editing} exam={exam} onClose={() => setEditing(false)} />
       <AddClassesDialog exam={addingClasses ? exam : null} onClose={() => setAddingClasses(false)} />
       <ExamRoutineDialog target={routine} canEdit={canManage} onClose={() => setRoutine(null)} />
-      <DeleteExamDialog exam={deleting ? exam : null} onClose={() => setDeleting(false)} onDeleted={onBack} />
+      <DeleteExamDialog target={deleting} onClose={() => setDeleting(null)} onDeleted={onBack} />
     </div>
   );
 }
@@ -386,41 +379,5 @@ function AddClassesDialog({ exam, onClose }: { exam: Exam | null; onClose: () =>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function DeleteExamDialog({ exam, onClose, onDeleted }: { exam: Exam | null; onClose: () => void; onDeleted: () => void }) {
-  const t = useTranslations("school.exams.detail.deleteDialog");
-  const tCommon = useTranslations("common");
-  const describeError = useErrorMessage();
-  const name = useLocalizedName();
-  const remove = useDeleteExam();
-
-  const confirm = () =>
-    exam &&
-    remove.mutate(exam.id, {
-      onSuccess: () => {
-        toast.success(t("done", { name: name(exam) }));
-        onClose();
-        onDeleted();
-      },
-      onError: (e) => toast.error(describeError(e)),
-    });
-
-  return (
-    <AlertDialog open={!!exam} onOpenChange={(open) => !open && !remove.isPending && onClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{t("title", { name: exam ? name(exam) : "" })}</AlertDialogTitle>
-          <AlertDialogDescription>{t("description")}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={remove.isPending}>{tCommon("cancel")}</AlertDialogCancel>
-          <Button variant="destructive" onClick={confirm} disabled={remove.isPending}>
-            {remove.isPending ? t("working") : t("confirm")}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }

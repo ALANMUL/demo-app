@@ -2,8 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { companyContact, localPhone } from "@/lib/marketing/company";
 import { MARKETING_SECTIONS } from "@/lib/marketing/sections";
 import { BrandMark } from "./BrandMark";
+import { PAGE } from "./Margin";
 
-/** The marketing site's footer, on navy: the name, the sections, the way schools log in. */
+/** The marketing site's footer, on the hero's sky-blue paper: the name, the sections, the way schools log in. */
 export async function MarketingFooter() {
   const [t, tNav, tCommon] = await Promise.all([
     getTranslations("marketing.footer"),
@@ -14,27 +15,19 @@ export async function MarketingFooter() {
   const { phone, email } = companyContact;
 
   return (
-    <footer className="dark relative isolate overflow-hidden bg-mk-ink text-white">
-      {/* the name, huge and faint, behind everything */}
-      <p
-        aria-hidden
-        className="pointer-events-none absolute -bottom-6 left-1/2 -z-10 -translate-x-1/2 text-[9vw] leading-none font-black tracking-tighter whitespace-nowrap text-white/[0.03] select-none"
-      >
-        {name}
-      </p>
-
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.2fr]">
+    <footer className="bg-mk-sky text-mk-ink">
+      <div className={`${PAGE} grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1.3fr]`}>
         <div className="space-y-4">
-          <BrandMark name={name} />
-          <p className="max-w-sm text-sm leading-relaxed text-white/60">{t("about")}</p>
+          <BrandMark name={name} onWhite />
+          <p className="max-w-sm text-base leading-relaxed text-mk-slate">{t("about")}</p>
         </div>
 
         <nav aria-label={t("links")}>
-          <h3 className="mb-4 text-xs font-semibold tracking-[0.18em] text-mk-gold uppercase">{t("links")}</h3>
-          <ul className="space-y-2.5 text-sm">
+          <h2 className="mb-4 text-base font-bold">{t("links")}</h2>
+          <ul className="space-y-2.5 text-base">
             {MARKETING_SECTIONS.map((section) => (
               <li key={section}>
-                <a href={`#${section}`} className="text-white/70 transition-colors hover:text-white">
+                <a href={`#${section}`} className="text-mk-slate transition-colors hover:text-mk-ink hover:underline">
                   {tNav(section)}
                 </a>
               </li>
@@ -43,21 +36,23 @@ export async function MarketingFooter() {
         </nav>
 
         <div>
-          <h3 className="mb-4 text-xs font-semibold tracking-[0.18em] text-mk-gold uppercase">{t("schools")}</h3>
-          <p className="text-sm leading-relaxed text-white/60">{t("login")}</p>
-          <p className="mt-2 inline-block rounded-lg border border-white/10 bg-white/[0.05] px-3 py-1.5 font-mono text-sm text-white/85">{t("loginAddress")}</p>
+          <h2 className="mb-4 text-base font-bold">{t("schools")}</h2>
+          <p className="text-base leading-relaxed text-mk-slate">{t("login")}</p>
+          <p className="mt-3 inline-block rounded-md border border-mk-rule bg-white px-3 py-1.5 text-base" data-ascii-digits>
+            {t("loginAddress")}
+          </p>
           {(phone || email) && (
-            <ul className="mt-5 space-y-1.5 text-sm text-white/70">
+            <ul className="mt-5 space-y-1.5 text-base text-mk-slate">
               {phone && (
                 <li>
-                  <a href={`tel:${phone}`} className="tabular-nums hover:text-white">
+                  <a href={`tel:${phone}`} className="tabular-nums hover:text-mk-ink hover:underline">
                     {localPhone(phone)}
                   </a>
                 </li>
               )}
               {email && (
                 <li>
-                  <a href={`mailto:${email}`} className="break-all hover:text-white">
+                  <a href={`mailto:${email}`} className="break-all hover:text-mk-ink hover:underline">
                     {email}
                   </a>
                 </li>
@@ -67,8 +62,8 @@ export async function MarketingFooter() {
         </div>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-white/50 sm:flex-row sm:justify-between">
+      <div className="border-t border-mk-rule">
+        <div className={`${PAGE} flex flex-col gap-2 py-6 text-sm text-mk-slate sm:flex-row sm:justify-between`}>
           <p>{t("rights", { year: new Date().getFullYear(), name })}</p>
           <p>{t("made")}</p>
         </div>

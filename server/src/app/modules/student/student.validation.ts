@@ -121,10 +121,15 @@ const listStudentsQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+// a student with no class this year into one (same fields as on admission)
+const placeStudent = enrollmentInput;
+
 export const StudentValidation = {
+  placeStudent,
   createStudent,
   updateStudent,
   changePlacement,
   studentIdParams,
   listStudentsQuery,
 };
+export type PlaceStudentPayload = z.infer<typeof placeStudent>;

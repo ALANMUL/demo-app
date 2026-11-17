@@ -63,8 +63,9 @@ export const sectionsApi = {
   rename: async ({ sectionId, name }: { sectionId: string; name: string }) =>
     (await httpClient.patch<ApiResponse<Section>>(`/section/${sectionId}`, { name })).data.data,
 
-  remove: async (sectionId: string) => {
-    await httpClient.delete(`/section/${sectionId}`);
+  // with what was done in it; its students stay, unplaced (super admin)
+  remove: async ({ sectionId, reason }: { sectionId: string; reason?: string }) => {
+    await httpClient.delete(`/section/${sectionId}`, { params: { reason } });
   },
 
   setYearConfig: async ({ sectionId, body }: { sectionId: string; body: SectionYearConfigBody }) =>

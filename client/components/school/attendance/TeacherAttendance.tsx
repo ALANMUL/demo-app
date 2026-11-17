@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsSuperAdmin } from "@/lib/auth/hooks";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/lib/school/attendance";
 import { todayKey } from "@/lib/school/calendar";
 import { StudentAvatar } from "../students/StudentAvatar";
+import { DeleteAttendanceButton } from "./DeleteAttendanceDialog";
 import { StatusToggle, TallyLine } from "./shared";
 
 /** The teachers' attendance for a date: everyone starts present (or on leave), mark the rest. */
@@ -61,6 +63,7 @@ function Editor({ sheet }: { sheet: TeacherSheet }) {
   const tReason = useTranslations("school.calendar.reasons");
   const describeError = useErrorMessage();
   const name = useLocalizedName();
+  const isSuperAdmin = useIsSuperAdmin();
   const save = useSaveTeacherSheet();
 
   const initial = useMemo(() => new Map(sheet.items.map((i) => [i.teacher.id, { status: i.status, note: i.note ?? "" }])), [sheet]);
@@ -115,6 +118,7 @@ function Editor({ sheet }: { sheet: TeacherSheet }) {
         </div>
         {sheet.canTake && (
           <div className="flex gap-2">
+            {sheet.taken && isSuperAdmin && <DeleteAttendanceButton target={{ kind: "teachers", date: sheet.date }} />}
             <Button
               variant="outline"
               size="sm"

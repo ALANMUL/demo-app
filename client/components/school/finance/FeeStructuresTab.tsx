@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, MoreHorizontal, Pencil, Plus, RefreshCw } from "lucide-react";
+import { Copy, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,7 +14,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DeleteRecordDialog } from "@/components/data/DeleteRecordDialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useIsSuperAdmin } from "@/lib/auth/hooks";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocalizedName } from "@/lib/i18n/names";
@@ -23,6 +25,7 @@ import { useAcademicYears, type AcademicYear } from "@/lib/school/academicYears"
 import { useClasses } from "@/lib/school/classes";
 import {
   useCopyFeeStructures,
+  useDeleteFeeStructure,
   useFeeStructures,
   useMoney,
   useMonthName,
@@ -86,6 +89,11 @@ export function FeeStructuresTab({ canManage, canSync, onOpenFeeTypes }: { canMa
   const [classId, setClassId] = useState<string | undefined>();
   // undefined: closed; null: a new fee; a structure: change it
   const [editing, setEditing] = useState<FeeStructure | null | undefined>();
+  // the super admin only, while none of its fees was paid or discounted
+  const canDelete = useIsSuperAdmin();
+  const tDelete = useTranslations("deletes.feeStructure");
+  const remove = useDeleteFeeStructure();
+  const [deleting, setDeleting] = useState<FeeStructure | null>(null);
 
   const year = years.data?.find((y) => y.id === yearId) ?? years.data?.find((y) => y.isCurrent) ?? years.data?.[0];
   // the year just before the chosen one: its class fees can be copied in
@@ -223,6 +231,14 @@ export function FeeStructuresTab({ canManage, canSync, onOpenFeeTypes }: { canMa
                                 <RefreshCw /> {t("sync")}
                               </DropdownMenuItem>
                             )}
+                            {canDelete && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(s)}>
+                                  <Trash2 /> {tDelete("action")}
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
@@ -242,6 +258,18 @@ export function FeeStructuresTab({ canManage, canSync, onOpenFeeTypes }: { canMa
         </ListState>
       )}
 
+      <DeleteRecordDialog
+        target={
+          deleting && {
+            title: tDelete("title", { name: name(deleting.feeType) }),
+            description: tDelete("description"),
+            checkPath: `/fee-structure/${deleting.id}/delete-check`,
+            done: tDelete("done", { name: name(deleting.feeType) }),
+            run: (reason) => remove.mutateAsync({ feeStructureId: deleting.id, reason }),
+          }
+        }
+        onClose={() => setDeleting(null)}
+      />
       <AlertDialog open={copying} onOpenChange={(open) => !open && !copy.isPending && setCopying(false)}>
         <AlertDialogContent>
           <AlertDialogHeader>

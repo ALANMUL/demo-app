@@ -46,6 +46,10 @@ const queue = async (db: Prisma.TransactionClient | typeof prisma, schoolId: str
   return devices.length * bodies.length;
 };
 
+/* Takes a deleted student or teacher off every device of the school. */
+export const queueDeviceRemoval = (db: Prisma.TransactionClient | typeof prisma, schoolId: string, pin: string) =>
+  queue(db, schoolId, [deleteCommand(pin)]);
+
 // ------------------------------------------------------------------ people
 
 /* Who belongs on the devices: students on roll this year, working teachers. */

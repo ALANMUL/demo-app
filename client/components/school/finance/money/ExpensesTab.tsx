@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/lib/auth/hooks";
+import { useCan, useCanReverseMoney } from "@/lib/auth/hooks";
 import { bangladeshDay } from "@/lib/dates";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
@@ -38,6 +38,8 @@ export function ExpensesTab() {
   const name = useLocalizedName();
   const money = useMoney();
   const can = useCan();
+  // voiding is a money reversal: the super admin only
+  const canVoid = useCanReverseMoney();
   const funds = useFunds();
   const categories = useExpenseCategories();
   const [range, setRange] = useState(thisMonth);
@@ -153,7 +155,7 @@ export function ExpensesTab() {
                     <TableCell className="text-sm">{name(e.fund)}</TableCell>
                     <TableCell className={cn("text-right font-medium tabular-nums", voided && "line-through")}>{money(e.amount)}</TableCell>
                     <TableCell>
-                      {!voided && can("expense:void") && (
+                      {!voided && canVoid && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8" aria-label={t("actions")}>

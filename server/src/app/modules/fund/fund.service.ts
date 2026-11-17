@@ -232,7 +232,12 @@ const getLedger = async (schoolId: string, query: LedgerQuery) => {
       orderBy: [{ transactionDate: "desc" }, { createdAt: "desc" }, { id: "desc" }],
       skip: (page - 1) * limit,
       take: limit,
-      include: { fund: { select: { id: true, nameEn: true, nameBn: true } } },
+      include: {
+        fund: { select: { id: true, nameEn: true, nameBn: true } },
+        // a voided entry, and the entry that voids another
+        reversedBy: { select: { id: true, description: true, createdAt: true, createdBy: true } },
+        reverses: { select: { id: true, type: true, source: true } },
+      },
     }),
     prisma.fundTransaction.count({ where }),
     prisma.fundTransaction.groupBy({ by: ["type"], where, _sum: { amount: true } }),

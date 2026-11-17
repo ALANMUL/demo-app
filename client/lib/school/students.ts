@@ -179,6 +179,15 @@ export const studentsApi = {
 
   removePhoto: async (studentId: string) =>
     (await httpClient.delete<ApiResponse<Student>>(`/student/${studentId}/photo`)).data.data,
+
+  // a student with no class this year (their class or section was deleted) into one
+  place: async ({ studentId, body }: { studentId: string; body: { classId: string; sectionId?: string; rollNumber?: string; admissionType: "NEW" | "OLD" } }) =>
+    (await httpClient.post<ApiResponse<StudentDetail>>(`/student/${studentId}/enrollment`, body)).data.data,
+
+  // the super admin only; refused while the student has money records (see the delete check)
+  remove: async ({ studentId, reason }: { studentId: string; reason?: string }) => {
+    await httpClient.delete(`/student/${studentId}`, { params: { reason } });
+  },
 };
 
 const studentsKey = ["school", "students"] as const;
@@ -225,6 +234,8 @@ export const useUpdateStudent = () => useStudentMutation(studentsApi.update);
 export const useChangePlacement = () => useStudentMutation(studentsApi.changePlacement);
 export const useSetStudentPhoto = () => useStudentMutation(studentsApi.setPhoto);
 export const useRemoveStudentPhoto = () => useStudentMutation(studentsApi.removePhoto);
+export const useDeleteStudent = () => useStudentMutation(studentsApi.remove);
+export const usePlaceStudent = () => useStudentMutation(studentsApi.place);
 
 /** "+8801712345678" -> "01712345678": how people type it */
 export const localPhone = (phone: string | null) => (phone ?? "").replace(/^\+?880/, "0");

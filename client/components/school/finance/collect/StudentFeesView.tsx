@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useCan } from "@/lib/auth/hooks";
+import { useCan, useIsSuperAdmin } from "@/lib/auth/hooks";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useRemoveCustomFee, useStudentFees, type StudentFee } from "@/lib/school/collection";
 import { useMoney } from "@/lib/school/finance";
@@ -35,6 +35,8 @@ export function StudentFeesView({ studentId, enrollments }: { studentId: string;
   const can = useCan();
   const canDiscount = can("student_fee:discount");
   const canCustom = can("student_fee:create_custom");
+  // removing a fee: the super admin only, while nothing was paid or discounted
+  const canRemove = useIsSuperAdmin();
   const [yearId, setYearId] = useState(enrollments[0]?.academicYearId);
   const fees = useStudentFees(studentId, { academicYearId: yearId, page: 1, limit: 100 });
   const remove = useRemoveCustomFee();
@@ -94,7 +96,7 @@ export function StudentFeesView({ studentId, enrollments }: { studentId: string;
             <TableBody>
               {items.map((f) => {
                 const custom = f.feeStructureId === null;
-                const removable = custom && Number(f.paidAmount) === 0;
+                const removable = custom && Number(f.paidAmount) === 0 && Number(f.discountAmount) === 0;
                 return (
                   <TableRow key={f.id}>
                     <TableCell>
@@ -111,7 +113,7 @@ export function StudentFeesView({ studentId, enrollments }: { studentId: string;
                       <FeeStatusBadge status={f.status} />
                     </TableCell>
                     <TableCell>
-                      {(canDiscount || (canCustom && removable)) && (
+                      {(canDiscount || (canRemove && removable)) && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8" aria-label={t("actions")}>
@@ -124,7 +126,7 @@ export function StudentFeesView({ studentId, enrollments }: { studentId: string;
                                 <Percent /> {t("discount")}
                               </DropdownMenuItem>
                             )}
-                            {canCustom && removable && (
+                            {canRemove && removable && (
                               <DropdownMenuItem variant="destructive" onSelect={() => setRemoving(f)}>
                                 <Trash2 /> {t("remove")}
                               </DropdownMenuItem>

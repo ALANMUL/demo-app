@@ -37,8 +37,9 @@ export const classesApi = {
   update: async ({ classId, body }: { classId: string; body: Partial<ClassBody> }) =>
     (await httpClient.patch<ApiResponse<SchoolClass>>(`/class/${classId}`, body)).data.data,
 
-  remove: async (classId: string) => {
-    await httpClient.delete(`/class/${classId}`);
+  // with everything set up for it and done in it; its students stay, unplaced (super admin)
+  remove: async ({ classId, reason }: { classId: string; reason?: string }) => {
+    await httpClient.delete(`/class/${classId}`, { params: { reason } });
   },
 };
 

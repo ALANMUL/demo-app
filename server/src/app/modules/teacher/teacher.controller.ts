@@ -2,7 +2,9 @@ import type { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
+import type { OptionalReasonQuery } from "../../shared/deleteSchemas";
 import { TeacherService } from "./teacher.service";
+import { TeacherDeleteService } from "./teacherDelete.service";
 import type { ListTeachersQuery, ScheduleQuery, YearQuery } from "./teacher.type";
 
 const createTeacher = catchAsync(async (req: Request, res: Response) => {
@@ -113,7 +115,19 @@ const getMySchedule = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteCheck = catchAsync(async (req: Request, res: Response) => {
+  const data = await TeacherDeleteService.deleteCheck(req.auth!.schoolId!, req.params.teacherId as string);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Delete check done", data });
+});
+
+const deleteTeacher = catchAsync(async (req: Request, res: Response) => {
+  const data = await TeacherDeleteService.deleteTeacher(req.auth!, req.params.teacherId as string, req.query as OptionalReasonQuery);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Teacher deleted", data });
+});
+
 export const TeacherController = {
+  deleteCheck,
+  deleteTeacher,
   setPhoto,
   removePhoto,
   createTeacher,

@@ -1,16 +1,22 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { ArrowDownLeft, ArrowUpRight, Scale } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Ban, Scale } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
+import { ConfirmActionDialog } from "@/components/data/ConfirmActionDialog";
 import { StatCard } from "@/components/data/StatCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useCanReverseMoney } from "@/lib/auth/hooks";
 import { useLocalizedName } from "@/lib/i18n/names";
+import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { bdDayEnd, bdDayStart } from "@/lib/school/collection";
 import { useFunds, useMoney } from "@/lib/school/finance";
-import { useLedger, type LedgerEntry, type LedgerSource } from "@/lib/school/ledger";
+import { useLedger, useVoidDeposit, useVoidTransfer, type LedgerEntry, type LedgerRow, type LedgerSource } from "@/lib/school/ledger";
 import { cn } from "@/lib/utils";
 import { Pager } from "../collect/PaymentsTab";
 import { ListState } from "../shared";
@@ -19,6 +25,8 @@ import { DayRange, thisMonth } from "./DayRange";
 const ALL = "all";
 const SOURCES: LedgerSource[] = ["PAYMENT", "PAYMENT_REVERSAL", "MANUAL_DEPOSIT", "EXPENSE", "ADJUSTMENT", "TRANSFER"];
 const isIn = (e: LedgerEntry) => e.type === "INCOME" || e.type === "TRANSFER_IN";
+// what can be voided here: money added by hand, and transfers (expenses on their own tab)
+const voidable = (e: LedgerRow) => !e.reversedBy && (e.source === "MANUAL_DEPOSIT" || (e.source === "TRANSFER" && !!e.transferId));
 
 /** Every money movement of the funds: fee payments, deposits, expenses, transfers, reversals. */
 export function LedgerTab() {
@@ -31,6 +39,8 @@ export function LedgerTab() {
   const [fundId, setFundId] = useState(ALL);
   const [source, setSource] = useState<LedgerSource | typeof ALL>(ALL);
   const [page, setPage] = useState(1);
+  const canVoid = useCanReverseMoney();
+  const [voiding, setVoiding] = useState<LedgerRow | null>(null);
   const ledger = useLedger({
     page,
     limit: 30,
@@ -95,6 +105,7 @@ export function LedgerTab() {
                 <TableHead>{t("columns.what")}</TableHead>
                 <TableHead className="text-right">{t("columns.in")}</TableHead>
                 <TableHead className="text-right">{t("columns.out")}</TableHead>
+                {canVoid && <TableHead className="w-12" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -108,11 +119,25 @@ export function LedgerTab() {
                     <div className="text-sm font-medium">
                       {e.source === "TRANSFER" ? t(isIn(e) ? "transferIn" : "transferOut") : t(`sources.${e.source}`)}
                       {e.category && <span className="font-normal text-muted-foreground"> · {e.category}</span>}
+                      {e.reversedBy && (
+                        <Badge variant="outline" className="ms-2">
+                          {t("voided")}
+                        </Badge>
+                      )}
                     </div>
                     {e.description && <div className="text-xs text-muted-foreground">{e.description}</div>}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{isIn(e) ? money(e.amount) : ""}</TableCell>
                   <TableCell className="text-right tabular-nums">{isIn(e) ? "" : money(e.amount)}</TableCell>
+                  {canVoid && (
+                    <TableCell>
+                      {voidable(e) && (
+                        <Button variant="ghost" size="icon" className="size-8" aria-label={t("void.action")} title={t("void.action")} onClick={() => setVoiding(e)}>
+                          <Ban />
+                        </Button>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -120,7 +145,50 @@ export function LedgerTab() {
         </div>
       </ListState>
       {ledger.data && ledger.data.meta.totalPages > 1 && <Pager page={page} totalPages={ledger.data.meta.totalPages} onPage={setPage} />}
+      <VoidEntryDialog entry={voiding} onClose={() => setVoiding(null)} />
     </div>
+  );
+}
+
+/* Voids a deposit or a transfer with an opposite entry: nothing is erased. The super admin only. */
+function VoidEntryDialog({ entry, onClose }: { entry: LedgerRow | null; onClose: () => void }) {
+  const t = useTranslations("school.finance.ledger.void");
+  const describeError = useErrorMessage();
+  const money = useMoney();
+  const voidDeposit = useVoidDeposit();
+  const voidTransfer = useVoidTransfer();
+  const [error, setError] = useState<string | null>(null);
+  const transfer = entry?.source === "TRANSFER";
+
+  const close = () => {
+    setError(null);
+    onClose();
+  };
+  const confirm = ({ reason }: { reason: string }) => {
+    if (!entry) return;
+    const handlers = {
+      onSuccess: () => {
+        toast.success(t(transfer ? "doneTransfer" : "doneDeposit"));
+        close();
+      },
+      onError: (e: unknown) => setError(describeError(e)),
+    };
+    if (transfer) voidTransfer.mutate({ transferId: entry.transferId!, reason }, handlers);
+    else voidDeposit.mutate({ transactionId: entry.id, reason }, handlers);
+  };
+
+  return (
+    <ConfirmActionDialog
+      open={!!entry}
+      onClose={close}
+      tone="void"
+      title={t(transfer ? "titleTransfer" : "titleDeposit", { amount: money(entry?.amount) })}
+      description={t(transfer ? "descriptionTransfer" : "descriptionDeposit")}
+      reason="required"
+      pending={voidDeposit.isPending || voidTransfer.isPending}
+      error={error}
+      onConfirm={confirm}
+    />
   );
 }
 

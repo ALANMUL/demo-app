@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { Prisma } from "../../../../generated/prisma/client";
 import { prisma } from "../../../../lib/prisma";
 import { AppError } from "../../errorHandler/AppError";
+import { writeAuditLog } from "../../shared/auditLog";
 import { getFundBalance, lockFund } from "../fund/fund.ledger";
 import type {
   CreateExpensePayload,
@@ -10,6 +11,7 @@ import type {
 } from "./expense.type";
 
 const ZERO = new Prisma.Decimal(0);
+type Auth = NonNullable<Express.Request["auth"]>;
 
 const createExpense = async (schoolId: string, userId: string, data: CreateExpensePayload) => {
   const amount = new Prisma.Decimal(data.amount);
@@ -120,31 +122,38 @@ const getCategories = async (schoolId: string) => {
  * takes the expense's own date, so the day's totals come out right; createdAt keeps
  * the real time of the void.
  */
-const voidExpense = async (
-  schoolId: string,
-  userId: string,
-  expenseId: string,
-  data: VoidExpensePayload,
-) => {
+const voidExpense = async (auth: Auth, expenseId: string, data: VoidExpensePayload) => {
+  const schoolId = auth.schoolId!;
   const original = await prisma.fundTransaction.findFirst({
     where: { id: expenseId, schoolId, type: "EXPENSE", source: "EXPENSE" },
   });
   if (!original) throw new AppError("Expense not found", httpStatus.NOT_FOUND);
 
   try {
-    return await prisma.fundTransaction.create({
-      data: {
-        schoolId,
-        fundId: original.fundId,
-        type: "INCOME",
-        source: "ADJUSTMENT",
-        amount: original.amount,
-        category: original.category,
-        description: `Void of expense: ${data.reason}`,
-        transactionDate: original.transactionDate,
-        reversesId: original.id,
-        createdBy: userId,
-      },
+    return await prisma.$transaction(async (tx) => {
+      const reversal = await tx.fundTransaction.create({
+        data: {
+          schoolId,
+          fundId: original.fundId,
+          type: "INCOME",
+          source: "ADJUSTMENT",
+          amount: original.amount,
+          category: original.category,
+          description: `Void of expense: ${data.reason}`,
+          transactionDate: original.transactionDate,
+          reversesId: original.id,
+          createdBy: auth.userId,
+        },
+      });
+      await writeAuditLog(tx, auth, {
+        action: "expense.void",
+        entityType: "FundTransaction",
+        entityId: original.id,
+        summary: `Expense${original.category ? ` "${original.category}"` : ""} · ${original.amount.toFixed(2)}`,
+        reason: data.reason,
+        snapshot: original,
+      });
+      return reversal;
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

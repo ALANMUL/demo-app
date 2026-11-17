@@ -403,31 +403,6 @@ const createCustomStudentFee = async (schoolId: string, data: CreateCustomFeePay
   });
 };
 
-/* Removes a custom fee added by mistake. Only if nothing was ever paid against it. */
-const removeCustomStudentFee = async (schoolId: string, studentFeeId: string) => {
-  return prisma.$transaction(async (tx) => {
-    await lockStudentFees(tx, [studentFeeId]);
-
-    const fee = await tx.studentFee.findFirst({
-      where: { id: studentFeeId, schoolId },
-      include: { _count: { select: { allocations: true } } },
-    });
-    if (!fee) throw new AppError("Fee not found for this school", httpStatus.NOT_FOUND);
-    if (fee.feeStructureId !== null) {
-      throw new AppError(
-        "Only custom fees can be removed. Use a discount for class fees",
-        httpStatus.BAD_REQUEST,
-      );
-    }
-    if (Number(fee.paidAmount) > 0 || fee._count.allocations > 0) {
-      throw new AppError("This fee has payment history and cannot be removed", httpStatus.BAD_REQUEST);
-    }
-
-    await tx.studentFee.delete({ where: { id: studentFeeId } });
-    return { id: studentFeeId };
-  });
-};
-
 // -------------------------------------------------------------- discounts
 
 const discountFields = (amount: number, reason: string | undefined, actorId: string) =>
@@ -580,7 +555,6 @@ const applyDiscountForFeeType = async (
 export const StudentFeeService = {
   listFees,
   createCustomStudentFee,
-  removeCustomStudentFee,
   applyDiscount,
   applyDiscountForFeeType,
 };

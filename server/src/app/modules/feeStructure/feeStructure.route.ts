@@ -1,7 +1,9 @@
 import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
-import authorize from "../../middlewares/authorize";
+import authorize, { superAdminOnly } from "../../middlewares/authorize";
+import { optionalReasonQuery } from "../../shared/deleteSchemas";
+import { DeleteController } from "../deletes/delete.controller";
 import { FeeStructureController } from "./feeStructure.controller";
 import { FeeStructureValidation } from "./feeStructure.validation";
 
@@ -36,6 +38,23 @@ router.post(
   authorize("fee_structure:update"),
   validateRequest({ params: FeeStructureValidation.feeStructureIdParams }),
   FeeStructureController.syncFeeStructure,
+);
+
+// a class's fee, only while none of its fees was paid or discounted; the super admin only
+router.get(
+  "/:feeStructureId/delete-check",
+  authorize("fee_structure:update"),
+  superAdminOnly,
+  validateRequest({ params: FeeStructureValidation.feeStructureIdParams }),
+  DeleteController.feeStructureCheck,
+);
+
+router.delete(
+  "/:feeStructureId",
+  authorize("fee_structure:update"),
+  superAdminOnly,
+  validateRequest({ params: FeeStructureValidation.feeStructureIdParams, query: optionalReasonQuery }),
+  DeleteController.deleteFeeStructure,
 );
 
 export const feeStructureRoutes = router;

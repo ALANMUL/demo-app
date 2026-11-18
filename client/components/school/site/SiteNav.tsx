@@ -10,22 +10,23 @@ import { cn } from "@/lib/utils";
 // section "top" is the top of the homepage; the others are ids of its sections
 export type SiteLink = { href: string; label: string; section: string };
 
-// the gold ring every control on the coloured bar shows when reached by keyboard
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-primary";
+// the ring every control on the white bar shows when reached by keyboard, in the school's colour
+const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-school-sidebar";
 
-// the way in: an outline on the bar, so the hero keeps the page's only solid white button
-const accountButton = "inline-flex h-9 items-center rounded-md border border-white/60 px-5 text-sm font-semibold text-white transition-colors hover:bg-white/10";
+// the way in: an outline in the school's colour, so the hero keeps the page's only solid button
+const accountButton =
+  "inline-flex h-9 items-center rounded-md border border-school-sidebar/50 px-5 text-sm font-semibold text-school-sidebar transition-colors hover:bg-school-sidebar/8";
 
-// বাংলা | English on the coloured bar: white outline, the chosen language filled white
+// বাংলা | English on the white bar: a quiet outline, the chosen language filled in the school's colour
 const languageOnBar = cn(
-  "border-white/30 bg-transparent",
-  "[&_button]:text-white/80 [&_button:hover]:text-white",
-  "[&_button[aria-pressed=true]]:bg-white [&_button[aria-pressed=true]]:text-school-sidebar [&_button[aria-pressed=true]:hover]:text-school-sidebar",
-  "[&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-sidebar-primary",
+  "border-school-sidebar/20 bg-transparent",
+  "[&_button]:text-school-sidebar/75 [&_button:hover]:text-school-sidebar",
+  "[&_button[aria-pressed=true]]:bg-school-sidebar [&_button[aria-pressed=true]]:text-white [&_button[aria-pressed=true]:hover]:text-white",
+  "[&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-school-sidebar",
 );
 
 /*
- * The menu of the public header's coloured bar: from lg the chapters in a row at the bar's middle,
+ * The menu of the public header's white bar: from lg the chapters in a row at the bar's middle,
  * the language and the way in at its right end; below lg a button opens them as a panel under the bar. A link scrolls to its
  * chapter and the gold mark follows the chapter in view.
  */
@@ -66,7 +67,9 @@ export function SiteNav({
             className={cn(
               "relative rounded-sm px-3.5 py-2 text-[17px] font-medium transition-colors after:absolute after:inset-x-3.5 after:-bottom-px after:h-0.5 after:rounded-full",
               focusRing,
-              active === link.section ? "text-white after:bg-sidebar-primary" : "text-white/85 hover:text-white hover:after:bg-white/40",
+              active === link.section
+                ? "text-school-sidebar after:bg-sidebar-primary"
+                : "text-school-sidebar/80 hover:text-school-sidebar hover:after:bg-school-sidebar/30",
             )}
           >
             {link.label}
@@ -90,13 +93,13 @@ export function SiteNav({
         aria-expanded={open}
         aria-controls="site-menu"
         aria-label={open ? labels.close : labels.menu}
-        className={cn("flex size-10 shrink-0 items-center justify-center rounded-md text-white hover:bg-white/10 lg:hidden", focusRing)}
+        className={cn("flex size-10 shrink-0 items-center justify-center rounded-md text-school-sidebar hover:bg-school-sidebar/8 lg:hidden", focusRing)}
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
 
       {open && (
-        <div id="site-menu" className="absolute inset-x-0 top-full border-t border-white/10 bg-school-sidebar lg:hidden">
+        <div id="site-menu" className="absolute inset-x-0 top-full border-y border-border bg-white shadow-lg lg:hidden">
           <nav aria-label={labels.nav} className="mx-auto flex max-w-6xl flex-col px-4 py-2">
             {links.map((link) => (
               <Link
@@ -107,14 +110,16 @@ export function SiteNav({
                 className={cn(
                   "border-l-2 px-3 py-2.5 text-[17px] font-medium",
                   focusRing,
-                  active === link.section ? "border-sidebar-primary text-white" : "border-transparent text-white/85 hover:text-white",
+                  active === link.section
+                    ? "border-sidebar-primary text-school-sidebar"
+                    : "border-transparent text-school-sidebar/80 hover:text-school-sidebar",
                 )}
               >
                 {link.label}
               </Link>
             ))}
           </nav>
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-3">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
             <LanguageSwitcher className={languageOnBar} />
             <Link
               href={account.href}

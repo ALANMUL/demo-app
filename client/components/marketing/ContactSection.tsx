@@ -1,14 +1,19 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { companyContact, localPhone } from "@/lib/marketing/company";
+import { companyContact, displayPhone, localPhone, whatsappLink } from "@/lib/marketing/company";
 import type { PublicPackage } from "@/lib/marketing/packages";
 import { ContactForm } from "./ContactForm";
 import { MarginHeading, MarginRow, Note } from "./Margin";
+import { WhatsAppGlyph } from "./WhatsAppGlyph";
 
-/** The last section, on navy: the three steps and our contacts at the left, the form on a white card at the right. */
+/**
+ * The last section, on navy: WhatsApp first (the quickest way to reach us), the three steps and our
+ * contacts at the left, the form on a white card at the right.
+ */
 export async function ContactSection({ packages }: { packages: PublicPackage[] }) {
-  const t = await getTranslations("marketing.contact");
-  const { phone, email, address } = companyContact;
+  const [t, tFloating] = await Promise.all([getTranslations("marketing.contact"), getTranslations("marketing.floating")]);
+  const { phone, email, address, whatsapp } = companyContact;
+  const chat = whatsappLink(whatsapp, tFloating("whatsappText"));
 
   return (
     <section id="contact" aria-labelledby="contact-title" className="scroll-mt-16 bg-mk-ink [--mk-line:rgb(255_255_255/0.2)]">
@@ -16,8 +21,36 @@ export async function ContactSection({ packages }: { packages: PublicPackage[] }
       <MarginRow note={<Note className="text-white/65 max-lg:mb-4 lg:pt-3">{t("eyebrow")}</Note>}>
         <MarginHeading light id="contact-title" title={t("title")} subtitle={t("subtitle")} />
 
-        <div className="mt-12 grid gap-12 lg:grid-cols-[17rem_minmax(0,1fr)] xl:gap-16">
+        <div className="mt-12 grid gap-12 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[21rem_minmax(0,1fr)] xl:gap-16">
           <div>
+            {/* WhatsApp, set apart: a green rule, the number large, the button in WhatsApp's green */}
+            <div className="mb-10 rounded-lg border border-white/15 border-l-4 border-l-[#25D366] bg-white/[0.06] p-5">
+              <p className="flex items-center gap-2.5 text-lg font-bold text-white">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#25D366] text-white">
+                  <WhatsAppGlyph className="size-[18px]" />
+                </span>
+                {t("whatsapp.title")}
+              </p>
+              <p className="mt-2 text-base leading-relaxed text-white/70">{t("whatsapp.body")}</p>
+              <a
+                href={chat}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 block text-[1.75rem] leading-none font-bold text-white tabular-nums hover:underline"
+              >
+                {displayPhone(whatsapp)}
+              </a>
+              <a
+                href={chat}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-md bg-[#25D366] px-4 text-base font-semibold whitespace-nowrap text-mk-ink transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 focus-visible:ring-offset-mk-ink focus-visible:outline-none"
+              >
+                <WhatsAppGlyph className="size-5" />
+                {t("whatsapp.button")}
+              </a>
+            </div>
+
             <h3 className="text-xl font-bold text-white">{t("stepsTitle")}</h3>
             {/* a real order: send, see it, go live */}
             <ol className="mt-6 space-y-6">

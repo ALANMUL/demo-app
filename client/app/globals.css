@@ -45,6 +45,11 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  /* the menu's current page: its box, its text, the bar on the menu's edge, and a current sub-page's text */
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-active-foreground: var(--sidebar-active-foreground);
+  --color-sidebar-active-bar: var(--sidebar-active-bar);
+  --color-sidebar-active-sub: var(--sidebar-active-sub);
   --color-sidebar: var(--sidebar);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -170,6 +175,10 @@
   --sidebar-accent-foreground: oklch(0.2 0.01 220);
   --sidebar-border: oklch(0.92 0.005 185);
   --sidebar-ring: oklch(0.7 0.14 78);
+  --sidebar-active: oklch(0.955 0.008 185);
+  --sidebar-active-foreground: oklch(0.2 0.01 220);
+  --sidebar-active-bar: oklch(0.7 0.14 78);
+  --sidebar-active-sub: oklch(0.7 0.14 78);
 }
 
 .dark {
@@ -205,7 +214,7 @@
   --navy: oklch(0.82 0.07 258);
   --navy-foreground: oklch(0.2 0.05 258);
   --navy-soft: oklch(0.27 0.05 258);
-  /* the sidebar (it always uses these dark values): navy, or the school's own dark colour */
+  /* the platform admin's sidebar (it always uses these dark values): navy */
   --sidebar: var(--school-sidebar);
   --sidebar-foreground: oklch(0.95 0.01 250);
   /* the menu's icons and current-page bar: the academic gold on the navy (option A) */
@@ -215,6 +224,78 @@
   --sidebar-accent-foreground: oklch(0.99 0 0);
   --sidebar-border: oklch(1 0 0 / 14%);
   --sidebar-ring: oklch(0.82 0.14 82);
+  /* the current page: a lighter box, white text and the gold bar (a gold sub-page) */
+  --sidebar-active: oklch(1 0 0 / 10%);
+  --sidebar-active-foreground: oklch(0.99 0 0);
+  --sidebar-active-bar: oklch(0.82 0.14 82);
+  --sidebar-active-sub: oklch(0.82 0.14 82);
+}
+
+/*
+ * A school's dashboard menu (.school-menu, from SidebarShell): white by default, a quiet dark
+ * grey in dark mode, and the current page filled with the school's accent (its band colour, with
+ * the band's own text colour). A school that picks a dark sidebar gets that colour and white text
+ * instead (lib/theme/accents.ts writes it after this sheet).
+ */
+.school-menu {
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.32 0.04 262);
+  --sidebar-accent: oklch(0.94 0.012 255);
+  --sidebar-accent-foreground: oklch(0.25 0.04 262);
+  --sidebar-border: oklch(0.91 0.01 255);
+  --sidebar-ring: var(--brand);
+  --sidebar-active: var(--brand-band);
+  --sidebar-active-foreground: var(--brand-band-foreground);
+  --sidebar-active-bar: transparent;
+  --sidebar-active-sub: var(--brand-band-foreground);
+}
+/*
+ * The index tab (on a computer; the phone's drawer has no page beside it): the menu's paper stops
+ * --tab-out short of its edge, a line marks the paper's edge, and the strip beyond shows the page's
+ * own colours (the top bar's white with its line, then the canvas). The current page's row reaches
+ * into it (SidebarShell). The strip is drawn under the menu's rows and scrollbar.
+ */
+.school-menu:not([data-mobile]) {
+  --tab-out: 14px;
+}
+.school-menu:not([data-mobile]) [data-slot="sidebar-inner"] {
+  position: relative;
+  isolation: isolate;
+}
+.school-menu:not([data-mobile]) [data-slot="sidebar-inner"]::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: -1;
+  width: var(--tab-out);
+  pointer-events: none;
+  border-left: 1px solid var(--sidebar-border);
+  /* the top bar is its white at 90% over the canvas: the same here, so the strip has no seam */
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--background) 90%, var(--canvas)) 71px,
+    var(--border) 71px 72px,
+    var(--canvas) 72px
+  );
+}
+/*
+ * Its rows scroll without a visible scrollbar: one would sit in the strip, across the tab. The
+ * wheel, touchpad and keyboard still scroll it, and the last rows fade out at the bottom to show
+ * there is more below (the strip itself is drawn by the menu behind, so it does not fade).
+ */
+.school-menu:not([data-mobile]) [data-slot="sidebar-content"] {
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, black calc(100% - 2rem), transparent);
+}
+.school-menu:not([data-mobile]) [data-slot="sidebar-content"]::-webkit-scrollbar {
+  display: none;
+}
+.dark .school-menu {
+  --sidebar: oklch(0.19 0 0);
+  --sidebar-foreground: oklch(0.93 0 0);
+  --sidebar-accent: oklch(1 0 0 / 7%);
+  --sidebar-accent-foreground: oklch(0.99 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
 }
 
 @layer base {
@@ -339,10 +420,9 @@
 }
 
 /*
- * The homepage hero's photos (components/school/site/HeroStage): full width behind the school's
- * name, the next fading in while the one before fades out. Nothing fades when the visitor asks for
- * less motion. Over them, a shade of the school's own colour (darkened) rising from the bottom, and
- * from 1024px also from the left, where the words sit, so white text reads on any photo.
+ * The homepage hero's photos (components/school/site/HeroStage): the whole screen, with no shade
+ * over them, the next fading in while the one before fades out (nothing fades when the visitor asks
+ * for less motion).
  */
 .hero-slide {
   opacity: 0;
@@ -354,33 +434,6 @@
 }
 .hero-slide[data-state="leaving"] {
   z-index: 1;
-}
-.hero-scrim {
-  --scrim: color-mix(in oklab, var(--school-sidebar) 55%, black);
-  background: linear-gradient(
-    to top,
-    color-mix(in oklab, var(--scrim) 80%, transparent) 0%,
-    color-mix(in oklab, var(--scrim) 55%, transparent) 40%,
-    color-mix(in oklab, var(--scrim) 10%, transparent) 72%,
-    transparent 100%
-  );
-}
-@media (min-width: 64rem) {
-  .hero-scrim {
-    background:
-      linear-gradient(
-        to right,
-        color-mix(in oklab, var(--scrim) 50%, transparent) 0%,
-        color-mix(in oklab, var(--scrim) 18%, transparent) 45%,
-        transparent 65%
-      ),
-      linear-gradient(
-        to top,
-        color-mix(in oklab, var(--scrim) 65%, transparent) 0%,
-        color-mix(in oklab, var(--scrim) 15%, transparent) 45%,
-        transparent 75%
-      );
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-slide {

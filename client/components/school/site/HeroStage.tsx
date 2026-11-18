@@ -2,7 +2,7 @@
 
 import { Pause, Play } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import type { SchoolSite } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,8 @@ const FADE_MS = 1200;
 // a swipe shorter than this is a tap
 const SWIPE_PX = 40;
 // a photo that would lose more than this share of itself to fill the stage is shown whole instead
-const MAX_CROP = 0.4;
+// (a tall poster); an ordinary landscape photo fills the width even on a short, wide screen
+const MAX_CROP = 0.5;
 
 type Slide = SchoolSite["slides"][number];
 
@@ -29,15 +30,15 @@ const usePrefersReducedMotion = () => {
 };
 
 /*
- * The homepage's opening: the school's photos across the full width, one fading into the next,
- * with its words (`children`) over them at the bottom left, on a shade of the school's colour.
- * A photo fills the stage; one whose shape would lose too much (a tall poster, or a landscape
- * photo on a phone) is shown whole over a softened copy of itself instead. Along the bottom: the
- * caption, "02 / 05", a marker per photo (filling while it shows) and pause/play. Pointing at or
- * focusing the controls holds the photo; arrows and swipes move on. Photos that fail to load are
- * left out; without any, the words alone on the school's colour.
+ * The homepage's opening: the school's photos at the full size of the screen (under the header),
+ * one fading into the next, with nothing over them but the controls, each on a small dark backing
+ * so it reads on any photo: the caption at the bottom left, and "02 / 05", a marker per photo
+ * (filling while it shows) and pause/play at the bottom right. A photo fills the stage; one whose
+ * shape would lose too much (a tall poster, or a landscape photo on a phone) is shown whole over a
+ * softened copy of itself instead. Pointing at or focusing the controls holds the photo; arrows and
+ * swipes move on. Photos that fail to load are left out; without any, nothing is shown.
  */
-export function HeroStage({ slides: all, name, children }: { slides: Slide[]; name: string; children: ReactNode }) {
+export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string }) {
   const t = useTranslations("schoolHome.slider");
   const format = useFormatter();
   const [failed, setFailed] = useState<string[]>([]);
@@ -135,10 +136,19 @@ export function HeroStage({ slides: all, name, children }: { slides: Slide[]; na
   const two = (n: number) => format.number(n, { minimumIntegerDigits: 2 });
   const caption = count > 0 ? slides[current].caption : null;
 
+  if (count === 0) return null;
+
   return (
     <section
       ref={stage}
-      className="dark relative isolate overflow-hidden bg-school-sidebar text-white"
+      // a screen on its side (a computer, a turned tablet or phone): the whole of it under the header
+      // bar (64px, 72px from 640px). An upright one (a phone, a tablet): the shape of a photo, 4:3
+      // then 16:9, since a wide photo at its full height would be a strip between blurred bands
+      className={cn(
+        "relative isolate overflow-hidden bg-school-sidebar/10",
+        "aspect-4/3 sm:aspect-video",
+        "landscape:aspect-auto landscape:h-[calc(100svh-4rem)] landscape:min-h-80 sm:landscape:h-[calc(100svh-4.5rem)]",
+      )}
       onTouchStart={(e) => (touchStart.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touchStart.current === null) return;
@@ -147,86 +157,73 @@ export function HeroStage({ slides: all, name, children }: { slides: Slide[]; na
         if (Math.abs(dx) > SWIPE_PX) go(current + (dx < 0 ? 1 : -1));
       }}
     >
-      {count > 0 && (
-        <>
-          {/* the photos, one fading into the next; each caption is shown as text along the bottom */}
-          <div aria-hidden className="absolute inset-0">
-            {slides.map((slide, i) => {
-              const src = i === current || i === leaving || fetched.includes(slide.id) ? slide.image : undefined;
-              const whole = showWhole(slide.id);
-              return (
-                <div key={slide.id} className="hero-slide absolute inset-0" data-state={i === current ? "active" : i === leaving ? "leaving" : "idle"}>
-                  {/* a photo shown whole sits over a softened copy of itself, so the stage stays full */}
-                  {whole && src && (
-                    // eslint-disable-next-line @next/next/no-img-element -- signed links to private storage
-                    <img src={src} alt="" decoding="async" className="absolute inset-0 size-full scale-110 object-cover blur-2xl brightness-90" />
-                  )}
-                  {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
-                  <img
-                    ref={(img) => measure(slide.id, img)}
-                    src={src}
-                    alt=""
-                    fetchPriority={i === 0 ? "high" : "auto"}
-                    decoding="async"
-                    onLoad={(e) => measure(slide.id, e.currentTarget)}
-                    onError={() => {
-                      setFailed((ids) => [...ids, slide.id]);
-                      setIndex(0);
-                      setLeaving(null);
-                    }}
-                    className={cn(
-                      "relative size-full transition-opacity duration-700",
-                      // shown once its shape is known, so it never jumps from filled to whole
-                      shapes[slide.id] ? "opacity-100" : "opacity-0",
-                      // whole: near the top on a phone (the words are below), to the right beside them on a desktop
-                      whole ? "object-contain object-[50%_8%] lg:object-[88%_50%]" : "object-cover",
-                    )}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          <div aria-hidden className="hero-scrim absolute inset-0 z-3" />
-        </>
-      )}
+      {/* the photos, one fading into the next; each caption is shown as text along the bottom */}
+      <div aria-hidden className="absolute inset-0">
+        {slides.map((slide, i) => {
+          const src = i === current || i === leaving || fetched.includes(slide.id) ? slide.image : undefined;
+          const whole = showWhole(slide.id);
+          return (
+            <div key={slide.id} className="hero-slide absolute inset-0" data-state={i === current ? "active" : i === leaving ? "leaving" : "idle"}>
+              {/* a photo shown whole sits over a softened copy of itself, so the stage stays full */}
+              {whole && src && (
+                // eslint-disable-next-line @next/next/no-img-element -- signed links to private storage
+                <img src={src} alt="" decoding="async" className="absolute inset-0 size-full scale-110 object-cover blur-2xl" />
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
+              <img
+                ref={(img) => measure(slide.id, img)}
+                src={src}
+                alt=""
+                fetchPriority={i === 0 ? "high" : "auto"}
+                decoding="async"
+                onLoad={(e) => measure(slide.id, e.currentTarget)}
+                onError={() => {
+                  setFailed((ids) => [...ids, slide.id]);
+                  setIndex(0);
+                  setLeaving(null);
+                }}
+                className={cn(
+                  "relative size-full transition-opacity duration-700",
+                  // shown once its shape is known, so it never jumps from filled to whole
+                  shapes[slide.id] ? "opacity-100" : "opacity-0",
+                  whole ? "object-contain" : "object-cover",
+                )}
+              />
+            </div>
+          );
+        })}
+      </div>
 
-      <div
-        className={cn(
-          "relative z-10 mx-auto flex max-w-6xl flex-col justify-end px-4",
-          count > 0
-            ? // the whole screen under the header bar (64px, 72px from 640px)
-              "min-h-[calc(100svh-4rem)] pt-28 pb-5 sm:min-h-[calc(100svh-4.5rem)] sm:pt-16 sm:pb-6 lg:pt-16 lg:pb-8"
-            : "py-14 sm:py-20 lg:py-24",
-        )}
-      >
-        <div className={cn("min-w-0 [text-shadow:0_1px_3px_rgb(0_0_0/0.45)]", count > 0 ? "max-w-2xl" : "max-w-4xl")}>{children}</div>
-
-        {(caption || count > 1) && (
-          <div
-            role="group"
-            aria-label={t("label", { name })}
-            className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-white/20 pt-3 lg:mt-12"
-            onKeyDown={onKeyDown}
-            onMouseEnter={() => setHeld(true)}
-            onMouseLeave={() => setHeld(false)}
-            onFocus={() => setHeld(true)}
-            onBlur={() => setHeld(false)}
-          >
+      {(caption || count > 1) && (
+        <div className="absolute inset-x-0 bottom-0 z-10">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-2 px-3 pb-3 sm:px-4 sm:pb-5">
             {caption && (
-              <p key={slides[current].id} className="min-w-0 flex-1 basis-full animate-in text-sm leading-snug text-white/85 duration-700 fade-in sm:basis-0">
+              <p
+                key={slides[current].id}
+                className="line-clamp-2 max-w-full animate-in rounded-md bg-black/45 px-3 py-1.5 text-sm leading-snug text-white backdrop-blur-sm duration-700 fade-in sm:max-w-md"
+              >
                 {caption}
               </p>
             )}
             {count > 1 && (
-              <div className={cn("flex items-center gap-3", caption ? "w-full sm:w-auto" : "w-full sm:ml-auto sm:w-auto")}>
-                <span className="shrink-0 text-sm text-white/85 tabular-nums" aria-live={announce ? "polite" : "off"}>
+              <div
+                role="group"
+                aria-label={t("label", { name })}
+                className="ml-auto flex items-center gap-3 rounded-full bg-black/40 py-0.5 pr-0.5 pl-4 text-white backdrop-blur-sm"
+                onKeyDown={onKeyDown}
+                onMouseEnter={() => setHeld(true)}
+                onMouseLeave={() => setHeld(false)}
+                onFocus={() => setHeld(true)}
+                onBlur={() => setHeld(false)}
+              >
+                <span className="shrink-0 text-sm text-white/90 tabular-nums" aria-live={announce ? "polite" : "off"}>
                   <span className="sr-only">{t("slideOf", { current: current + 1, total: count })}</span>
                   <span aria-hidden>
-                    {two(current + 1)} <span className="text-white/50">/</span> {two(count)}
+                    {two(current + 1)} <span className="text-white/55">/</span> {two(count)}
                   </span>
                 </span>
                 {/* a marker per photo: past ones full, the current one filling */}
-                <div className="flex flex-1 gap-1.5 sm:w-48 sm:flex-none">
+                <div className={cn("flex gap-1.5", reducedMotion ? "pr-3" : "", count > 4 ? "w-32 sm:w-48" : "w-24 sm:w-36")}>
                   {slides.map((slide, i) => (
                     <button
                       key={slide.id}
@@ -234,9 +231,9 @@ export function HeroStage({ slides: all, name, children }: { slides: Slide[]; na
                       onClick={() => go(i)}
                       aria-label={t("goTo", { number: i + 1 })}
                       aria-current={i === current}
-                      className="group/bar relative h-11 flex-1 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-primary"
+                      className="group/bar relative h-11 flex-1 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                     >
-                      <span className="absolute inset-x-0 top-1/2 h-0.75 -translate-y-1/2 overflow-hidden rounded-full bg-white/30 group-hover/bar:bg-white/50">
+                      <span className="absolute inset-x-0 top-1/2 h-0.75 -translate-y-1/2 overflow-hidden rounded-full bg-white/35 group-hover/bar:bg-white/60">
                         {i < current && <span className="absolute inset-0 bg-white" />}
                         {i === current &&
                           (still ? (
@@ -259,7 +256,7 @@ export function HeroStage({ slides: all, name, children }: { slides: Slide[]; na
                     type="button"
                     onClick={() => setUserPaused((p) => !p)}
                     aria-label={userPaused ? t("play") : t("pause")}
-                    className="flex size-11 shrink-0 items-center justify-center rounded-full border border-white/40 text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sidebar-primary"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white"
                   >
                     {userPaused ? <Play className="size-4" /> : <Pause className="size-4" />}
                   </button>
@@ -267,8 +264,8 @@ export function HeroStage({ slides: all, name, children }: { slides: Slide[]; na
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </section>
   );
 }

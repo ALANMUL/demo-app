@@ -18,6 +18,7 @@ import {
   asSidebar,
   SIDEBAR_COLORS,
   sidebarSwatch,
+  sidebarSwatchText,
   SUGGESTED_ACCENT,
   type AccentColor,
   type SchoolColors,
@@ -58,7 +59,7 @@ function AppearanceCard() {
   const appearance = useAppearance();
   const save = useSaveAppearance();
   const saved: Colors | undefined = appearance.data
-    ? { accent: asAccent(appearance.data.accentColor) ?? "BLUE", sidebar: asSidebar(appearance.data.sidebarColor) ?? "NAVY" }
+    ? { accent: asAccent(appearance.data.accentColor) ?? "BLUE", sidebar: asSidebar(appearance.data.sidebarColor) ?? "LIGHT" }
     : undefined;
   const [picked, setPicked] = useState<Partial<Colors>>({});
   const chosen: Colors | undefined = saved && { ...saved, ...picked };
@@ -87,7 +88,7 @@ function AppearanceCard() {
   const submit = () =>
     chosen &&
     save.mutate(
-      { accentColor: chosen.accent === "BLUE" ? null : chosen.accent, sidebarColor: chosen.sidebar === "NAVY" ? null : chosen.sidebar },
+      { accentColor: chosen.accent === "BLUE" ? null : chosen.accent, sidebarColor: chosen.sidebar === "LIGHT" ? null : chosen.sidebar },
       {
         onSuccess: () => {
           setPicked({});
@@ -128,7 +129,13 @@ function AppearanceCard() {
             <Swatches
               title={t("sidebar.title")}
               hint={t("sidebar.hint")}
-              options={SIDEBAR_COLORS.map((key) => ({ key, color: sidebarSwatch(key), label: t(`sidebar.colors.${key}`), isDefault: key === "NAVY" }))}
+              options={SIDEBAR_COLORS.map((key) => ({
+                key,
+                color: sidebarSwatch(key),
+                text: sidebarSwatchText(key),
+                label: t(`sidebar.colors.${key}`),
+                isDefault: key === "LIGHT",
+              }))}
               value={chosen.sidebar}
               onChange={(sidebar) => pick({ sidebar: sidebar as SidebarColor })}
             />
@@ -217,20 +224,20 @@ function Swatches({
   );
 }
 
-/* The two together, as the app draws them: a sliver of the sidebar beside a card. */
+/* The two together, as the app draws them: a sliver of the menu (its current page in the accent) beside a card. */
 function Preview() {
   const t = useTranslations("school.settings.appearance");
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium text-muted-foreground">{t("preview")}</p>
       <div className="flex overflow-hidden rounded-lg border">
-        <div className="w-36 shrink-0 space-y-1.5 bg-school-sidebar p-3 text-[15px] text-white">
-          <div className="pb-1 text-[12px] font-semibold tracking-wider text-white/50 uppercase">{t("previewMenu")}</div>
-          <div className="relative rounded-md bg-white/10 px-2 py-1.5 font-semibold before:absolute before:top-1.5 before:bottom-1.5 before:-left-3 before:w-[3px] before:rounded-r-full before:bg-sidebar-primary">
+        <div className="school-menu w-36 shrink-0 space-y-1.5 border-r border-sidebar-border bg-sidebar p-3 text-[15px] text-sidebar-foreground">
+          <div className="pb-1 text-[12px] font-semibold tracking-wider text-sidebar-foreground/60 uppercase">{t("previewMenu")}</div>
+          <div className="rounded-md bg-sidebar-active px-2 py-1.5 font-semibold text-sidebar-active-foreground ring-1 ring-sidebar-foreground/15 ring-inset">
             {t("previewActive")}
           </div>
-          <div className="px-2 py-1.5 text-white/80">{t("previewOther")}</div>
-          <div className="px-2 py-1.5 text-white/80">{t("previewOther2")}</div>
+          <div className="px-2 py-1.5 text-sidebar-foreground/80">{t("previewOther")}</div>
+          <div className="px-2 py-1.5 text-sidebar-foreground/80">{t("previewOther2")}</div>
         </div>
         <div className="min-w-0 flex-1 space-y-3 bg-canvas p-3">
           <div className="overflow-hidden rounded-md border bg-card">

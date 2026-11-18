@@ -89,33 +89,35 @@ function WelcomeBanner({ name, year, showActions }: { name: string; year?: strin
       <div aria-hidden className="site-dots absolute inset-0 -z-10 text-white/[0.07] [mask-image:linear-gradient(to_left,black,transparent_65%)]" />
       <div aria-hidden className="absolute -top-24 -right-16 -z-10 size-72 rounded-full bg-sidebar-primary/25 blur-3xl" />
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0">
+      {/* the greeting takes the room it needs (a long name wraps); the actions keep a fixed two-column shape beside it */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/65">
             {format.dateTime(now, { dateStyle: "full", timeZone: "Asia/Dhaka" })}
             {year && (
               <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-medium text-white/85 ring-1 ring-white/15">{t("year", { name: year })}</span>
             )}
           </p>
-          <h1 className="mt-2 truncate text-2xl font-bold tracking-tight sm:text-[1.75rem]">{t(`greeting.${greeting}`, { name })}</h1>
+          <h1 className="mt-2 text-2xl leading-snug font-bold tracking-tight text-balance sm:text-[1.75rem]">{t(`greeting.${greeting}`, { name })}</h1>
           <p className="mt-1 text-sm text-white/70">{t("banner")}</p>
         </div>
 
         {actions.length > 0 && (
-          <nav aria-label={t("actions.label")} className="flex flex-wrap gap-2">
+          <nav aria-label={t("actions.label")} className="grid shrink-0 grid-cols-2 gap-3 sm:max-lg:flex sm:max-lg:flex-wrap">
             {actions.map((a, i) => (
               <Link
                 key={a.href}
                 href={a.href}
                 className={cn(
-                  "inline-flex h-9 items-center gap-2 rounded-full px-4 text-sm font-medium transition-colors",
+                  // on a phone a long label wraps inside its box rather than being cut; from sm one line
+                  "inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-2xl px-3 py-1.5 text-sm leading-tight font-medium transition-colors sm:h-9 sm:gap-2 sm:rounded-full sm:px-4 sm:py-0 sm:whitespace-nowrap",
                   i === 0
                     ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-white hover:text-school-sidebar"
                     : "bg-white/10 text-white ring-1 ring-white/15 hover:bg-white hover:text-school-sidebar",
                 )}
               >
-                <a.icon className="size-4" />
-                {a.label}
+                <a.icon className="size-4 shrink-0" />
+                <span className="sm:truncate">{a.label}</span>
               </Link>
             ))}
           </nav>

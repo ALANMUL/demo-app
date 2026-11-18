@@ -8,8 +8,8 @@ import { siteChapters, type SchoolSite } from "@/lib/site";
 import { SiteNav, type SiteLink } from "./SiteNav";
 
 /*
- * The header of the school's public homepage: a bar in the school's own colour with its logo and
- * name, the menu and the way in, staying at the top while the page scrolls. The menu items are
+ * The header of the school's public homepage: a white bar with its logo and name in the school's
+ * own colour, the menu and the way in, staying at the top while the page scrolls. The menu items are
  * the homepage's chapters (those with something in them), in page order, and scroll to them.
  */
 export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
@@ -21,13 +21,12 @@ export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
   const links: SiteLink[] = siteChapters(school).map((id) => ({ href: `${publicSchoolRoutes.home}#${id}`, label: t(`nav.${id}`), section: id }));
 
   return (
-    // "dark" so the gold underline takes the menu's own gold
-    <header className="dark no-print sticky top-0 z-30 border-b border-white/10 bg-school-sidebar text-white">
+    <header className="no-print sticky top-0 z-30 border-b border-border bg-white text-school-sidebar">
       {/* from lg three columns, the outer two equal, so the menu sits at the bar's true middle */}
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-18 lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:gap-6">
         <Link
           href={publicSchoolRoutes.home}
-          className="flex min-w-0 flex-1 items-center gap-3 justify-self-start rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sidebar-primary"
+          className="flex min-w-0 flex-1 items-center gap-3 justify-self-start rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-school-sidebar"
         >
           <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-white text-school-sidebar">
             {school.logo ? (

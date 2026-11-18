@@ -33,7 +33,7 @@ export function AuthGuard({ session, children }: Props) {
     [session],
   );
 
-  if (isPending) return <FullPageState loading />;
+  if (isPending) return <FullPageState loading session={session} />;
 
   if (error) {
     // 401: the refresh failed and the interceptor is already leaving for login

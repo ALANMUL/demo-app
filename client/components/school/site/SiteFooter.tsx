@@ -38,10 +38,11 @@ export async function SiteFooter({ school }: { school: SchoolSite }) {
             <span aria-hidden className="h-0.75 w-6 bg-sidebar-primary" />
             {t("links")}
           </h3>
-          <ul className="space-y-2.5 text-sm">
+          {/* each link a full finger's height (44px); the negative margin keeps the list where it sat */}
+          <ul className="-my-3 text-sm">
             {links.map((l) => (
               <li key={l.href}>
-                <a href={l.href} className={link}>
+                <a href={l.href} className={`inline-flex min-h-11 items-center ${link}`}>
                   {l.label}
                 </a>
               </li>

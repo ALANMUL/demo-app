@@ -1,22 +1,30 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import type { SessionType } from "@/lib/tenant";
 import { cn } from "@/lib/utils";
 import { PageSkeleton } from "./PageSkeleton";
 
-// a block on the navy menu: white at low strength, so it reads as a placeholder there too
-const onMenu = "animate-pulse rounded-md bg-white/15 motion-reduce:animate-none";
+// a block on the menu: its text colour at low strength, so it reads as a placeholder on any menu
+const onMenu = "animate-pulse rounded-md bg-sidebar-foreground/15 motion-reduce:animate-none";
 
 /*
  * The whole dashboard's outline while the login is checked (before the real menu can be
- * drawn): the navy menu, the top bar and a page, at the sizes SidebarShell uses, so nothing
- * jumps when it arrives.
+ * drawn): the menu in its colours (the platform's navy, or a school's), the top bar and a page, at
+ * the sizes SidebarShell uses, so nothing jumps when it arrives.
  */
-export function ShellSkeleton() {
+export function ShellSkeleton({ session }: { session?: SessionType }) {
   return (
     <div className="flex min-h-screen bg-canvas">
-      <aside className="hidden w-58 shrink-0 flex-col bg-school-sidebar md:flex" aria-hidden>
-        <div className="flex h-18 items-center gap-3 border-b border-white/20 px-5">
+      <aside
+        className={cn(
+          "hidden shrink-0 flex-col bg-sidebar md:flex",
+          // as wide as the real menu: a school's is wider (its full name, its index tab)
+          session === "SCHOOL" ? "school-menu w-64 border-r border-sidebar-border" : "dark w-58",
+        )}
+        aria-hidden
+      >
+        <div className="flex h-18 items-center gap-3 border-b border-sidebar-foreground/20 px-5">
           <div className={cn(onMenu, "size-10 rounded-xl")} />
           <div className="flex-1 space-y-2">
             <div className={cn(onMenu, "h-4 w-24")} />

@@ -20,7 +20,8 @@ import { deleteFile, fileKey, putFile, withFileUrls } from "../../shared/storage
  * The colours themselves live in the client (lib/theme/accents.ts): keep the lists in step.
  */
 export const ACCENT_COLORS = ["BLUE", "NAVY", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
-export const SIDEBAR_COLORS = ["NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
+// LIGHT (off-white) is the default and is saved as null; NAVY is saved by name
+export const SIDEBAR_COLORS = ["LIGHT", "NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 
 const appearanceSelect = { accentColor: true, sidebarColor: true } as const;
 

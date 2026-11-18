@@ -3723,8 +3723,9 @@
         "default": "Default",
         "sidebar": {
           "title": "Sidebar colour",
-          "hint": "The menu on the left (and the top of your public homepage). All are dark, so the white menu text stays easy to read.",
+          "hint": "The menu on the left. White is the default; a dark colour also colours the top of your public homepage (with white it stays navy).",
           "colors": {
+            "LIGHT": "White",
             "NAVY": "Navy",
             "INDIGO": "Indigo",
             "TEAL": "Deep teal",
@@ -3736,7 +3737,7 @@
         },
         "accent": {
           "title": "Accent colour",
-          "hint": "Buttons, tabs, table headers and highlights.",
+          "hint": "Buttons, tabs, table headers, highlights and the menu's current page.",
           "colors": {
             "BLUE": "Royal blue",
             "NAVY": "Navy",
@@ -4915,6 +4916,11 @@
       "eyebrow": "Contact",
       "title": "Let's get your school or college online",
       "subtitle": "Tell us a little about your institution. We'll call you back, answer your questions and show you around.",
+      "whatsapp": {
+        "title": "Talk to us on WhatsApp",
+        "body": "The quickest way to reach us: send a message any time and we'll reply.",
+        "button": "Chat on WhatsApp"
+      },
       "stepsTitle": "How it works",
       "step1": {
         "title": "Send us your details",
@@ -4971,6 +4977,11 @@
       "step3Title": "Log in",
       "step3Body": "Enter your institution’s code (abc for abc.sncmt.com) and the mobile number your institution registered.",
       "playProtect": "Until the app is on Google Play, Android may say it is from an unknown developer: tap “Install anyway”. The app tells you when a new version is out."
+    },
+    "floating": {
+      "whatsapp": "Chat with us on WhatsApp",
+      "whatsappText": "Hello! I'd like to know more about SNCMT for my school or college.",
+      "top": "Back to top"
     }
   },
   "announcements": {
@@ -5113,7 +5124,9 @@
     "home": "Home",
     "workspace": "Workspace",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "session": "Session {year}",
+    "help": "Need help? WhatsApp us:"
   },
   "bottomNav": {
     "label": "Main pages",

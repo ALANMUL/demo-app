@@ -5,12 +5,13 @@ import { ChevronDown, ChevronRight, Menu as MenuIcon, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useState, useEffect, useRef, type ReactNode } from "react";
+import { createContext, Fragment, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarInset,
   SidebarProvider,
@@ -57,6 +58,8 @@ export type MenuGroup = {
   label?: keyof (typeof messages)["navGroups"];
   icon?: LucideIcon;
   items: MenuItem[];
+  // a school's menu: a thin rule before this group, closing the cluster above (as an index does)
+  divider?: boolean;
 };
 
 /** Active on its own page and the pages under it ("/" only on itself). */
@@ -82,29 +85,61 @@ type Props = {
   topBarItems?: ReactNode;
   // a bar of the main pages along the bottom on a phone (it can open the menu: it sits inside it)
   bottomNav?: ReactNode;
+  // a line at the foot of the menu (a school's: how to reach support), hidden when it is folded
+  footer?: ReactNode;
   children: ReactNode;
 };
 
-// a menu row: a rounded box with a white icon; the current page a lighter box with a gold bar on the menu's edge
-const rowClass = (active: boolean) =>
+/*
+ * A school's menu is drawn as an index with tabs (.school-menu in globals.css): the current page
+ * is a tab in the school's accent that reaches past the menu's paper into a strip of the page's own
+ * colours (--tab-out wide, on a computer only). Its rows keep that strip clear.
+ */
+const IndexTabs = createContext(false);
+
+/*
+ * A menu row: a rounded box in the menu's text colour; the current page in the menu's "active"
+ * colours (globals.css): on the platform's navy a lighter box with a gold bar on the menu's edge,
+ * on a school's menu a box filled with the school's accent.
+ */
+const rowClass = (active: boolean, tabs = false) =>
   cn(
     // a little more room before the icon (20 px) than after the text
     "relative flex h-10 w-full items-center gap-3 rounded-lg pr-3 pl-5 text-left text-[16.5px] transition-colors [&:lang(en)]:text-[15.5px]",
-    "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+    tabs
+      ? // folded to icons: every icon in the same place, so the tab's icon stays put as it reaches out
+        "group-data-[collapsible=icon]:pl-3"
+      : "group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
     active
-      ? "bg-sidebar-accent font-semibold text-white ring-1 ring-white/15 ring-inset before:absolute before:top-2 before:bottom-2 before:-left-3 before:w-[3px] before:rounded-r-full before:bg-sidebar-primary"
-      : "text-white hover:bg-white/5",
+      ? cn(
+          "bg-sidebar-active font-semibold text-sidebar-active-foreground ring-1 ring-sidebar-foreground/15 ring-inset",
+          tabs
+            ? TAB
+            : "before:absolute before:top-2 before:bottom-2 before:-left-3 before:w-[3px] before:rounded-r-full before:bg-sidebar-active-bar",
+        )
+      : "text-sidebar-foreground hover:bg-sidebar-foreground/5",
   );
 
-/** Logged-in layout: the navy menu on the left; a white top bar and the page on a squared light-grey canvas. Used by the admin and school sites. */
+// the tab: wider by the gap and the strip, a soft shadow where it lies on the page, and a faint
+// crease where it leaves the paper (in the phone's drawer there is no page beside it: a plain box)
+const TAB =
+  "w-[calc(100%+var(--tab-out,0px)+0.75rem)] max-w-none rounded-r-[10px] shadow-[8px_8px_16px_-10px_rgb(20_30_60/0.45)] after:absolute after:inset-y-[7px] after:right-[var(--tab-out,0px)] after:w-px after:bg-current after:opacity-20 in-data-[mobile=true]:w-full in-data-[mobile=true]:shadow-none in-data-[mobile=true]:after:hidden";
+
+/**
+ * Logged-in layout: the menu on the left (navy for the platform admin; white or the school's
+ * own dark colour for a school, see .school-menu in globals.css); a white top bar and the page on a
+ * squared light-grey canvas. Used by the admin and school sites.
+ */
 export function SidebarShell({
   session,
   brand,
   menu,
   topBarItems,
   bottomNav,
+  footer,
   children,
 }: Props) {
+  const tabs = session === "SCHOOL";
   const t = useTranslations("nav");
   const tGroups = useTranslations("navGroups");
   const tShell = useTranslations("shell");
@@ -132,25 +167,43 @@ export function SidebarShell({
 
 
   return (
+    <IndexTabs.Provider value={tabs}>
     <SidebarProvider
       style={
         {
-          "--sidebar-width": "14.5rem",
-          "--sidebar-width-icon": "4.25rem",
+          // a school's menu: room for its full name, and for the strip its tab reaches into
+          "--sidebar-width": tabs ? "16rem" : "14.5rem",
+          "--sidebar-width-icon": tabs ? "5rem" : "4.25rem",
         } as React.CSSProperties
       }
     >
-      <Sidebar collapsible="icon" className="dark border-r-0">
-        {/* the logo block on the same navy as the menu, as tall as the top bar; its text is white */}
-        <SidebarHeader className="h-[72px] flex-row items-center gap-0 border-b border-white/20 px-5 py-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+      <Sidebar collapsible="icon" // no border of its own (the sidebar's default one is turned off): a school's menu has a single
+        // edge, the line its paper draws (globals.css)
+        className={tabs ? "school-menu border-r-0 group-data-[side=left]:border-r-0" : "dark border-r-0"}>
+        {/* the logo block on the menu's own colour: as tall as the top bar, or taller for a long name */}
+        <SidebarHeader
+          className={cn(
+            "flex-row items-center gap-0 border-b border-sidebar-foreground/20 px-5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+            "h-[72px] py-0",
+            // a school's stops at the paper's edge (its line too), clear of the strip
+            tabs &&
+              cn(
+                "mr-(--tab-out) pr-3",
+                // its line under it: light and short, like the rules between the menu's clusters
+                "relative border-b-0 after:absolute after:inset-x-6 after:bottom-0 after:h-px after:bg-sidebar-border",
+              ),
+          )}
+        >
           <Link
             href={brand.home}
-            className="flex min-w-0 flex-1 items-center gap-3 group-data-[collapsible=icon]:hidden"
+            className={cn(
+              "flex min-w-0 flex-1 items-center gap-3 group-data-[collapsible=icon]:hidden",
+            )}
           >
-            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-sidebar shadow-sm">
+            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-school-sidebar shadow-sm ring-1 ring-sidebar-foreground/10">
               {brand.icon}
             </span>
-            <span className="grid min-w-0 gap-0.5 leading-tight text-white">
+            <span className="grid min-w-0 gap-0.5 leading-tight text-sidebar-foreground">
               <span
                 className="truncate text-[17px] font-bold tracking-tight"
                 title={brand.title}
@@ -158,7 +211,13 @@ export function SidebarShell({
                 {brand.sidebarTitle ?? brand.title}
               </span>
               {brand.subtitle && (
-                <span className="truncate font-mono text-[13px] text-white/70">
+                <span
+                  className={cn(
+                    "truncate text-sidebar-foreground/70",
+                    // a note in the margin: italic (Bangla has none, so upright)
+                    tabs ? "text-[14px] italic [&:lang(bn)]:not-italic" : "font-mono text-[13px]",
+                  )}
+                >
                   {brand.subtitle}
                 </span>
               )}
@@ -167,20 +226,40 @@ export function SidebarShell({
           <SidebarToggle />
         </SidebarHeader>
 
-        <SidebarContent className="sidebar-scroll gap-0 px-3 pt-3 pb-6">
-          <p className="pr-3 pl-5 pb-2 text-[13px] font-semibold tracking-[0.14em] text-white/50 uppercase group-data-[collapsible=icon]:hidden">
-            {tShell("workspace")}
-          </p>
+        <SidebarContent
+          className={cn(
+            "sidebar-scroll gap-0 pt-3 pb-6",
+            // a school's rows keep clear of the strip their tab reaches into
+            tabs ? "pr-[calc(var(--tab-out,0px)+0.75rem)] pl-3" : "px-3",
+          )}
+        >
+          {!tabs && (
+            <p className="pr-3 pl-5 pb-2 text-[13px] font-semibold tracking-[0.14em] text-sidebar-foreground/60 uppercase group-data-[collapsible=icon]:hidden">
+              {tShell("workspace")}
+            </p>
+          )}
           <Menu groups={groups} pathname={pathname} />
         </SidebarContent>
-        <SidebarRail />
+        {footer && (
+          <SidebarFooter
+            className={cn(
+              "border-t border-sidebar-border px-5 py-3 text-[14px] leading-snug text-sidebar-foreground/75 group-data-[collapsible=icon]:hidden",
+              tabs && "mr-(--tab-out)",
+            )}
+          >
+            {footer}
+          </SidebarFooter>
+        )}
+        {/* the rail (click the edge to fold) draws a line on hover: a school's menu has one edge only,
+            and folds with its button */}
+        {!tabs && <SidebarRail />}
       </Sidebar>
 
       <SidebarInset className="canvas-grid min-w-0">
         <header className="no-print sticky top-0 z-20 flex h-[72px] shrink-0 items-center gap-3 border-b bg-background/90 px-3 backdrop-blur md:px-4 lg:px-5">
           {/* on a phone the menu is hidden: its button lives here (the bottom bar's Menu opens it too) */}
           <MobileMenuButton />
-          {/* the school's full name (the sidebar shows the short one) */}
+          {/* the site's full name (the platform's sidebar shows a short one) */}
           <p className="min-w-0 truncate text-lg font-bold tracking-tight text-foreground sm:text-xl">
             {brand.title}
           </p>
@@ -238,6 +317,7 @@ export function SidebarShell({
       </SidebarInset>
       {bottomNav}
     </SidebarProvider>
+    </IndexTabs.Provider>
   );
 }
 
@@ -246,7 +326,7 @@ function SidebarToggle() {
   const tShell = useTranslations("shell");
   const { isMobile, setOpenMobile } = useSidebar();
   const look =
-    "size-9 shrink-0 text-white hover:bg-white/15 hover:text-white [&_svg]:size-5!";
+    "size-9 shrink-0 text-sidebar-foreground hover:bg-sidebar-foreground/15 hover:text-sidebar-foreground [&_svg]:size-5!";
   if (!isMobile) return <SidebarTrigger className={look} />;
   return (
     <Button
@@ -288,8 +368,12 @@ function Menu({
 }) {
   const t = useTranslations("nav");
   const tGroups = useTranslations("navGroups");
+  const tabs = useContext(IndexTabs);
   const { state, isMobile, setOpenMobile } = useSidebar();
   const folded = state === "collapsed" && !isMobile;
+  // the rule that closes a cluster (a school's menu), never before the first row
+  const rule = (group: MenuGroup, i: number) =>
+    tabs && group.divider && i > 0 ? <div role="separator" className="mx-3 my-2 h-px shrink-0 bg-sidebar-border" /> : null;
   const activeGroup = groups.find((g) =>
     g.items.some((i) => isActive(i.href, pathname)),
   )?.label;
@@ -317,10 +401,10 @@ function Menu({
       <Link
         href={item.href}
         onClick={close}
-        className={rowClass(active)}
+        className={rowClass(active, tabs)}
         aria-current={active ? "page" : undefined}
       >
-        <item.icon className="size-[18px] shrink-0 text-white" />
+        <item.icon className="size-[18px] shrink-0" />
         <span className="truncate group-data-[collapsible=icon]:hidden">
           {t(item.label)}
         </span>
@@ -339,7 +423,12 @@ function Menu({
   if (folded)
     return (
       <nav className="grid gap-1">
-        {groups.flatMap((g) => g.items).map(pageRow)}
+        {groups.map((g, i) => (
+          <Fragment key={g.label ?? i}>
+            {rule(g, i)}
+            {g.items.map(pageRow)}
+          </Fragment>
+        ))}
       </nav>
     );
 
@@ -349,6 +438,7 @@ function Menu({
         if (!group.label || group.items.length === 1)
           return (
             <Fragment key={group.label ?? i}>
+              {rule(group, i)}
               {group.items.map(pageRow)}
             </Fragment>
           );
@@ -357,8 +447,9 @@ function Menu({
         const label = group.label;
 
         return (
+          <Fragment key={label}>
+          {rule(group, i)}
           <div
-            key={label}
             ref={(el) => {
               if (el) groupEls.current.set(label, el);
               else groupEls.current.delete(label);
@@ -369,14 +460,14 @@ function Menu({
               type="button"
               onClick={() => setOpenLabel(open ? "" : group.label)}
               aria-expanded={open}
-              className={cn(rowClass(false), open && "bg-white/5 text-white")}
+              className={cn(rowClass(false, tabs), open && "bg-sidebar-foreground/5")}
             >
-              <Icon className="size-[18px] shrink-0 text-white" />
+              <Icon className="size-[18px] shrink-0" />
               <span className="flex-1 truncate">{tGroups(group.label)}</span>
               {open ? (
-                <ChevronDown className="size-4 text-white/85" />
+                <ChevronDown className="size-4 opacity-85" />
               ) : (
-                <ChevronRight className="size-4 text-white/85" />
+                <ChevronRight className="size-4 opacity-85" />
               )}
             </button>
             {open && (
@@ -391,10 +482,14 @@ function Menu({
                         onClick={close}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "flex h-9 items-center rounded-lg px-3 text-[15.5px] transition-colors [&:lang(en)]:text-[14.5px]",
+                          "relative flex h-9 items-center rounded-lg px-3 text-[15.5px] transition-colors [&:lang(en)]:text-[14.5px]",
                           active
-                            ? "bg-sidebar-accent font-semibold text-sidebar-primary ring-1 ring-white/15 ring-inset"
-                            : "text-white/90 hover:bg-white/5 hover:text-white",
+                            ? cn(
+                                "bg-sidebar-active font-semibold text-sidebar-active-sub ring-1 ring-sidebar-foreground/15 ring-inset",
+                                // a page inside a group: the same tab, from its own line
+                                tabs && TAB,
+                              )
+                            : "text-sidebar-foreground/90 hover:bg-sidebar-foreground/5 hover:text-sidebar-foreground",
                         )}
                       >
                         <span className="truncate">{t(item.label)}</span>
@@ -405,6 +500,7 @@ function Menu({
               </ul>
             )}
           </div>
+          </Fragment>
         );
       })}
     </nav>

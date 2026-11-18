@@ -59,6 +59,7 @@ export const schoolMenu: MenuGroup[] = [
     ],
   },
   {
+    divider: true,
     items: [
       { href: "/attendance", label: "attendance", icon: ClipboardCheck, permission: ["attendance:view", "attendance:mark", "teacher_attendance:mark", "attendance:devices"], anyPermission: true },
       // teachers (their own subjects), staff with homework permissions and families
@@ -71,6 +72,7 @@ export const schoolMenu: MenuGroup[] = [
     items: [{ href: "/exams", label: "exams", icon: FileText, permission: ["exam:view", "grading:view"], anyPermission: true }],
   },
   {
+    divider: true,
     items: [
       // fee work; family logins see their children's payments there
       { href: "/fees", label: "fees", icon: ReceiptText, permission: FEES_PERMISSIONS, anyPermission: true, family: true },
@@ -79,6 +81,7 @@ export const schoolMenu: MenuGroup[] = [
     ],
   },
   {
+    divider: true,
     items: [
       // every member: each reads the notices meant for them
       { href: "/notices", label: "notices", icon: Megaphone },
@@ -90,6 +93,7 @@ export const schoolMenu: MenuGroup[] = [
     ],
   },
   {
+    divider: true,
     label: "administration",
     icon: ShieldCheck,
     items: [

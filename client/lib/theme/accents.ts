@@ -5,9 +5,12 @@
  *   in light and dark mode. Picked to stay readable on white and on the dark canvas, and to
  *   never look like the status colours (green present / paid, red absent / due, amber late).
  * - the accent band (--brand-band, with --brand-band-foreground for its text): a strip in the
- *   accent itself, such as the Students page's status tabs. The same in both modes; golden and
- *   cream carry dark text, the rest white.
- * - the sidebar (--school-sidebar), always dark so its white text and gold highlights read.
+ *   accent itself, such as the Students page's status tabs and the menu's current page. The same
+ *   in both modes; golden and cream carry dark text, the rest white.
+ * - the sidebar: white by default (LIGHT, saved as no choice; .school-menu in globals.css), or
+ *   one of the dark colours. A dark one also becomes --school-sidebar, the school's dark colour
+ *   behind white text (its homepage's hero and footer, the dashboard's welcome banner, the phone's
+ *   bottom bar); with the white menu that stays navy.
  *
  * Same keys as ACCENT_COLORS / SIDEBAR_COLORS in server/src/app/modules/schoolSettings: keep
  * them in step.
@@ -16,7 +19,7 @@
 export const ACCENT_COLORS = ["BLUE", "NAVY", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 export type AccentColor = (typeof ACCENT_COLORS)[number];
 
-export const SIDEBAR_COLORS = ["NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
+export const SIDEBAR_COLORS = ["LIGHT", "NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 export type SidebarColor = (typeof SIDEBAR_COLORS)[number];
 
 // text on the darker bands
@@ -85,8 +88,12 @@ const ACCENTS: Record<AccentColor, Accent> = {
 // the band: the accent's light-mode colour with white text, unless it has its own
 const band = (accent: AccentColor) => ACCENTS[accent].band ?? { color: ACCENTS[accent].light.brand, text: WHITE };
 
-// dark enough for white text in both modes (the sidebar never changes with the theme)
+// the white menu (what .school-menu in globals.css draws; here for its swatch)
+const MENU_WHITE = "oklch(1 0 0)";
+
+// the dark ones: dark enough for white text in both modes (they never change with the theme)
 const SIDEBARS: Record<SidebarColor, string> = {
+  LIGHT: MENU_WHITE,
   // the platform's own (what globals.css has)
   NAVY: "oklch(0.285 0.11 263)",
   // a brighter blue-violet (#4d44b5, chosen by hex); white text reads at about 7.5 : 1
@@ -102,6 +109,7 @@ const SIDEBARS: Record<SidebarColor, string> = {
 
 /** The accent that goes well with a sidebar colour (a suggestion; any pair is allowed). */
 export const SUGGESTED_ACCENT: Record<SidebarColor, AccentColor> = {
+  LIGHT: "BLUE",
   NAVY: "BLUE",
   INDIGO: "INDIGO",
   TEAL: "TEAL",
@@ -114,13 +122,14 @@ export const SUGGESTED_ACCENT: Record<SidebarColor, AccentColor> = {
 /** The accent as a swatch: its band colour (the colour by its name), and the colour of a mark on it. */
 export const accentSwatch = (accent: AccentColor) => band(accent).color;
 export const accentSwatchText = (accent: AccentColor) => band(accent).text;
-/** The sidebar colour (for a swatch or a preview). */
+/** The sidebar colour (for a swatch or a preview), and the colour of a mark on it. */
 export const sidebarSwatch = (sidebar: SidebarColor) => SIDEBARS[sidebar];
+export const sidebarSwatchText = (sidebar: SidebarColor) => (sidebar === "LIGHT" ? "oklch(0.32 0.04 262)" : WHITE);
 
 /** A known accent, or null for anything else (an old or unknown value means the default). */
 export const asAccent = (value: string | null | undefined): AccentColor | null =>
   value && (ACCENT_COLORS as readonly string[]).includes(value) ? (value as AccentColor) : null;
-/** A known sidebar colour, or null for anything else (the default navy). */
+/** A known sidebar colour, or null for anything else (the default white). */
 export const asSidebar = (value: string | null | undefined): SidebarColor | null =>
   value && (SIDEBAR_COLORS as readonly string[]).includes(value) ? (value as SidebarColor) : null;
 
@@ -130,8 +139,9 @@ export type SchoolColors = { accent: AccentColor | null; sidebar: SidebarColor |
  * The CSS that gives the page a school's colours, or "" for the defaults. It comes after the
  * app's stylesheet, so it wins. The accent is in two rules: light mode on the page
  * (:root:not(.dark)) and dark mode (.dark, which also covers the always-dark sidebar). Buttons
- * keep their own near-white in dark mode, so --primary is only set for light mode. The sidebar
- * colour is the same in both.
+ * keep their own near-white in dark mode, so --primary is only set for light mode. A dark sidebar
+ * colour is the same in both: the school's dark colour, and its menu with white text (after
+ * .school-menu and .dark .school-menu in globals.css, at the same weight, so it wins).
  */
 export const schoolColorsCss = ({ accent, sidebar }: SchoolColors) => {
   let css = "";
@@ -143,7 +153,12 @@ export const schoolColorsCss = ({ accent, sidebar }: SchoolColors) => {
       `:root:not(.dark){--brand:${light.brand};--brand-soft:${light.soft};--primary:${light.ink};--navy:${light.ink};--navy-soft:${light.inkSoft}}` +
       `.dark{--brand:${dark.brand};--brand-soft:${dark.soft};--navy:${dark.ink};--navy-soft:${dark.inkSoft}}`;
   }
-  if (sidebar && sidebar !== "NAVY") css += `:root{--school-sidebar:${SIDEBARS[sidebar]}}`;
+  if (sidebar && sidebar !== "LIGHT") {
+    const color = SIDEBARS[sidebar];
+    css +=
+      `:root{--school-sidebar:${color}}` +
+      `:root .school-menu{--sidebar:${color};--sidebar-foreground:oklch(0.95 0.01 250);--sidebar-accent:oklch(1 0 0 / 10%);--sidebar-accent-foreground:${WHITE};--sidebar-border:oklch(1 0 0 / 14%);--sidebar-ring:oklch(0.82 0.14 82)}`;
+  }
   return css;
 };
 

@@ -200,7 +200,7 @@ export function SidebarShell({
               "flex min-w-0 flex-1 items-center gap-3 group-data-[collapsible=icon]:hidden",
             )}
           >
-            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-school-sidebar shadow-sm ring-1 ring-sidebar-foreground/10">
+            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white text-brand-ink shadow-sm ring-1 ring-sidebar-foreground/10">
               {brand.icon}
             </span>
             <span className="grid min-w-0 gap-0.5 leading-tight text-sidebar-foreground">

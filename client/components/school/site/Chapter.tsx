@@ -26,7 +26,7 @@ export async function Chapter({
   const headingId = `${id}-title`;
 
   return (
-    <section id={id} aria-labelledby={headingId} className={cn("scroll-mt-16 border-t border-border/70 sm:scroll-mt-18", tone === "paper" ? "bg-card" : "bg-canvas")}>
+    <section id={id} aria-labelledby={headingId} className={cn("scroll-mt-16 border-t border-border/70 sm:scroll-mt-22", tone === "paper" ? "bg-card" : "bg-canvas")}>
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 sm:py-20 lg:grid-cols-12 lg:gap-12 lg:py-24">
         <header className="lg:col-span-3">
           <div className="flex items-baseline gap-4 lg:sticky lg:top-28 lg:block">

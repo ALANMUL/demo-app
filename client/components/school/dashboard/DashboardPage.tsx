@@ -84,7 +84,8 @@ function WelcomeBanner({ name, year, showActions }: { name: string; year?: strin
   ).slice(0, showActions ? 4 : 0);
 
   return (
-    <section className="dark relative isolate overflow-hidden rounded-2xl bg-school-sidebar px-6 py-6 text-white sm:px-8 sm:py-7">
+    // the school's accent, in its deep shade (the same in dark mode, so the white words always read)
+    <section className="dark relative isolate overflow-hidden rounded-2xl bg-brand-ink px-6 py-6 text-white sm:px-8 sm:py-7">
       {/* dots fading in from the right, and a warm light in the corner */}
       <div aria-hidden className="site-dots absolute inset-0 -z-10 text-white/[0.07] [mask-image:linear-gradient(to_left,black,transparent_65%)]" />
       <div aria-hidden className="absolute -top-24 -right-16 -z-10 size-72 rounded-full bg-sidebar-primary/25 blur-3xl" />
@@ -112,8 +113,8 @@ function WelcomeBanner({ name, year, showActions }: { name: string; year?: strin
                   // on a phone a long label wraps inside its box rather than being cut; from sm one line
                   "inline-flex min-h-9 min-w-0 items-center gap-1.5 rounded-2xl px-3 py-1.5 text-sm leading-tight font-medium transition-colors sm:h-9 sm:gap-2 sm:rounded-full sm:px-4 sm:py-0 sm:whitespace-nowrap",
                   i === 0
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-white hover:text-school-sidebar"
-                    : "bg-white/10 text-white ring-1 ring-white/15 hover:bg-white hover:text-school-sidebar",
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-white hover:text-brand-ink"
+                    : "bg-white/10 text-white ring-1 ring-white/15 hover:bg-white hover:text-brand-ink",
                 )}
               >
                 <a.icon className="size-4 shrink-0" />

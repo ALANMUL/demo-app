@@ -18,10 +18,12 @@ export type PublicNoticeItem = {
   pinned: boolean;
   publishAt: string;
   expiresAt: string | null;
+  // the start of the text as one plain line (up to 200 characters)
+  excerpt: string;
   attachmentCount: number;
 };
 
-export type PublicNotice = Omit<PublicNoticeItem, "attachmentCount"> & { body: string; attachments: NoticeAttachment[] };
+export type PublicNotice = Omit<PublicNoticeItem, "attachmentCount" | "excerpt"> & { body: string; attachments: NoticeAttachment[] };
 
 export type PublicNoticePage = { items: PublicNoticeItem[]; meta: ListMeta };
 

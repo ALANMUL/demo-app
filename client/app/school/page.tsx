@@ -26,8 +26,9 @@ type ContactRow = { icon: LucideIcon; label: string; value: string; action?: { h
 /**
  * A school's public homepage (no login), its only page, laid out like a printed prospectus: the
  * header, the photos with the school's name over them and the newest notice under them, then a
- * numbered chapter per menu item (about, admission, notices, gallery, contact; those the school
- * left empty are skipped and the rest keep counting) and the footer. The menu scrolls to them.
+ * part per menu item: the about section and the notice cards in layouts of their own, and admission,
+ * gallery and contact as numbered chapters (those the school left empty are skipped and the rest
+ * keep counting), then the footer. The menu scrolls to them.
  */
 export default async function SchoolHomePage() {
   const [t, locale, school] = await Promise.all([getTranslations("schoolHome"), getLocale(), getCurrentSchoolSite()]);
@@ -36,9 +37,10 @@ export default async function SchoolHomePage() {
   // the name in the language being read (the other one only when this one is missing)
   const name = pickName(school, locale);
 
-  // each chapter's number, counting only those shown
+  // each chapter's number, counting only those shown (about and notices have layouts of their own, unnumbered)
   const chapters = siteChapters(school);
-  const numberOf = (id: (typeof chapters)[number]) => chapters.indexOf(id) + 1;
+  const numbered = chapters.filter((id) => id !== "about" && id !== "notices");
+  const numberOf = (id: (typeof numbered)[number]) => numbered.indexOf(id) + 1;
 
   const contacts = [
     school.phone && {
@@ -79,11 +81,11 @@ export default async function SchoolHomePage() {
       <main className="flex-1">
         <HeroSection school={school} name={name} />
 
-        {chapters.includes("about") && <AboutSection about={school.about} number={numberOf("about")} />}
+        {chapters.includes("about") && <AboutSection about={school.about} />}
 
         {chapters.includes("admission") && <AdmissionSection admission={school.admission} number={numberOf("admission")} />}
 
-        <NoticesSection subdomain={school.subdomain} number={numberOf("notices")} />
+        <NoticesSection subdomain={school.subdomain} />
 
         {chapters.includes("gallery") && <GallerySection photos={school.gallery} number={numberOf("gallery")} />}
 

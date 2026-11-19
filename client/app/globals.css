@@ -3,6 +3,9 @@
 
 /* Dark mode follows a .dark class on <html>, so it can be toggled later. */
 @custom-variant dark (&:is(.dark *));
+/* a wide but short window (a laptop's browser: 1366 x 768 leaves ~640px): the marketing hero tightens to fit it */
+@custom-variant short-screen (@media (min-width: 64rem) and (max-height: 840px));
+@custom-variant shorter-screen (@media (min-width: 64rem) and (max-height: 700px));
 
 @theme inline {
   --color-background: var(--background);
@@ -17,6 +20,7 @@
   /* a strip in the accent itself (the Students page's status tabs), and its text */
   --color-brand-band: var(--brand-band);
   --color-brand-band-foreground: var(--brand-band-foreground);
+  --color-brand-ink: var(--brand-ink);
   /* the sidebar's navy, for the page: active tabs, primary buttons, soft highlights */
   --color-navy: var(--navy);
   --color-navy-foreground: var(--navy-foreground);
@@ -140,6 +144,8 @@
   /* the accent band, the same in both modes (a school's accent replaces it: lib/theme/accents.ts) */
   --brand-band: oklch(0.5 0.17 262);
   --brand-band-foreground: oklch(0.985 0 0);
+  /* the accent's deep shade behind white text, the same in both modes (the homepage's footer) */
+  --brand-ink: oklch(0.305 0.1 258);
   /* the sidebar's colour in both modes; a school's own choice replaces it (lib/theme/accents.ts) */
   --school-sidebar: oklch(0.285 0.11 263);
   --canvas: oklch(0.972 0.006 260);

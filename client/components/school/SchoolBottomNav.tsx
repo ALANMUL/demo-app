@@ -26,8 +26,8 @@ export const useBottomNavHasMessages = () => {
 const isActive = (href: string, pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
 
 /*
- * On a phone, the main pages along the bottom (like a phone app), in the school's sidebar
- * colour with the current one in gold. Which pages depends on who is logged in:
+ * On a phone, the main pages along the bottom (like a phone app), in the deep shade of the
+ * school's accent (--brand-ink) with the current one in gold. Which pages depends on who is logged in:
  *   families: Home, Homework, Fees, Messages
  *   teachers: Home, Attendance, Homework, Messages
  *   everyone else: Home and up to three pages they may open (Students, Attendance, Notices)
@@ -77,7 +77,7 @@ export function SchoolBottomNav() {
     // "dark" so the menu's own colours (its gold) apply, as in the sidebar
     <nav
       aria-label={t("label")}
-      className="dark no-print fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-school-sidebar pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgb(0_0_0/0.15)] md:hidden"
+      className="dark no-print fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-brand-ink pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgb(0_0_0/0.15)] md:hidden"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-5 px-1">
         {tabs.map((tab) => {
@@ -88,7 +88,7 @@ export function SchoolBottomNav() {
                 <span className={iconBox(active)}>
                   <tab.icon className="size-5" />
                   {!!tab.badge && (
-                    <span className="absolute -top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[12px] leading-none font-semibold text-white tabular-nums ring-2 ring-school-sidebar">
+                    <span className="absolute -top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[12px] leading-none font-semibold text-white tabular-nums ring-2 ring-brand-ink">
                       {tab.badge > 99 ? "99+" : format.number(tab.badge)}
                     </span>
                   )}

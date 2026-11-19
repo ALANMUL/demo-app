@@ -3723,7 +3723,7 @@
         "default": "Default",
         "sidebar": {
           "title": "Sidebar colour",
-          "hint": "The menu on the left. White is the default; a dark colour also colours the top of your public homepage (with white it stays navy).",
+          "hint": "The menu on the left of your dashboard. White is the default.",
           "colors": {
             "LIGHT": "White",
             "NAVY": "Navy",
@@ -3838,7 +3838,26 @@
         "taglineHint": "Shown at the top of the homepage, under the name. Leave empty to use: “{fallback}”",
         "footerNote": "Footer line",
         "footerNoteHint": "Shown at the bottom of the homepage, beside the name. Leave empty to use: “{fallback}”",
-        "linesNote": "Both lines show exactly as you write them, in Bangla and in English."
+        "social": "Social links",
+        "socialHint": "Shown as icons in the footer of your homepage. Leave a link empty to hide its icon.",
+        "facebookUrl": "Facebook page",
+        "youtubeUrl": "YouTube channel",
+        "instagramUrl": "Instagram",
+        "linesNote": "Both lines show exactly as you write them, in Bangla and in English.",
+        "principal": "Principal's message",
+        "principalHint": "Shown beside the about text on the homepage. Leave the message empty to hide it.",
+        "principalPhoto": "Photo",
+        "principalPhotoHint": "Cropped to a square around the face (400 × 400). JPG, PNG or WebP, up to 5 MB.",
+        "addPhoto": "Add photo",
+        "changePhoto": "Change photo",
+        "photoSaved": "Photo saved",
+        "photoRemoved": "Photo removed",
+        "principalName": "Name",
+        "principalNamePlaceholder": "e.g. Md. Abdul Karim",
+        "principalTitle": "Title",
+        "principalTitleHint": "Leave empty to use “{fallback}”.",
+        "principalMessage": "Message",
+        "principalMessagePlaceholder": "A few words to students and guardians…"
       },
       "gallery": {
         "title": "Gallery",
@@ -5155,6 +5174,7 @@
       "visit": "Visit the website"
     },
     "nav": {
+      "home": "Home",
       "admission": "Admission",
       "notices": "Notices",
       "contact": "Contact",
@@ -5182,6 +5202,9 @@
     "notices": {
       "title": "Latest notices",
       "empty": "There are no notices right now.",
+      "view": "View",
+      "viewAll": "View all notices",
+      "allTitle": "All notices",
       "pinned": "Pinned",
       "files": "{count, plural, one {# file} other {# files}}",
       "showMore": "Show more",
@@ -5204,10 +5227,18 @@
     "footer": {
       "about": "Learning, discipline and care, together. Visit us, call us, or follow our notices to stay up to date.",
       "links": "Quick links",
-      "rights": "© {year} {name}. All rights reserved."
+      "rights": "© {year} {name}. All rights reserved.",
+      "contact": "Contact us",
+      "follow": "Follow us",
+      "facebookUrl": "Facebook",
+      "youtubeUrl": "YouTube",
+      "instagramUrl": "Instagram"
     },
     "about": {
-      "title": "About the school"
+      "title": "About the school",
+      "principalHeading": "Message from the {title}",
+      "principalTitle": "Principal",
+      "learnMore": "Learn more"
     },
     "gallery": {
       "title": "Life at our school",

@@ -142,12 +142,13 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
     <section
       ref={stage}
       // a screen on its side (a computer, a turned tablet or phone): the whole of it under the header
-      // bar (64px, 72px from 640px). An upright one (a phone, a tablet): the shape of a photo, 4:3
+      // (its thin bar and its white bar: 36px + 64px, 40px + 88px from 640px). An upright one (a
+      // phone, a tablet): the shape of a photo, 4:3
       // then 16:9, since a wide photo at its full height would be a strip between blurred bands
       className={cn(
-        "relative isolate overflow-hidden bg-school-sidebar/10",
+        "relative isolate overflow-hidden bg-brand-soft",
         "aspect-4/3 sm:aspect-video",
-        "landscape:aspect-auto landscape:h-[calc(100svh-4rem)] landscape:min-h-80 sm:landscape:h-[calc(100svh-4.5rem)]",
+        "landscape:aspect-auto landscape:h-[calc(100svh-6.25rem)] landscape:min-h-80 sm:landscape:h-[calc(100svh-8rem)]",
       )}
       onTouchStart={(e) => (touchStart.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {

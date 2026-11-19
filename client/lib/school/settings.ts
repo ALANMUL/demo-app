@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { httpClient } from "@/lib/api/httpClient";
 import type { ApiResponse } from "@/lib/api/types";
-import type { About, Admission } from "@/lib/site";
+import type { About, Admission, SocialKey } from "@/lib/site";
 import type { AccentColor, SidebarColor } from "@/lib/theme/accents";
 
 // The school's own settings (its super admin only): its accent and sidebar colours, and its
@@ -97,7 +97,7 @@ const useAboutMutation = <T,>(request: (body: T) => Promise<About>) => {
 // the words and the facts
 export const useSaveAbout = () =>
   useAboutMutation(
-    async (body: Pick<About, "body" | "facts" | "tagline" | "footerNote">) =>
+    async (body: Pick<About, "body" | "facts" | "tagline" | "footerNote" | "principalMessage" | "principalName" | "principalTitle" | SocialKey>) =>
       (await httpClient.put<ApiResponse<About>>("/school-settings/about", body)).data.data,
   );
 
@@ -111,6 +111,19 @@ export const useUploadAboutImage = () =>
 
 export const useRemoveAboutImage = () =>
   useAboutMutation(async () => (await httpClient.delete<ApiResponse<About>>("/school-settings/about/image")).data.data);
+
+// the principal's photo (a square, cropped to the face)
+export const useUploadPrincipalPhoto = () =>
+  useAboutMutation(async (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return (
+      await httpClient.post<ApiResponse<About>>("/school-settings/about/principal-photo", body, { headers: { "Content-Type": "multipart/form-data" } })
+    ).data.data;
+  });
+
+export const useRemovePrincipalPhoto = () =>
+  useAboutMutation(async () => (await httpClient.delete<ApiResponse<About>>("/school-settings/about/principal-photo")).data.data);
 
 // ------------------------------------------------------------- admission section
 

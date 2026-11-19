@@ -6,18 +6,22 @@
  *   never look like the status colours (green present / paid, red absent / due, amber late).
  * - the accent band (--brand-band, with --brand-band-foreground for its text): a strip in the
  *   accent itself, such as the Students page's status tabs and the menu's current page. The same
- *   in both modes; golden and cream carry dark text, the rest white.
+ *   in both modes; golden and cream carry dark text, the rest white. And --brand-ink, the accent's
+ *   deep shade behind white text in both modes (the homepage's footer).
  * - the sidebar: white by default (LIGHT, saved as no choice; .school-menu in globals.css), or
- *   one of the dark colours. A dark one also becomes --school-sidebar, the school's dark colour
- *   behind white text (its homepage's hero and footer, the dashboard's welcome banner, the phone's
- *   bottom bar); with the white menu that stays navy.
+ *   one of the dark colours (also written as --school-sidebar). It colours the dashboard's menu
+ *   only: the welcome banner and the phone's bottom bar use --brand-ink, and the public homepage
+ *   uses the accent only (and the menu's gold).
  *
  * Same keys as ACCENT_COLORS / SIDEBAR_COLORS in server/src/app/modules/schoolSettings: keep
  * them in step.
  */
 
-export const ACCENT_COLORS = ["BLUE", "NAVY", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
+export const ACCENT_COLORS = ["NAVY", "BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 export type AccentColor = (typeof ACCENT_COLORS)[number];
+
+/** A school's accent until it picks one (saved as no choice; any other is saved by name). */
+export const DEFAULT_ACCENT: AccentColor = "NAVY";
 
 export const SIDEBAR_COLORS = ["LIGHT", "NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 export type SidebarColor = (typeof SIDEBAR_COLORS)[number];
@@ -34,7 +38,7 @@ const WHITE = "oklch(0.985 0 0)";
 type Shade = { brand: string; soft: string; ink: string; inkSoft: string };
 type Accent = { light: Shade; dark: Shade; band?: { color: string; text: string } };
 const ACCENTS: Record<AccentColor, Accent> = {
-  // the platform's own (what globals.css has): a school without a choice looks like this
+  // the platform's own (what globals.css has); a school without a choice gets NAVY instead
   BLUE: {
     light: { brand: "oklch(0.5 0.17 262)", soft: "oklch(0.952 0.022 262)", ink: "oklch(0.305 0.1 258)", inkSoft: "oklch(0.955 0.018 258)" },
     dark: { brand: "oklch(0.64 0.15 262)", soft: "oklch(0.29 0.05 262)", ink: "oklch(0.82 0.07 258)", inkSoft: "oklch(0.27 0.05 258)" },
@@ -109,7 +113,7 @@ const SIDEBARS: Record<SidebarColor, string> = {
 
 /** The accent that goes well with a sidebar colour (a suggestion; any pair is allowed). */
 export const SUGGESTED_ACCENT: Record<SidebarColor, AccentColor> = {
-  LIGHT: "BLUE",
+  LIGHT: "NAVY",
   NAVY: "BLUE",
   INDIGO: "INDIGO",
   TEAL: "TEAL",
@@ -145,11 +149,13 @@ export type SchoolColors = { accent: AccentColor | null; sidebar: SidebarColor |
  */
 export const schoolColorsCss = ({ accent, sidebar }: SchoolColors) => {
   let css = "";
-  if (accent && accent !== "BLUE") {
-    const { light, dark } = ACCENTS[accent];
-    const { color, text } = band(accent);
+  // no choice = the default accent (navy); blue is what globals.css already has
+  const chosen = accent ?? DEFAULT_ACCENT;
+  if (chosen !== "BLUE") {
+    const { light, dark } = ACCENTS[chosen];
+    const { color, text } = band(chosen);
     css +=
-      `:root{--brand-band:${color};--brand-band-foreground:${text}}` +
+      `:root{--brand-band:${color};--brand-band-foreground:${text};--brand-ink:${light.ink}}` +
       `:root:not(.dark){--brand:${light.brand};--brand-soft:${light.soft};--primary:${light.ink};--navy:${light.ink};--navy-soft:${light.inkSoft}}` +
       `.dark{--brand:${dark.brand};--brand-soft:${dark.soft};--navy:${dark.ink};--navy-soft:${dark.inkSoft}}`;
   }

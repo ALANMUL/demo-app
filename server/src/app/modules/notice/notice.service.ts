@@ -471,6 +471,16 @@ const publicSelect = {
   expiresAt: true,
 } as const;
 
+// the start of a notice's text as one plain line (its marks dropped), for the homepage's notice cards
+const EXCERPT_LENGTH = 200;
+const excerptOf = (body: string) =>
+  body
+    .replace(/\*\*/g, "")
+    .replace(/^\s*[-•]\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, EXCERPT_LENGTH);
+
 /* The school's public notice page: notices marked public that are up now. */
 const listPublic = async (subdomain: string, query: NoticeBoardQuery) => {
   const schoolId = await publicSchool(subdomain);
@@ -486,11 +496,11 @@ const listPublic = async (subdomain: string, query: NoticeBoardQuery) => {
       orderBy: [{ pinned: "desc" }, { publishAt: "desc" }],
       skip: (query.page - 1) * query.limit,
       take: query.limit,
-      select: { ...publicSelect, _count: { select: { attachments: true } } },
+      select: { ...publicSelect, body: true, _count: { select: { attachments: true } } },
     }),
     prisma.notice.count({ where }),
   ]);
-  const items = rows.map(({ _count, ...n }) => ({ ...n, attachmentCount: _count.attachments }));
+  const items = rows.map(({ _count, body, ...n }) => ({ ...n, excerpt: excerptOf(body), attachmentCount: _count.attachments }));
   return { items, meta: { page: query.page, limit: query.limit, total, totalPages: Math.ceil(total / query.limit) } };
 };
 

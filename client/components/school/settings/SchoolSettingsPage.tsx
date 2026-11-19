@@ -14,6 +14,7 @@ import {
   accentSwatch,
   accentSwatchText,
   applySchoolColors,
+  DEFAULT_ACCENT,
   asAccent,
   asSidebar,
   SIDEBAR_COLORS,
@@ -59,7 +60,7 @@ function AppearanceCard() {
   const appearance = useAppearance();
   const save = useSaveAppearance();
   const saved: Colors | undefined = appearance.data
-    ? { accent: asAccent(appearance.data.accentColor) ?? "BLUE", sidebar: asSidebar(appearance.data.sidebarColor) ?? "LIGHT" }
+    ? { accent: asAccent(appearance.data.accentColor) ?? DEFAULT_ACCENT, sidebar: asSidebar(appearance.data.sidebarColor) ?? "LIGHT" }
     : undefined;
   const [picked, setPicked] = useState<Partial<Colors>>({});
   const chosen: Colors | undefined = saved && { ...saved, ...picked };
@@ -88,7 +89,7 @@ function AppearanceCard() {
   const submit = () =>
     chosen &&
     save.mutate(
-      { accentColor: chosen.accent === "BLUE" ? null : chosen.accent, sidebarColor: chosen.sidebar === "LIGHT" ? null : chosen.sidebar },
+      { accentColor: chosen.accent === DEFAULT_ACCENT ? null : chosen.accent, sidebarColor: chosen.sidebar === "LIGHT" ? null : chosen.sidebar },
       {
         onSuccess: () => {
           setPicked({});
@@ -144,7 +145,7 @@ function AppearanceCard() {
               <Swatches
                 title={t("accent.title")}
                 hint={t("accent.hint")}
-                options={ACCENT_COLORS.map((key) => ({ key, color: accentSwatch(key), text: accentSwatchText(key), label: t(`accent.colors.${key}`), isDefault: key === "BLUE" }))}
+                options={ACCENT_COLORS.map((key) => ({ key, color: accentSwatch(key), text: accentSwatchText(key), label: t(`accent.colors.${key}`), isDefault: key === DEFAULT_ACCENT }))}
                 value={chosen.accent}
                 onChange={(accent) => pick({ accent: accent as AccentColor })}
               />

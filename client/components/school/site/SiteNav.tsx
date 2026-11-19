@@ -3,7 +3,6 @@
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type MouseEvent } from "react";
-import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { jumpToSection, useActiveSection } from "@/lib/useSectionNav";
 import { cn } from "@/lib/utils";
 
@@ -11,24 +10,13 @@ import { cn } from "@/lib/utils";
 export type SiteLink = { href: string; label: string; section: string };
 
 // the ring every control on the white bar shows when reached by keyboard, in the school's colour
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-school-sidebar";
-
-// the way in: an outline in the school's colour, so the hero keeps the page's only solid button
-const accountButton =
-  "inline-flex h-9 items-center rounded-md border border-school-sidebar/50 px-5 text-sm font-semibold text-school-sidebar transition-colors hover:bg-school-sidebar/8";
-
-// বাংলা | English on the white bar: a quiet outline, the chosen language filled in the school's colour
-const languageOnBar = cn(
-  "border-school-sidebar/20 bg-transparent",
-  "[&_button]:text-school-sidebar/75 [&_button:hover]:text-school-sidebar",
-  "[&_button[aria-pressed=true]]:bg-school-sidebar [&_button[aria-pressed=true]]:text-white [&_button[aria-pressed=true]:hover]:text-white",
-  "[&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-school-sidebar",
-);
+const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink";
 
 /*
- * The menu of the public header's white bar: from lg the chapters in a row at the bar's middle,
- * the language and the way in at its right end; below lg a button opens them as a panel under the bar. A link scrolls to its
- * chapter and the gold mark follows the chapter in view.
+ * The menu of the public header's white bar: from lg the links in a row at the bar's right, the
+ * one in view a pill in the school's accent with a short gold line under it; below lg a button
+ * opens them as a panel under the bar, with the way in (the language and the portals are in the
+ * thin bar above). A link scrolls to its chapter.
  */
 export function SiteNav({
   links,
@@ -57,35 +45,29 @@ export function SiteNav({
 
   return (
     <>
-      <nav aria-label={labels.nav} className="hidden items-center justify-center gap-1 lg:flex">
-        {links.map((link) => (
-          <Link
-            key={link.section}
-            href={link.href}
-            onClick={(e) => jump(e, link)}
-            aria-current={active === link.section ? "location" : undefined}
-            className={cn(
-              "relative rounded-sm px-3.5 py-2 text-[17px] font-medium transition-colors after:absolute after:inset-x-3.5 after:-bottom-px after:h-0.5 after:rounded-full",
-              focusRing,
-              active === link.section
-                ? "text-school-sidebar after:bg-sidebar-primary"
-                : "text-school-sidebar/80 hover:text-school-sidebar hover:after:bg-school-sidebar/30",
-            )}
-          >
-            {link.label}
-          </Link>
-        ))}
+      <nav aria-label={labels.nav} className="ml-auto hidden items-center gap-1 lg:flex">
+        {links.map((link) => {
+          const current = active === link.section;
+          return (
+            <Link
+              key={link.section}
+              href={link.href}
+              onClick={(e) => jump(e, link)}
+              aria-current={current ? "location" : undefined}
+              className={cn(
+                "relative rounded-full px-4 py-2 text-[15px] font-semibold whitespace-nowrap transition-colors",
+                focusRing,
+                current
+                  ? // the pill, and a short gold line under it
+                    "bg-brand-band text-brand-band-foreground after:absolute after:inset-x-4 after:-bottom-2.5 after:h-0.75 after:rounded-full after:bg-sidebar-primary"
+                  : "text-brand-ink hover:bg-brand-ink/8",
+              )}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
       </nav>
-
-      <div className="hidden items-center gap-3 justify-self-end lg:flex">
-        <LanguageSwitcher className={languageOnBar} />
-        <Link
-          href={account.href}
-          className={cn(accountButton, focusRing)}
-        >
-          {account.label}
-        </Link>
-      </div>
 
       <button
         type="button"
@@ -93,7 +75,7 @@ export function SiteNav({
         aria-expanded={open}
         aria-controls="site-menu"
         aria-label={open ? labels.close : labels.menu}
-        className={cn("flex size-10 shrink-0 items-center justify-center rounded-md text-school-sidebar hover:bg-school-sidebar/8 lg:hidden", focusRing)}
+        className={cn("flex size-10 shrink-0 items-center justify-center rounded-md text-brand-ink hover:bg-brand-ink/8 lg:hidden", focusRing)}
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
@@ -111,19 +93,21 @@ export function SiteNav({
                   "border-l-2 px-3 py-2.5 text-[17px] font-medium",
                   focusRing,
                   active === link.section
-                    ? "border-sidebar-primary text-school-sidebar"
-                    : "border-transparent text-school-sidebar/80 hover:text-school-sidebar",
+                    ? "border-sidebar-primary font-semibold text-brand-ink"
+                    : "border-transparent text-brand-ink/80 hover:text-brand-ink",
                 )}
               >
                 {link.label}
               </Link>
             ))}
           </nav>
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
-            <LanguageSwitcher className={languageOnBar} />
+          <div className="mx-auto flex max-w-6xl justify-end border-t border-border px-4 py-3">
             <Link
               href={account.href}
-              className={cn(accountButton, focusRing)}
+              className={cn(
+                "inline-flex h-10 items-center rounded-full bg-brand-band px-6 text-sm font-semibold text-brand-band-foreground transition-opacity hover:opacity-90",
+                focusRing,
+              )}
             >
               {account.label}
             </Link>

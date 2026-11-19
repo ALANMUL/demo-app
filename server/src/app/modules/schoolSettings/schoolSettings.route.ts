@@ -19,7 +19,8 @@ import { deleteFile, fileKey, putFile, withFileUrls } from "../../shared/storage
  * and late; sidebars stay dark enough for their white text. null is the default (blue, navy).
  * The colours themselves live in the client (lib/theme/accents.ts): keep the lists in step.
  */
-export const ACCENT_COLORS = ["BLUE", "NAVY", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
+// NAVY is a school's default and is saved as null; BLUE is saved by name
+export const ACCENT_COLORS = ["NAVY", "BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 // LIGHT (off-white) is the default and is saved as null; NAVY is saved by name
 export const SIDEBAR_COLORS = ["LIGHT", "NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 
@@ -194,19 +195,68 @@ router.put(
 // ------------------------------------------------------------- about section
 
 const MAX_FACTS = 4;
+// a web address (http or https) with a real host name, or blank
+const isWebAddress = (v: string) => {
+  try {
+    const url = new URL(v);
+    return (url.protocol === "https:" || url.protocol === "http:") && url.hostname.includes(".");
+  } catch {
+    return false;
+  }
+};
+const socialUrl = z
+  .string()
+  .trim()
+  .max(300, "Keep it under 300 characters")
+  .refine((v) => v === "" || isWebAddress(v), "Enter a full web address, starting with https://")
+  .default("");
 const aboutBody = z.strictObject({
   body: z.string().trim().max(3000, "Keep it under 3000 characters"),
   facts: z.array(z.strictObject({ label: text(40), value: text(40) })).max(MAX_FACTS, `Up to ${MAX_FACTS} facts`),
   // the homepage's line under the school's name, and its footer line; blank = the app's default line
   tagline: z.string().trim().max(160, "Keep it under 160 characters").default(""),
   footerNote: z.string().trim().max(300, "Keep it under 300 characters").default(""),
+  // the principal's message beside the about text (blank = none), their name and their title
+  principalMessage: z.string().trim().max(1200, "Keep it under 1200 characters").default(""),
+  principalName: z.string().trim().max(80, "Keep it under 80 characters").default(""),
+  principalTitle: z.string().trim().max(60, "Keep it under 60 characters").default(""),
+  // the school's pages elsewhere, as icons in the homepage's footer (blank = no icon)
+  facebookUrl: socialUrl,
+  youtubeUrl: socialUrl,
+  instagramUrl: socialUrl,
 });
-const aboutSelect = { body: true, image: true, facts: true, tagline: true, footerNote: true } as const;
-const NO_ABOUT = { body: "", image: null, facts: [], tagline: "", footerNote: "" };
+const aboutSelect = {
+  body: true,
+  image: true,
+  facts: true,
+  tagline: true,
+  footerNote: true,
+  principalMessage: true,
+  principalName: true,
+  principalTitle: true,
+  principalPhoto: true,
+  facebookUrl: true,
+  youtubeUrl: true,
+  instagramUrl: true,
+} as const;
+const NO_ABOUT = {
+  body: "",
+  image: null,
+  facts: [],
+  tagline: "",
+  footerNote: "",
+  principalMessage: "",
+  principalName: "",
+  principalTitle: "",
+  principalPhoto: null,
+  facebookUrl: "",
+  youtubeUrl: "",
+  instagramUrl: "",
+};
 
 const readAbout = async (schoolId: string) => {
   const about = await prisma.schoolAbout.findUnique({ where: { schoolId }, select: aboutSelect });
-  return about ? withFileUrls(about, ["image"]) : NO_ABOUT;
+  return about ? withFileUrls(about, ["image", "principalPhoto"]) : NO_ABOUT;
 };
 
 router.get(
@@ -253,6 +303,35 @@ router.delete(
       await deleteFile(old.image);
     }
     sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Picture removed", data: await readAbout(schoolId) });
+  }),
+);
+
+// the principal's photo: a 400 px square, cropped to the face
+router.post(
+  "/about/principal-photo",
+  imageUploadMiddleware,
+  catchAsync(async (req: Request, res: Response) => {
+    const schoolId = req.auth!.schoolId!;
+    const image = await processImage(req.file!.buffer, "photo");
+    const key = fileKey(`schools/${schoolId}/about`, "principal", image.extension);
+    await putFile(key, image.body, image.contentType);
+    const old = await prisma.schoolAbout.findUnique({ where: { schoolId }, select: { principalPhoto: true } });
+    await prisma.schoolAbout.upsert({ where: { schoolId }, create: { schoolId, principalPhoto: key }, update: { principalPhoto: key } });
+    if (old?.principalPhoto) await deleteFile(old.principalPhoto);
+    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Photo saved", data: await readAbout(schoolId) });
+  }),
+);
+
+router.delete(
+  "/about/principal-photo",
+  catchAsync(async (req: Request, res: Response) => {
+    const schoolId = req.auth!.schoolId!;
+    const old = await prisma.schoolAbout.findUnique({ where: { schoolId }, select: { principalPhoto: true } });
+    if (old?.principalPhoto) {
+      await prisma.schoolAbout.update({ where: { schoolId }, data: { principalPhoto: null } });
+      await deleteFile(old.principalPhoto);
+    }
+    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Photo removed", data: await readAbout(schoolId) });
   }),
 );
 

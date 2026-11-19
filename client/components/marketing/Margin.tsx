@@ -17,14 +17,17 @@ export function MarginRow({
   children,
   className,
   noteClassName,
+  rowClassName,
 }: {
   note?: ReactNode;
   children?: ReactNode;
   className?: string;
   noteClassName?: string;
+  // the row itself (the margin and the content together), e.g. to let it grow
+  rowClassName?: string;
 }) {
   return (
-    <div className={cn(PAGE, "grid lg:grid-cols-[9.5rem_minmax(0,1fr)]")}>
+    <div className={cn(PAGE, "grid lg:grid-cols-[9.5rem_minmax(0,1fr)]", rowClassName)}>
       <div
         className={cn(
           "border-[color:var(--mk-line)] max-lg:border-l max-lg:pl-5 sm:max-lg:pl-8 lg:pr-6 lg:text-right",

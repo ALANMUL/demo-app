@@ -376,7 +376,8 @@ model AdmissionInfo {
   updatedAt DateTime @updatedAt
 }
 
-// The about section of the school's public homepage: its own words, a picture and a few facts.
+// The about section of the school's public homepage: its own words, a picture, a few facts and
+// its principal's message.
 model SchoolAbout {
   id String @id @default(cuid())
 
@@ -394,6 +395,19 @@ model SchoolAbout {
   tagline    String @default("")
   // the line in the homepage's footer; "" = the app's default line
   footerNote String @default("")
+
+  // the principal's message beside the about text; an empty message = no message shown
+  principalMessage String  @default("")
+  principalName    String  @default("")
+  // their title under the name ("Principal", "Headmaster"); "" = the app's word for principal
+  principalTitle   String  @default("")
+  // storage key of their photo (400 px square)
+  principalPhoto   String?
+
+  // the school's pages elsewhere, as icons in the homepage's footer; "" = no icon
+  facebookUrl  String @default("")
+  youtubeUrl   String @default("")
+  instagramUrl String @default("")
 
   updatedAt DateTime @updatedAt
 }

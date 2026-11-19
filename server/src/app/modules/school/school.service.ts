@@ -282,7 +282,22 @@ const getPublicSite = async (subdomain: string) => {
       status: true,
       slides: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
       admissionInfo: { select: { requirements: true, dates: true, fees: true } },
-      about: { select: { body: true, image: true, facts: true, tagline: true, footerNote: true } },
+      about: {
+        select: {
+          body: true,
+          image: true,
+          facts: true,
+          tagline: true,
+          footerNote: true,
+          principalMessage: true,
+          principalName: true,
+          principalTitle: true,
+          principalPhoto: true,
+          facebookUrl: true,
+          youtubeUrl: true,
+          instagramUrl: true,
+        },
+      },
       galleryPhotos: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
     },
   });
@@ -294,7 +309,7 @@ const getPublicSite = async (subdomain: string) => {
   const [withUrls, signedSlides, signedAbout, signedGallery] = await Promise.all([
     withFileUrls({ ...site, publicEmail: site.publicEmail ?? email }, ["logo", "favicon"]),
     Promise.all(slides.map((slide) => withFileUrls(slide, ["image"]))),
-    about ? withFileUrls(about, ["image"]) : null,
+    about ? withFileUrls(about, ["image", "principalPhoto"]) : null,
     Promise.all(galleryPhotos.map((photo) => withFileUrls(photo, ["image"]))),
   ]);
   // a picture that can't be linked (storage off) is left out
@@ -304,7 +319,20 @@ const getPublicSite = async (subdomain: string) => {
     // never saved = nothing to show
     admission: admissionInfo ?? { requirements: [], dates: [], fees: [] },
     // tagline / footerNote "" = the site shows its default lines
-    about: signedAbout ?? { body: "", image: null, facts: [], tagline: "", footerNote: "" },
+    about: signedAbout ?? {
+      body: "",
+      image: null,
+      facts: [],
+      tagline: "",
+      footerNote: "",
+      principalMessage: "",
+      principalName: "",
+      principalTitle: "",
+      principalPhoto: null,
+      facebookUrl: "",
+      youtubeUrl: "",
+      instagramUrl: "",
+    },
     gallery: signedGallery.filter((photo) => photo.image),
   };
 };

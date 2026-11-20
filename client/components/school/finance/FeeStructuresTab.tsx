@@ -264,6 +264,7 @@ export function FeeStructuresTab({ canManage, canSync, onOpenFeeTypes }: { canMa
             title: tDelete("title", { name: name(deleting.feeType) }),
             description: tDelete("description"),
             checkPath: `/fee-structure/${deleting.id}/delete-check`,
+            money: true,
             done: tDelete("done", { name: name(deleting.feeType) }),
             run: (reason) => remove.mutateAsync({ feeStructureId: deleting.id, reason }),
           }

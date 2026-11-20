@@ -12,7 +12,7 @@ import { SOCIAL_GLYPHS } from "./SocialGlyphs";
  * The homepage's footer, on paper, in the school's accent: up to four columns parted by hairlines.
  *   - the school: its round logo, its name, and its line (its footer line, or the default one) in
  *     italic;
- *   - quick links: the homepage's chapters, then the login (or the app, once logged in);
+ *   - quick links: the homepage's chapters, then the login (or the dashboard, once logged in);
  *   - contact: phone, email and address, each behind a small round mark in the accent's deep shade;
  *   - follow: the school's pages elsewhere (Facebook, YouTube, Instagram) as round marks, only
  *     those it filled in (no column without any).
@@ -30,7 +30,7 @@ export async function SiteFooter({ school }: { school: SchoolSite }) {
   const loggedIn = jar.has(sessionFlagCookie.SCHOOL);
   const links = [
     ...siteChapters(school).map((id) => ({ href: `#${id}`, label: tNav(id) })),
-    loggedIn ? { href: authRoutes.SCHOOL.home, label: tHome("openApp") } : { href: authRoutes.SCHOOL.login, label: tHome("logIn") },
+    loggedIn ? { href: authRoutes.SCHOOL.home, label: tHome("dashboard") } : { href: authRoutes.SCHOOL.login, label: tHome("logIn") },
   ];
   const social = SOCIAL_KEYS.filter((key) => school.about[key]);
   const focus = "rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink";

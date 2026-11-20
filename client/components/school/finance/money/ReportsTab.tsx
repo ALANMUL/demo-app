@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Banknote, CircleX, HandCoins, History, Printer, Receipt, Scale, Users, Wallet } from "lucide-react";
+import { ArrowLeft, Banknote, HandCoins, History, Printer, Receipt, Scale, Users, Wallet } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -91,11 +91,10 @@ export function CollectionReport() {
                 {range.from === range.to ? day(range.from) : t("range", { from: day(range.from), to: day(range.to) })}
               </p>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-2 sm:grid-cols-3">
               <Tile icon={Banknote} label={t("collected")} value={money(d.collected.total)} sub={t("payments", { count: d.collected.count })} />
               <Tile icon={Receipt} label={t("spent")} value={money(d.expenses.total)} />
               <Tile icon={Scale} label={t("net")} value={money(d.net)} sub={t("netHint")} />
-              <Tile icon={CircleX} label={t("cancelled")} value={money(d.cancelled.total)} sub={t("payments", { count: d.cancelled.count })} />
             </div>
             <div className="grid gap-3 md:grid-cols-3">
               <AmountTable title={t("byMethod")} rows={d.byMethod.map((m) => ({ key: m.method, label: tMethod(m.method), amount: m.amount }))} />

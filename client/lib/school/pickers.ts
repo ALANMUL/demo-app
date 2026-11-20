@@ -27,7 +27,8 @@ export const useWorkingTeachers = (enabled = true) =>
     queryKey: ["school", "pickers", "teachers"],
     queryFn: async () => {
       const { data } = await httpClient.get<ApiResponse<{ items: TeacherOption[] }>>("/teacher", {
-        params: { limit: 100 },
+        // a picker reads best in name order
+        params: { limit: 100, sort: "name" },
       });
       return data.data.items.filter((t) => t.status === "ACTIVE" || t.status === "ON_LEAVE");
     },

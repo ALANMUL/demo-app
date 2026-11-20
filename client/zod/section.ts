@@ -4,7 +4,36 @@ import { toAsciiDigits } from "@/lib/i18n/digits";
 // Mirrors the server's section.validation.ts.
 // Messages are translation keys; <FormMessage> shows them in the current language.
 
-const sectionName = z.string().trim().min(1, "validation.sectionNameRequired").max(50, "validation.sectionNameTooLong");
+/** A section name always starts with a capital letter: "a" -> "A", "blue" -> "Blue". */
+export const capitalizeSectionName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1);
+
+/** The same for every name in "a, b; c" while it is typed: "A, B; C" (separators and spaces kept). */
+export const capitalizeSectionNames = (text: string) =>
+  text.replace(/(^|[,،;])(\s*)(\S)/g, (_, sep: string, space: string, first: string) => sep + space + first.toUpperCase());
+
+/**
+ * An input's onChange that capitalises as the person types, keeping the cursor where it was
+ * (a controlled input given a new value would otherwise jump to the end).
+ */
+export const capitalizingChange =
+  (capitalize: (text: string) => string, onChange: (value: string) => void) =>
+  (e: { target: HTMLInputElement }) => {
+    const el = e.target;
+    const value = capitalize(el.value);
+    if (value !== el.value) {
+      const { selectionStart, selectionEnd } = el;
+      el.value = value;
+      el.setSelectionRange(selectionStart, selectionEnd);
+    }
+    onChange(value);
+  };
+
+const sectionName = z
+  .string()
+  .trim()
+  .min(1, "validation.sectionNameRequired")
+  .max(50, "validation.sectionNameTooLong")
+  .transform(capitalizeSectionName);
 
 /** "A, B , c" -> ["A", "B", "c"]; a Bangla comma (،) or a semicolon works too. */
 export const splitSectionNames = (text: string) =>

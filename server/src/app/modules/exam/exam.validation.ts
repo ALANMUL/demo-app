@@ -80,7 +80,7 @@ const listExamsQuery = z.object({
   academicYearId: optionalId,
 });
 
-// deleting an exam (or a class of it): once marks exist, a reason and its name typed again
+// deleting an exam (or a class of it): an optional reason for the activity log (confirmName is no longer used)
 const deleteExamQuery = z.object({
   reason: z.string().trim().max(300).optional(),
   confirmName: z.string().trim().max(200).optional(),

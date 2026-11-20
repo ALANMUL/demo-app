@@ -48,7 +48,11 @@ export type TeacherDetail = Teacher & {
   } | null;
 };
 
-export type TeacherListQuery = { page: number; limit: number; search?: string; status?: TeacherStatus };
+// the list's order: by when each teacher was added (the server's default is oldest first), or by name
+export const TEACHER_SORTS = ["oldest", "newest", "name"] as const;
+export type TeacherSort = (typeof TEACHER_SORTS)[number];
+
+export type TeacherListQuery = { page: number; limit: number; search?: string; status?: TeacherStatus; sort?: TeacherSort };
 
 export type TeacherList = {
   items: Teacher[];

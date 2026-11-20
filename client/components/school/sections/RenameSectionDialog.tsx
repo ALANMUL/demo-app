@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { applyServerErrors } from "@/lib/auth/formErrors";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useRenameSection, type Section } from "@/lib/school/sections";
-import { renameSectionSchema } from "@/zod/section";
+import { capitalizeSectionName, capitalizingChange, renameSectionSchema } from "@/zod/section";
 
 export function RenameSectionDialog({ section, onClose }: { section: Section | null; onClose: () => void }) {
   const t = useTranslations("school.sections.renameDialog");
@@ -72,7 +72,7 @@ function RenameForm({ section, onDone }: { section: Section; onDone: () => void 
             <FormItem>
               <FormLabel required>{t("name")}</FormLabel>
               <FormControl>
-                <Input autoFocus {...field} />
+                <Input autoFocus {...field} onChange={capitalizingChange(capitalizeSectionName, field.onChange)} />
               </FormControl>
               <FormMessage />
             </FormItem>

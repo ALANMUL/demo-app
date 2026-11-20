@@ -4,7 +4,7 @@
 #   redis  rate limiting (memory only; nothing to keep)
 #   migrate  one-off: docker compose run --rm migrate
 #
-# Settings that differ between machines are in ./.env (see .env.example);
+# Settings that differ between machines are in ./.env;
 # the API's own settings and secrets are in ./server/.env.
 
 name: school-management

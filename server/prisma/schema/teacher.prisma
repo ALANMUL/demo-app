@@ -38,6 +38,10 @@ model TeacherProfile {
   status TeacherStatus @default(ACTIVE)
   leftAt DateTime?     @db.Date
 
+  // the teacher's place in the "Our teachers" row of the school's public homepage (0 first);
+  // null = not on the homepage. The school picks them in its settings.
+  siteOrder Int?
+
   subjectAssignments SubjectTeacher[]
   attendance         TeacherAttendance[]
   routineEntries     RoutineEntry[]

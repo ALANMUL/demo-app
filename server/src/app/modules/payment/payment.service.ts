@@ -8,8 +8,8 @@ import { fileUrl } from "../../shared/storage";
 import { getFundBalance, lockFund } from "../fund/fund.ledger";
 import { NotificationService, notifyInBackground } from "../notification/notification.service";
 import { computeFeeStatus, currentMonth, lockStudentFees, round2 } from "../studentFee/studentFee.service";
+import type { ReasonPayload } from "../../shared/deleteSchemas";
 import type {
-  CancelPaymentPayload,
   ListPaymentsQuery,
   RecordPaymentPayload,
 } from "./payment.type";
@@ -289,19 +289,20 @@ const recordPayment = async (schoolId: string, userId: string, data: RecordPayme
   }
 };
 
-// ----------------------------------------------------------- cancel payment
+// ----------------------------------------------------------- delete payment
 
 /*
- * Cancels a whole payment by reversal: the payment is kept and marked CANCELLED,
- * every fee goes back to what it was, and each fund gets an opposite ledger entry.
- * It is refused if a fund no longer holds the money (already spent or transferred),
- * because the balance would go negative.
+ * Erases a payment (the super admin only, see the routes): the receipt is gone, every fee goes
+ * back to what it was before it, and the money leaves the funds (its ledger entries are
+ * removed, and for an old cancelled payment its reversal entries too, which cancel out).
+ * Refused if a fund no longer holds the money (spent or transferred): its balance would go
+ * negative. A full copy is kept in the activity log. An online receipt's money is with the
+ * school's SSLCommerz account: its online payment record stays, marked for refund.
  */
-const cancelPayment = async (auth: Auth, paymentId: string, data: CancelPaymentPayload) => {
+const deletePayment = async (auth: Auth, paymentId: string, data: ReasonPayload) => {
   const schoolId = auth.schoolId!;
-  const userId = auth.userId;
-  const result = await prisma.$transaction(async (tx) => {
-    // lock the payment so two simultaneous cancels can't both go through
+  const erased = await prisma.$transaction(async (tx) => {
+    // lock the payment so two deletes (or a delete and a refund) can't both go through
     const locked = await tx.$queryRaw<{ id: string }[]>`
       SELECT "id" FROM "Payment"
       WHERE "id" = ${paymentId} AND "schoolId" = ${schoolId}
@@ -310,12 +311,12 @@ const cancelPayment = async (auth: Auth, paymentId: string, data: CancelPaymentP
 
     const payment = await tx.payment.findUniqueOrThrow({
       where: { id: paymentId },
-      include: { allocations: true },
+      include: {
+        allocations: true,
+        student: { select: { id: true, admissionNo: true, nameEn: true, nameBn: true } },
+      },
     });
-    if (payment.status === "CANCELLED") {
-      throw new AppError("This payment is already cancelled", httpStatus.CONFLICT);
-    }
-
+    const active = payment.status !== "CANCELLED";
     const allocationIds = payment.allocations.map((a) => a.id);
     const feeIds = payment.allocations.map((a) => a.studentFeeId);
 
@@ -323,115 +324,87 @@ const cancelPayment = async (auth: Auth, paymentId: string, data: CancelPaymentP
     const fees = await tx.studentFee.findMany({ where: { id: { in: feeIds } } });
     const feeMap = new Map(fees.map((f) => [f.id, f]));
 
-    // reverse exactly what was written when the payment was taken
-    const originals = await tx.fundTransaction.findMany({
-      where: { schoolId, source: "PAYMENT", paymentAllocationId: { in: allocationIds } },
+    // what the payment wrote to the ledger (and, if it was cancelled, the reversal)
+    const ledger = await tx.fundTransaction.findMany({
+      where: { schoolId, source: { in: ["PAYMENT", "PAYMENT_REVERSAL"] }, paymentAllocationId: { in: allocationIds } },
     });
-    if (originals.length !== allocationIds.length) {
-      throw new AppError(
-        "Ledger entries for this payment are missing, so it cannot be reversed",
-        httpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
 
-    const reversalByFund = new Map<string, Prisma.Decimal>();
-    for (const o of originals) {
-      reversalByFund.set(o.fundId, (reversalByFund.get(o.fundId) ?? ZERO).plus(o.amount));
-    }
-
-    // lock funds in id order, then make sure each can give the money back
-    const fundIds = [...reversalByFund.keys()].sort();
-    for (const fundId of fundIds) await lockFund(tx, schoolId, fundId);
-
-    const funds = await tx.fund.findMany({
-      where: { id: { in: fundIds } },
-      select: { id: true, nameEn: true, nameBn: true },
-    });
-    const fundName = new Map(funds.map((f) => [f.id, displayName(f)]));
-
-    for (const fundId of fundIds) {
-      const balance = await getFundBalance(tx, schoolId, fundId);
-      const needed = reversalByFund.get(fundId)!;
-      if (balance.lt(needed)) {
-        throw new AppError(
-          `Cannot cancel: fund "${fundName.get(fundId)}" holds ${balance.toFixed(2)} but ${needed.toFixed(2)} must be returned. Deposit the difference first`,
-          httpStatus.BAD_REQUEST,
-        );
+    if (active) {
+      const takenByFund = new Map<string, Prisma.Decimal>();
+      for (const l of ledger.filter((e) => e.source === "PAYMENT")) {
+        takenByFund.set(l.fundId, (takenByFund.get(l.fundId) ?? ZERO).plus(l.amount));
       }
-    }
 
-    await tx.payment.update({
-      where: { id: paymentId },
-      data: {
-        status: "CANCELLED",
-        cancelledAt: new Date(),
-        cancelledBy: userId,
-        cancelReason: data.reason,
-      },
-    });
+      // lock funds in id order, then make sure each still holds the money
+      const fundIds = [...takenByFund.keys()].sort();
+      for (const fundId of fundIds) await lockFund(tx, schoolId, fundId);
+      const funds = await tx.fund.findMany({ where: { id: { in: fundIds } }, select: { id: true, nameEn: true, nameBn: true } });
+      const fundName = new Map(funds.map((f) => [f.id, displayName(f)]));
+      for (const fundId of fundIds) {
+        const balance = await getFundBalance(tx, schoolId, fundId);
+        const needed = takenByFund.get(fundId)!;
+        if (balance.lt(needed)) {
+          throw new AppError(
+            `Cannot delete: fund "${fundName.get(fundId)}" holds ${balance.toFixed(2)} but ${needed.toFixed(2)} must be taken out. Deposit the difference first`,
+            httpStatus.BAD_REQUEST,
+          );
+        }
+      }
 
-    // a cancelled online receipt: its money is with the school's SSLCommerz account, to give
-    // back. A refund already given stays given: only this receipt's amount is to refund, and
-    // the earlier refund is kept in the note.
-    if (payment.method === "ONLINE") {
-      const online = await tx.onlinePayment.findFirst({ where: { paymentId, schoolId } });
-      if (online) {
-        const day = (d: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dhaka", dateStyle: "medium" }).format(d);
-        await tx.onlinePayment.update({
-          where: { id: online.id },
-          data: online.refundedAt
-            ? {
-                refundAmount: payment.amount,
-                refundedAt: null,
-                refundNote: `${online.refundAmount.toFixed(2)} already refunded on ${day(online.refundedAt)}${online.refundNote ? `: ${online.refundNote}` : ""}`.slice(0, 300),
-              }
-            : { refundAmount: online.refundAmount.plus(payment.amount) },
+      // the fees go back to what they were before this payment
+      for (const a of payment.allocations) {
+        const fee = feeMap.get(a.studentFeeId)!;
+        const newPaid = fee.paidAmount.minus(a.amount);
+        if (newPaid.lt(0)) throw new AppError("Fee amounts are inconsistent", httpStatus.INTERNAL_SERVER_ERROR);
+        await tx.studentFee.update({
+          where: { id: fee.id },
+          data: { paidAmount: newPaid, status: computeFeeStatus(Number(fee.amount), Number(fee.discountAmount), Number(newPaid)) },
         });
       }
-    }
 
-    for (const a of payment.allocations) {
-      const fee = feeMap.get(a.studentFeeId)!;
-      const newPaid = fee.paidAmount.minus(a.amount);
-      if (newPaid.lt(0)) {
-        throw new AppError("Fee amounts are inconsistent", httpStatus.INTERNAL_SERVER_ERROR);
+      // an online receipt: the money is with SSLCommerz, to give back. A refund already given
+      // stays given: only this receipt's amount is to refund, the earlier one kept in the note.
+      if (payment.method === "ONLINE") {
+        const online = await tx.onlinePayment.findFirst({ where: { paymentId, schoolId } });
+        if (online) {
+          const day = (d: Date) => new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dhaka", dateStyle: "medium" }).format(d);
+          await tx.onlinePayment.update({
+            where: { id: online.id },
+            data: online.refundedAt
+              ? {
+                  refundAmount: payment.amount,
+                  refundedAt: null,
+                  refundNote: `${online.refundAmount.toFixed(2)} already refunded on ${day(online.refundedAt)}${online.refundNote ? `: ${online.refundNote}` : ""}`.slice(0, 300),
+                }
+              : { refundAmount: online.refundAmount.plus(payment.amount) },
+          });
+        }
       }
-      await tx.studentFee.update({
-        where: { id: fee.id },
-        data: {
-          paidAmount: newPaid,
-          status: computeFeeStatus(Number(fee.amount), Number(fee.discountAmount), Number(newPaid)),
-        },
-      });
     }
 
-    await tx.fundTransaction.createMany({
-      data: originals.map((o) => ({
-        schoolId,
-        fundId: o.fundId,
-        type: "EXPENSE" as const,
-        source: "PAYMENT_REVERSAL" as const,
-        amount: o.amount,
-        description: `Cancelled payment: ${data.reason}`,
-        paymentAllocationId: o.paymentAllocationId,
-        createdBy: userId,
-      })),
-    });
+    await tx.fundTransaction.deleteMany({ where: { id: { in: ledger.map((l) => l.id) } } });
+    // its allocations go by cascade; an online payment record is kept (paymentId set to null)
+    await tx.payment.delete({ where: { id: paymentId } });
 
     await writeAuditLog(tx, auth, {
-      action: "payment.cancel",
+      action: "payment.delete",
       entityType: "Payment",
       entityId: paymentId,
-      summary: `Receipt ${payment.receiptNo} · ${payment.amount.toFixed(2)}`,
+      summary: `Receipt ${payment.receiptNo} · ${displayName(payment.student)} (${payment.student.admissionNo}) · ${payment.amount.toFixed(2)}`,
       reason: data.reason,
-      snapshot: { payment, ledger: originals },
+      snapshot: { payment, fees, ledger },
     });
 
-    return getPaymentDetail(tx, schoolId, paymentId);
+    return { active, studentId: payment.student.id, amount: payment.amount.toFixed(2), receiptNo: payment.receiptNo };
   }, TX_OPTIONS);
 
-  notifyInBackground("payment cancelled", () => NotificationService.notifyPayment(schoolId, paymentId, "PAYMENT_CANCELLED"));
-  return result;
+  // the family is told the receipt no longer counts (a payment already cancelled was told then)
+  if (erased.active) {
+    notifyInBackground("payment deleted", () =>
+      NotificationService.notifyPaymentErased(schoolId, { paymentId, studentId: erased.studentId, amount: erased.amount, receiptNo: erased.receiptNo }),
+    );
+  }
+  return { id: paymentId };
 };
 
 // ------------------------------------------------------------------- reading
@@ -531,7 +504,7 @@ export const PaymentParts = { feeLabel, amountsOf, nextReceiptNo, getPaymentDeta
 export const PaymentService = {
   getPayableFees,
   recordPayment,
-  cancelPayment,
+  deletePayment,
   getPaymentById,
   getReceipt,
   listPayments,

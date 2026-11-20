@@ -8,7 +8,9 @@ const sectionName = z
   .string({ error: "Section name is required!" })
   .trim()
   .min(1, "Section name is required!")
-  .max(50, "Section name cannot exceed 50 characters");
+  .max(50, "Section name cannot exceed 50 characters")
+  // "a" -> "A", "blue" -> "Blue": a section name always starts with a capital letter
+  .transform((name) => name.charAt(0).toUpperCase() + name.slice(1));
 
 const optionalId = z.string().trim().min(1).optional();
 

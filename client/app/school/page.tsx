@@ -9,6 +9,7 @@ import { HeroSection } from "@/components/school/site/HeroSection";
 import { NoticesSection } from "@/components/school/site/NoticesSection";
 import { SchoolSiteHeader } from "@/components/school/site/SchoolSiteHeader";
 import { SiteFooter } from "@/components/school/site/SiteFooter";
+import { TeachersSection } from "@/components/school/site/TeachersSection";
 import { pickName } from "@/lib/i18n/names";
 import { siteChapters } from "@/lib/site";
 import { getCurrentSchoolSite } from "@/lib/site.server";
@@ -26,7 +27,7 @@ type ContactRow = { icon: LucideIcon; label: string; value: string; action?: { h
 /**
  * A school's public homepage (no login), its only page, laid out like a printed prospectus: the
  * header, the photos with the school's name over them and the newest notice under them, then a
- * part per menu item: the about section and the notice cards in layouts of their own, and admission,
+ * part per menu item: the about section, the teachers row and the notice cards in layouts of their own, and admission,
  * gallery and contact as numbered chapters (those the school left empty are skipped and the rest
  * keep counting), then the footer. The menu scrolls to them.
  */
@@ -37,9 +38,9 @@ export default async function SchoolHomePage() {
   // the name in the language being read (the other one only when this one is missing)
   const name = pickName(school, locale);
 
-  // each chapter's number, counting only those shown (about and notices have layouts of their own, unnumbered)
+  // each chapter's number, counting only those shown (about, teachers and notices have layouts of their own, unnumbered)
   const chapters = siteChapters(school);
-  const numbered = chapters.filter((id) => id !== "about" && id !== "notices");
+  const numbered = chapters.filter((id) => id !== "about" && id !== "teachers" && id !== "notices");
   const numberOf = (id: (typeof numbered)[number]) => numbered.indexOf(id) + 1;
 
   const contacts = [
@@ -82,6 +83,8 @@ export default async function SchoolHomePage() {
         <HeroSection school={school} name={name} />
 
         {chapters.includes("about") && <AboutSection about={school.about} />}
+
+        {chapters.includes("teachers") && <TeachersSection teachers={school.teachers} />}
 
         {chapters.includes("admission") && <AdmissionSection admission={school.admission} number={numberOf("admission")} />}
 

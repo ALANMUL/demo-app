@@ -23,7 +23,15 @@ import { useLocalizedName } from "@/lib/i18n/names";
 import { ExportMenu } from "@/components/data/ExportMenu";
 import { useSchoolMe } from "@/lib/auth/hooks";
 import { datedFileName, type ListExport } from "@/lib/export/listExport";
-import { listAllTeachers, TEACHER_STATUSES, useTeachers, type Teacher, type TeacherStatus } from "@/lib/school/teachers";
+import {
+  listAllTeachers,
+  TEACHER_SORTS,
+  TEACHER_STATUSES,
+  useTeachers,
+  type Teacher,
+  type TeacherSort,
+  type TeacherStatus,
+} from "@/lib/school/teachers";
 import { cn } from "@/lib/utils";
 import { TeacherCredentialsDialog, type TeacherCredentials } from "./TeacherCredentialsDialog";
 import { TeacherFormDialog } from "./TeacherFormDialog";
@@ -43,6 +51,8 @@ export function TeachersList() {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebouncedValue(searchInput.trim());
   const [status, setStatus] = useState<TeacherStatus | undefined>();
+  // the teachers added first come first, unless another order is picked
+  const [sort, setSort] = useState<TeacherSort>("oldest");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(PAGE_SIZES[0]);
 
@@ -51,6 +61,7 @@ export function TeachersList() {
     limit,
     search: search || undefined,
     status,
+    sort,
   });
 
   const [adding, setAdding] = useState(false);
@@ -68,7 +79,7 @@ export function TeachersList() {
           <p className="page-subtitle">{t("description")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <TeachersExport query={{ search: search || undefined, status }} filtered={filtering} />
+          <TeachersExport query={{ search: search || undefined, status, sort }} filtered={filtering} />
           {can("teacher:create") && (
             <Button onClick={() => setAdding(true)}>
               <Plus /> {t("add")}
@@ -93,6 +104,24 @@ export function TeachersList() {
             {TEACHER_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
                 {tStatus(s)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={sort}
+          onValueChange={(v) => {
+            setSort(v as TeacherSort);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="w-44" label={t("sort.label")}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TEACHER_SORTS.map((s) => (
+              <SelectItem key={s} value={s}>
+                {t(`sort.${s}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -252,8 +281,8 @@ function TeacherRow({ teacher, canUpdate, onEdit }: { teacher: Teacher; canUpdat
   );
 }
 
-/** Saves (Excel) or prints (PDF) the teachers under the current filters. */
-function TeachersExport({ query, filtered }: { query: { search?: string; status?: TeacherStatus }; filtered: boolean }) {
+/** Saves (Excel) or prints (PDF) the teachers under the current filters, in the list's order. */
+function TeachersExport({ query, filtered }: { query: { search?: string; status?: TeacherStatus; sort?: TeacherSort }; filtered: boolean }) {
   const t = useTranslations("school.teachers");
   const tStatus = useTranslations("teacherStatuses");
   const tGender = useTranslations("genders");

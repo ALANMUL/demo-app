@@ -299,18 +299,25 @@ const getPublicSite = async (subdomain: string) => {
         },
       },
       galleryPhotos: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
+      // the teachers the school picked for its homepage, in its order (only those still working)
+      teacherProfiles: {
+        where: { siteOrder: { not: null }, status: { in: ["ACTIVE", "ON_LEAVE"] } },
+        orderBy: { siteOrder: "asc" },
+        select: { id: true, nameEn: true, nameBn: true, designation: true, photo: true },
+      },
     },
   });
   if (!school || school.status !== "ACTIVE") {
     throw new AppError("School not found!", httpStatus.NOT_FOUND);
   }
 
-  const { status: _status, email, slides, admissionInfo, about, galleryPhotos, ...site } = school;
-  const [withUrls, signedSlides, signedAbout, signedGallery] = await Promise.all([
+  const { status: _status, email, slides, admissionInfo, about, galleryPhotos, teacherProfiles, ...site } = school;
+  const [withUrls, signedSlides, signedAbout, signedGallery, signedTeachers] = await Promise.all([
     withFileUrls({ ...site, publicEmail: site.publicEmail ?? email }, ["logo", "favicon"]),
     Promise.all(slides.map((slide) => withFileUrls(slide, ["image"]))),
     about ? withFileUrls(about, ["image", "principalPhoto"]) : null,
     Promise.all(galleryPhotos.map((photo) => withFileUrls(photo, ["image"]))),
+    Promise.all(teacherProfiles.map((teacher) => withFileUrls(teacher, ["photo"]))),
   ]);
   // a picture that can't be linked (storage off) is left out
   return {
@@ -334,6 +341,8 @@ const getPublicSite = async (subdomain: string) => {
       instagramUrl: "",
     },
     gallery: signedGallery.filter((photo) => photo.image),
+    // a teacher without a photo still shows (with a drawn silhouette)
+    teachers: signedTeachers,
   };
 };
 

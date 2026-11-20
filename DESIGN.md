@@ -170,7 +170,7 @@ The system is flat. Surfaces are white paper on a cool grey desk, separated by h
 
 Density follows the work. Tables and forms are compact enough to show a full class on one screen, but every row has room to breathe and every control reads as clickable for staff who are not technical. Bangla and English share every screen, so layouts allow for longer Bangla words and Bangla digits.
 
-Each school's public homepage is the same register turned outward: the school's prospectus. It opens on the school's own photographs at the full size of the screen, then its about section with the principal's message and its newest notices as cards, then numbered chapters on ruled paper (admission, gallery, contact). Real photographs supply the warmth; the rest is order, serif type and hairlines, in the school's own accent.
+Each school's public homepage is the same register turned outward: the school's prospectus. It opens on the school's own photographs at the full size of the screen, then its about section with the principal's message, its teachers, and its newest notices as cards, then numbered chapters on ruled paper (admission, gallery, contact). Real photographs supply the warmth; the rest is order, serif type and hairlines, in the school's own accent.
 
 **Key Characteristics:**
 - White menu, white paper, cool grey desk; the current page is an index tab in the school's accent.
@@ -189,7 +189,7 @@ A school picks one of nine accents: Navy (the default), Royal blue, Indigo, Viol
 - **Accent** (`--brand`; Signal Blue by default): the short bar above each page title, the open tab's underline, links, small highlights.
 - **Accent Wash** (`--brand-soft`; Signal Blue Wash by default): soft tinted fills: the principal's card, the facts row, the hero while photos load.
 - **Accent Ink** (`--navy`, `--primary`; Register Navy Ink by default): the accent's deep shade, for primary buttons, headings and figures in the accent, and white text on it. In dark mode it turns into a light tint.
-- **Accent Band** (`--brand-band` and its text colour): the accent as a fill, the same in both modes: the dashboard menu's current page, the homepage menu's current item, the Students page's status band. Golden and Cream bands carry dark navy text; the rest white.
+- **Accent Band** (`--brand-band` and its text colour): the accent as a fill, the same in both modes: the dashboard menu's current page, the homepage menu's current item. Golden and Cream bands carry dark navy text; the rest white.
 - **Accent Ink, fixed** (`--brand-ink`): the accent's deep shade, the same in both modes, for parts that stay white or dark whatever the theme: the dashboard's welcome banner and the phone's bottom bar, the homepage header's text and the footer's round marks.
 
 Every accent is checked for WCAG AA: its text on white, white on its ink, and its band's text on the band.
@@ -201,7 +201,7 @@ Every accent is checked for WCAG AA: its text on white, white on its ink, and it
 
 ### Merit Gold
 - **Merit Gold** (oklch(0.82 0.14 82)): marks on the platform admin's navy menu, and the homepage's gold lines (the menu pill, the About and Notices headings).
-- **Merit Gold Deep** (oklch(0.7 0.14 78)): the same gold on white: the line under the homepage menu's current item, the short line above the About heading, the phone menu's current-item bar, the class index's current-class bar.
+- **Merit Gold Deep** (oklch(0.7 0.14 78)): the same gold on white: the line under the homepage menu's current item, the short line above the About heading, the phone menu's current-item bar, the top bar of the picked status card on the Students page.
 - Gold never follows the accent: it is the one fixed colour that says "you are here".
 
 ### Neutral
@@ -257,14 +257,14 @@ A fixed white menu (256px, folding to 80px of icons) on the left; a white top ba
 
 Spacing follows a 4px grid; the common steps are 8px between related controls, 12px between toolbar items, 20px of padding inside cards and 24px between page sections. Tables keep their first and last columns aligned with the card's 20px padding.
 
-On phones the menu becomes a drawer opened from the top bar, a bottom bar carries the main pages, and sideways lists (the class index, status tabs) scroll instead of wrapping.
+On phones the menu becomes a drawer opened from the top bar, a bottom bar carries the main pages, and sideways lists (the Students page's status cards, status tabs) scroll instead of wrapping.
 
 ### The public homepage
 - **Header** (two parts):
   - a thin white contact bar, 36px on phones and 40px from 640px, that scrolls away with the page. Phone, email and address sit on the left with hairline dividers; the email and address drop off on narrow screens, and only the address shortens with "…". The login link ("Open the app" once logged in) and a language dropdown sit on the right.
   - a sticky white bar under it, 64px on phones and 88px from 640px. The school's round logo and its Site Name sit on the left; the menu (Home, then the chapters) sits on the right from 1024px; below 1024px a menu button opens a panel holding the links and a Log in button.
 - **Hero:** the school's photographs at the full size of the screen under the header (`100svh` minus the header's 100px or 128px). Its height and the chapters' scroll margins follow the header's height.
-- **Order:** the latest-notice strip, then About and Notices (unnumbered, each its own layout), then the numbered chapters (admission, gallery, contact), then the footer.
+- **Order:** the latest-notice strip, then About, Teachers and Notices (unnumbered, each its own layout), then the numbered chapters (admission, gallery, contact), then the footer.
 - **Column:** everything sits in a centred 1152px column with a 16px gutter.
 - **Chapters:** each is a 12-column grid from 1024px: the number and title in a 3-column margin that stays in view while the chapter scrolls, the content in the other 9, 48px apart. On phones the number sits beside the title above the content. Chapters are 56px, 80px and 96px tall in padding (phone, tablet, desktop), divided by hairlines, and alternate paper and the grey desk.
 
@@ -341,11 +341,11 @@ Every page opens with its title in Display weight, a 28px by 3px accent bar abov
 ### Dashboard Welcome
 A banner in the school's accent, in its fixed deep shade (Accent Ink, fixed): the date and year chip, the greeting with the school's full name (wrapping, never cut), and the quick actions (Collect fee, Take attendance, Add student, New notice) as an even two-column grid of pills, 12px apart, beside it. On phones the actions sit under the greeting, and a long label wraps inside its pill.
 
-### Class Index (signature)
-The Students register's left rail: All classes, then School and College headings, the current class marked with a Merit Gold Deep bar and its sections as small buttons beneath. It becomes a sideways-scrolling row on phones.
+### Status Cards (Students)
+The Students register opens with a card per status: All, Active, Suspended, Inactive, Graduated. Each is paper with a hairline edge and 8px corners: a 32px icon box and the status name, the count in large tabular figures, and a 4px bar of its share of all the students with the percent. Icon and bar take the status pill's colours (emerald, red, grey, Accent Ink; All in the accent). The picked card carries a 3px Merit Gold Deep bar along its top and a darker edge; hover only darkens the edge. Five across from 1024px, a sideways-scrolling row below. Under them one card holds the toolbar on a Muted Fill band (search; Class, grouped School and College, and its Section; Year, Group, New or old, Gender, Religion; Clear filters; the order, "Sort", at the right end: the usual order, Newest, Oldest) and the table.
 
 ### Homepage Header
-- **Contact bar:** Accent Ink text, small icons and hairline dividers (see Layout). The login link carries a small sign-in icon. The language dropdown is a globe, the language's name and a small arrow.
+- **Contact bar:** Accent Ink text, small icons and hairline dividers (see Layout). The address shows only its last two parts (e.g. "Jatrabari, Bangladesh"), the whole of it on hover. The login link carries a small sign-in icon; once logged in it reads "Dashboard" with a dashboard icon. The language dropdown is a globe, the language's name and a small arrow.
 - **Main bar:** the logo is a round badge with a soft shadow. The Site Name sits beside it over two lines.
 - **Menu:** links in Accent Ink. The current one is a pill filled with the Accent Band, with a short Merit Gold Deep line under it; hover tints the pill area with the Accent Ink at 8%.
 - **Phone menu:** the current link carries a gold bar on its left.
@@ -365,6 +365,12 @@ The school's introduction and its principal's message as one compact row of up t
 - **Principal's card:** on the Accent Wash, with a gold quote mark and the heading "Message from the {title}" in Accent Ink. The message, cut to five lines, sits beside a round photo with a white ring, then "— Name" in Accent Ink with the title beside it in Quiet Ink. The title defaults to "Principal" / "অধ্যক্ষ"; the card shows only when the message isn't empty.
 - **Facts:** a ruled row on the Accent Wash, four across on desktop and two on phones, separated by accent hairlines. Each holds a large bold figure in Accent Ink over its label.
 - **Missing parts:** any part the school hasn't filled in drops out, and the columns close up.
+
+### Homepage Teachers
+Right after About, unnumbered, on paper with a hairline above. The teachers the school picked in Settings ("Teachers on the homepage"), in its order; with none picked there is no section and no menu item.
+- **Heading row:** a short Merit Gold Deep line and "Our teachers" in Accent Ink; across from it two 36px round outline arrows in Accent Ink, faded at the ends, shown only when the cards don't all fit.
+- **Cards:** five across from 1024px, four from 768px, three from 640px, two on phones, 16px apart, sliding a page at a time (swipe on phones, snap to each card). Each is the Accent Wash with an 8px corner: a round photo (96px, 112px from 640px) with a white ring and soft shadow (a drawn silhouette on an accent tint without one), the name bold in Accent Ink, the designation in Quiet Ink, both two lines at most.
+- **Dots:** one per page under the row; the current one a 24px Merit Gold pill, the rest 8px grey dots.
 
 ### Homepage Chapters
 - **Margin:** the Chapter Numeral, a 48px hairline and the chapter title (bold, 1.5rem). No introduction line: the title says it.

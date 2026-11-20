@@ -1,4 +1,4 @@
-import { LogIn, Mail, MapPin, Phone, School } from "lucide-react";
+import { LayoutDashboard, LogIn, Mail, MapPin, Phone, School } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -24,7 +24,7 @@ export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
   const [t, locale, jar] = await Promise.all([getTranslations("schoolHome"), getLocale(), cookies()]);
   const name = pickName(school, locale);
   const loggedIn = jar.has(sessionFlagCookie.SCHOOL);
-  const address = school.address?.split("\n")[0];
+  const address = school.address ? shortAddress(school.address) : null;
 
   // the logo goes home; the menu starts with Home, then the chapters
   const links: SiteLink[] = [
@@ -54,9 +54,12 @@ export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
               </Contact>
             )}
             {address && (
-              // a long address is the one contact that shortens
+              // only its last parts (the area and city), the whole address on hover; it still
+              // shortens if even that doesn't fit
               <Contact icon={<MapPin className="size-3.5" />} className="hidden min-w-0 shrink lg:flex">
-                <span className="truncate">{address}</span>
+                <span className="truncate" title={school.address!.replace(/\s*\n\s*/g, ", ")}>
+                  {address}
+                </span>
               </Contact>
             )}
           </ul>
@@ -67,8 +70,8 @@ export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
               href={loggedIn ? authRoutes.SCHOOL.home : login}
               className="inline-flex items-center gap-1.5 font-medium hover:underline"
             >
-              <LogIn className="size-3.5" />
-              {loggedIn ? t("openApp") : t("logIn")}
+              {loggedIn ? <LayoutDashboard className="size-3.5" /> : <LogIn className="size-3.5" />}
+              {loggedIn ? t("dashboard") : t("logIn")}
             </Link>
             <SiteLanguageMenu />
           </div>
@@ -97,7 +100,7 @@ export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
           </Link>
           <SiteNav
             links={links}
-            account={{ href: loggedIn ? authRoutes.SCHOOL.home : login, label: loggedIn ? t("openApp") : t("logIn") }}
+            account={{ href: loggedIn ? authRoutes.SCHOOL.home : login, label: loggedIn ? t("dashboard") : t("logIn") }}
             labels={{ menu: t("nav.menu"), close: t("nav.closeMenu"), nav: t("nav.label") }}
           />
         </div>
@@ -105,6 +108,16 @@ export async function SchoolSiteHeader({ school }: { school: SchoolSite }) {
     </>
   );
 }
+
+// "House 10, Road 4, Kajla, Jatrabari, Dhaka" -> "Jatrabari, Dhaka": the last two parts, split at
+// commas and line breaks (the whole address is in the contact section and the footer)
+const shortAddress = (address: string) =>
+  address
+    .split(/[,\n]/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .slice(-2)
+    .join(", ");
 
 // one contact in the thin bar: an icon and its text, a short line before every one but the first
 function Contact({ icon, className, children }: { icon: ReactNode; className?: string; children: ReactNode }) {

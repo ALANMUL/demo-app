@@ -137,6 +137,7 @@ export function FeeTypesTab({ canCreate, canUpdate }: { canCreate: boolean; canU
             title: tDelete("title", { name: name(deleting) }),
             description: tDelete("description"),
             checkPath: `/fee-type/${deleting.id}/delete-check`,
+            money: true,
             confirmText: name(deleting),
             done: tDelete("done", { name: name(deleting) }),
             run: (reason) => remove.mutateAsync({ feeTypeId: deleting.id, reason }),

@@ -34,10 +34,6 @@ const recordPayment = z
     { message: "Each fee can appear only once per payment", path: ["allocations"] },
   );
 
-const cancelPayment = z.object({
-  reason: z.string({ error: "Cancel reason is required!" }).trim().min(3).max(300),
-});
-
 const paymentIdParams = z.object({ paymentId: idSchema("Payment id") });
 const studentIdParams = z.object({ studentId: idSchema("Student id") });
 
@@ -64,7 +60,6 @@ const listPaymentsQuery = z
 
 export const PaymentValidation = {
   recordPayment,
-  cancelPayment,
   paymentIdParams,
   studentIdParams,
   payableQuery,

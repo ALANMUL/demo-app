@@ -61,7 +61,6 @@ export type CollectionReport = {
   from: string;
   to: string;
   collected: { total: string; count: number };
-  cancelled: { total: string; count: number };
   expenses: { total: string; byCategory: { category: string | null; count: number; amount: string }[] };
   net: string;
   byDay: { day: string; amount: string }[];

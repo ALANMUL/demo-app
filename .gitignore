@@ -1,4 +1,4 @@
-# docker compose settings for this machine (.env.example is the template)
+# docker compose settings for this machine
 .env
 .mcp.json
 .playwright-mcp/

@@ -9,8 +9,8 @@ import type { DeleteExamQuery } from "./exam.validation";
 
 /*
  * Deleting an exam, or taking one class out of it, at any stage (the super admin only, see
- * the routes). Once marks or results exist the delete also needs a reason and the exam's name
- * typed. Marks, results, remarks and the seat plan go with it; the marks are kept in the
+ * the routes), after a warning (a stronger one once marks or results exist: see `level`).
+ * Marks, results, remarks and the seat plan go with it; the marks are kept in the
  * activity log. A final result built from the exam loses it: it goes back to draft and its
  * published final results are deleted, to be published again from the remaining exams.
  */
@@ -86,8 +86,6 @@ const check = async (db: Db, exam: Exam, scope: Scope): Promise<DeleteCheck & { 
 
 const deleteCheckFor = async (schoolId: string, scope: Scope) => check(prisma, await findExam(prisma, schoolId, scope), scope);
 
-/* Exam names compared loosely: extra spaces and letter case don't matter. */
-const loose = (s: string | null | undefined) => (s ?? "").trim().replace(/\s+/g, " ").toLowerCase();
 
 const remove = async (auth: Auth, scope: Scope, query: DeleteExamQuery) => {
   const schoolId = auth.schoolId!;
@@ -95,16 +93,6 @@ const remove = async (auth: Auth, scope: Scope, query: DeleteExamQuery) => {
     await tx.$queryRaw`SELECT "id" FROM "Exam" WHERE "id" = ${scope.examId} AND "schoolId" = ${schoolId} FOR UPDATE`;
     const exam = await findExam(tx, schoolId, scope);
     const result = await check(tx, exam, scope);
-
-    if (result.level === "SUPER_ADMIN") {
-      if (!query.reason || query.reason.length < 3) {
-        throw new AppError("Write why the exam is deleted (at least 3 characters)", httpStatus.BAD_REQUEST);
-      }
-      const typed = loose(query.confirmName);
-      if (!typed || (typed !== loose(exam.nameEn) && typed !== loose(exam.nameBn))) {
-        throw new AppError("Type the exam's name exactly to confirm", httpStatus.BAD_REQUEST);
-      }
-    }
 
     const examClassIds = exam.classes.map((c) => c.id);
     const marks = await tx.examMark.findMany({

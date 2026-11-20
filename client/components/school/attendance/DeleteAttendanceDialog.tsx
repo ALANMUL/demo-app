@@ -26,7 +26,7 @@ export function DeleteAttendanceButton({ target }: { target: { kind: "students";
     setError(null);
     setOpen(false);
   };
-  const confirm = ({ reason }: { reason: string }) => {
+  const confirm = () => {
     const handlers = {
       onSuccess: ({ removed }: { removed: number }) => {
         toast.success(t("done", { count: removed }));
@@ -34,8 +34,8 @@ export function DeleteAttendanceButton({ target }: { target: { kind: "students";
       },
       onError: (e: unknown) => setError(describeError(e)),
     };
-    if (target.kind === "students") students.mutate({ sectionId: target.sectionId, date: target.date, reason: reason || undefined }, handlers);
-    else teachers.mutate({ date: target.date, reason: reason || undefined }, handlers);
+    if (target.kind === "students") students.mutate({ sectionId: target.sectionId, date: target.date }, handlers);
+    else teachers.mutate({ date: target.date }, handlers);
   };
 
   return (
@@ -47,8 +47,7 @@ export function DeleteAttendanceButton({ target }: { target: { kind: "students";
         open={open}
         onClose={close}
         title={t(target.kind === "students" ? "titleStudents" : "titleTeachers", { date: target.date })}
-        description={t("description")}
-        reason="optional"
+        warning={t("description")}
         pending={pending}
         error={error}
         onConfirm={confirm}

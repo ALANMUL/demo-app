@@ -28,7 +28,14 @@ import { Input } from "@/components/ui/input";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import type { SchoolClass } from "@/lib/school/classes";
 import { useCreateSections } from "@/lib/school/sections";
-import { addSectionsSchema, splitSectionNames, type AddSectionsInput, type AddSectionsValues } from "@/zod/section";
+import {
+  addSectionsSchema,
+  capitalizeSectionNames,
+  capitalizingChange,
+  splitSectionNames,
+  type AddSectionsInput,
+  type AddSectionsValues,
+} from "@/zod/section";
 
 type Props = {
   open: boolean;
@@ -149,7 +156,7 @@ function AddSectionsForm({
             <FormItem>
               <FormLabel required>{t("names")}</FormLabel>
               <FormControl>
-                <Input placeholder="A, B, C" {...field} />
+                <Input placeholder="A, B, C" {...field} onChange={capitalizingChange(capitalizeSectionNames, field.onChange)} />
               </FormControl>
               <FormDescription>{t("namesHint")}</FormDescription>
               <FormMessage />

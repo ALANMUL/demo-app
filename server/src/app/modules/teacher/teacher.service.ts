@@ -195,7 +195,9 @@ const getTeachers = async (schoolId: string, query: ListTeachersQuery) => {
       : {}),
   };
 
-  const orderBy = await teacherOrder(schoolId);
+  // by when each was added (the id breaks ties), or by name in the school's language
+  const orderBy: Prisma.TeacherProfileOrderByWithRelationInput[] =
+    query.sort === "name" ? await teacherOrder(schoolId) : [{ createdAt: query.sort === "newest" ? "desc" : "asc" }, { id: "asc" }];
   const [items, total] = await Promise.all([
     prisma.teacherProfile.findMany({
       where,

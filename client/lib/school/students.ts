@@ -201,11 +201,15 @@ export const useStudents = (query: StudentListQuery) =>
 
 export type StudentFilterQuery = Omit<StudentListQuery, "page" | "limit" | "sortBy" | "sortOrder" | "withStatusCounts">;
 
-/** Every student under these filters, a page of the most the server allows at a time (for an export). */
-export async function listAllStudents(query: StudentFilterQuery) {
+export type StudentSort = Pick<StudentListQuery, "sortBy" | "sortOrder">;
+
+/**
+ * Every student under these filters, a page of the most the server allows at a time (for an
+ * export), in the given order; without one a class runs in roll order, like its list.
+ */
+export async function listAllStudents(query: StudentFilterQuery, sort?: StudentSort) {
   const limit = 100;
-  // a class's export runs in roll order, like its list
-  const sorted = { ...query, ...(query.classId ? { sortBy: "roll" as const } : {}) };
+  const sorted = { ...query, ...(sort?.sortBy ? sort : query.classId ? { sortBy: "roll" as const } : {}) };
   const first = await studentsApi.list({ ...sorted, page: 1, limit });
   const items = [...first.items];
   for (let page = 2; page <= first.meta.totalPages; page++) items.push(...(await studentsApi.list({ ...sorted, page, limit })).items);

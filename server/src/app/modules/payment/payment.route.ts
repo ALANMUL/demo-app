@@ -2,6 +2,7 @@ import express from "express";
 import validateRequest from "../../errorHandler/validateRequest";
 import authenticate from "../../middlewares/auth";
 import authorize, { superAdminOnly } from "../../middlewares/authorize";
+import { reasonQuery } from "../../shared/deleteSchemas";
 import { PaymentController } from "./payment.controller";
 import { PaymentValidation } from "./payment.validation";
 
@@ -59,16 +60,14 @@ router.get(
   PaymentController.getPaymentById,
 );
 
-router.post(
-  "/:paymentId/cancel",
-  // a money reversal: the school super admin only
+// erases a payment for good (the fees go back to unpaid, the money leaves the funds), with a
+// reason (?reason=) and a copy in the activity log: the school super admin only
+router.delete(
+  "/:paymentId",
   authorize("payment:cancel"),
   superAdminOnly,
-  validateRequest({
-    params: PaymentValidation.paymentIdParams,
-    body: PaymentValidation.cancelPayment,
-  }),
-  PaymentController.cancelPayment,
+  validateRequest({ params: PaymentValidation.paymentIdParams, query: reasonQuery }),
+  PaymentController.deletePayment,
 );
 
 export const paymentRoutes = router;

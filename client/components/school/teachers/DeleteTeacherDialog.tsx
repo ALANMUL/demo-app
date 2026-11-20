@@ -7,7 +7,6 @@ import { ConfirmActionDialog } from "@/components/data/ConfirmActionDialog";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { useDeleteCheck } from "@/lib/school/deletes";
-import { localPhone } from "@/lib/school/students";
 import { useDeleteTeacher, type TeacherDetail } from "@/lib/school/teachers";
 
 /** Deletes a teacher added by mistake; one with history is refused (they leave instead). */
@@ -38,16 +37,13 @@ export function DeleteTeacherDialog({
         onClose();
       }}
       title={t("title", { name: teacherName })}
-      description={t("description")}
+      warning={t("description")}
       check={check}
-      reason="optional"
-      // their login number is easier to type than a name in either script
-      confirmText={teacher.membership.user.phone ? localPhone(teacher.membership.user.phone) : teacherName}
       pending={remove.isPending}
       error={error}
-      onConfirm={({ reason }) =>
+      onConfirm={() =>
         remove.mutate(
-          { teacherId: teacher.id, reason: reason || undefined },
+          { teacherId: teacher.id },
           {
             onSuccess: () => {
               toast.success(t("done", { name: teacherName }));

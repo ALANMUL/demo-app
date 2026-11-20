@@ -146,3 +146,37 @@ export const useSaveAdmission = () => {
     onSuccess: (data) => queryClient.setQueryData(admissionKey, data),
   });
 };
+
+// ------------------------------------------------------------- the homepage's teachers
+
+// mirrors GET/PUT /school-settings/site-teachers: the school's working teachers, those on the
+// homepage first (siteOrder 0, 1, 2…; null = not shown), then the rest by name
+export type SiteTeacherChoice = {
+  id: string;
+  nameEn: string;
+  nameBn: string;
+  designation: string | null;
+  photo: string | null;
+  siteOrder: number | null;
+};
+
+// up to this many on the homepage (the server's limit too)
+export const MAX_SITE_TEACHERS = 40;
+
+const siteTeachersKey = ["school", "settings", "siteTeachers"] as const;
+
+export const useSiteTeachers = () =>
+  useQuery({
+    queryKey: siteTeachersKey,
+    queryFn: async () => (await httpClient.get<ApiResponse<SiteTeacherChoice[]>>("/school-settings/site-teachers")).data.data,
+  });
+
+// the whole pick at once, in its order
+export const useSaveSiteTeachers = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (teacherIds: string[]) =>
+      (await httpClient.put<ApiResponse<SiteTeacherChoice[]>>("/school-settings/site-teachers", { teacherIds })).data.data,
+    onSuccess: (data) => queryClient.setQueryData(siteTeachersKey, data),
+  });
+};

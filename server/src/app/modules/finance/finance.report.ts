@@ -22,7 +22,7 @@ const bdDay = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dh
 
 /*
  * Money in and out over some days (Bangladesh time): fees collected (by day, method, fee
- * type and fund), cancelled payments, and expenses by category. Left out = today.
+ * type and fund), and expenses by category. Left out = today.
  */
 const getCollection = async (schoolId: string, query: CollectionReportQuery) => {
   const today = todayInBangladesh();
@@ -32,7 +32,7 @@ const getCollection = async (schoolId: string, query: CollectionReportQuery) => 
     throw new AppError("Choose at most about a year at a time", httpStatus.BAD_REQUEST);
   }
 
-  const [payments, cancelled, expenses] = await Promise.all([
+  const [payments, expenses] = await Promise.all([
     prisma.payment.findMany({
       where: { schoolId, status: "SUCCESS", paidAt: { gte: from, lte: to } },
       select: {
@@ -51,11 +51,6 @@ const getCollection = async (schoolId: string, query: CollectionReportQuery) => 
           },
         },
       },
-    }),
-    prisma.payment.aggregate({
-      where: { schoolId, status: "CANCELLED", paidAt: { gte: from, lte: to } },
-      _sum: { amount: true },
-      _count: { _all: true },
     }),
     // a voided expense never counts
     prisma.fundTransaction.groupBy({
@@ -91,7 +86,6 @@ const getCollection = async (schoolId: string, query: CollectionReportQuery) => 
     from,
     to,
     collected: { total: total.toFixed(2), count: payments.length },
-    cancelled: { total: (cancelled._sum.amount ?? ZERO).toFixed(2), count: cancelled._count._all },
     expenses: {
       total: expenseTotal.toFixed(2),
       byCategory: expenses.map((g) => ({ category: g.category, count: g._count._all, amount: (g._sum.amount ?? ZERO).toFixed(2) })),

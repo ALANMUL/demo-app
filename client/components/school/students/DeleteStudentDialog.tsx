@@ -36,15 +36,13 @@ export function DeleteStudentDialog({
         onClose();
       }}
       title={t("title", { name: name(student) })}
-      description={t("description")}
+      warning={t("description")}
       check={check}
-      reason="optional"
-      confirmText={student.admissionNo}
       pending={remove.isPending}
       error={error}
-      onConfirm={({ reason }) =>
+      onConfirm={() =>
         remove.mutate(
-          { studentId: student.id, reason: reason || undefined },
+          { studentId: student.id },
           {
             onSuccess: () => {
               toast.success(t("done", { name: name(student) }));

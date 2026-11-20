@@ -425,4 +425,52 @@ router.delete(
   }),
 );
 
+// ------------------------------------------------------------- teachers section
+
+// the teachers who can be on the homepage: those still working at the school
+const WORKING = ["ACTIVE", "ON_LEAVE"] as const;
+const MAX_SITE_TEACHERS = 40;
+
+const siteTeachersBody = z.strictObject({
+  // in the order they show; [] = no teachers section
+  teacherIds: z
+    .array(z.string().trim().min(1).max(64))
+    .max(MAX_SITE_TEACHERS, `Up to ${MAX_SITE_TEACHERS} teachers`)
+    .refine((ids) => new Set(ids).size === ids.length, "A teacher is listed twice"),
+});
+
+/* The school's working teachers: those on the homepage first (in their order), then the rest by name. */
+const listSiteTeachers = async (schoolId: string) => {
+  const teachers = await prisma.teacherProfile.findMany({
+    where: { schoolId, status: { in: [...WORKING] } },
+    orderBy: [{ siteOrder: { sort: "asc", nulls: "last" } }, { nameEn: "asc" }],
+    select: { id: true, nameEn: true, nameBn: true, designation: true, photo: true, siteOrder: true },
+  });
+  return Promise.all(teachers.map((teacher) => withFileUrls(teacher, ["photo"])));
+};
+
+router.get(
+  "/site-teachers",
+  catchAsync(async (req: Request, res: Response) => {
+    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Teachers retrieved", data: await listSiteTeachers(req.auth!.schoolId!) });
+  }),
+);
+
+// the whole list at once: who is on the homepage, and in what order
+router.put(
+  "/site-teachers",
+  validateRequest({ body: siteTeachersBody }),
+  catchAsync(async (req: Request, res: Response) => {
+    const schoolId = req.auth!.schoolId!;
+    const { teacherIds } = req.body as z.infer<typeof siteTeachersBody>;
+    const found = await prisma.teacherProfile.count({ where: { schoolId, status: { in: [...WORKING] }, id: { in: teacherIds } } });
+    if (found !== teacherIds.length) throw new AppError("Some of these teachers aren't working at this school", httpStatus.BAD_REQUEST);
+    await prisma.$transaction([
+      prisma.teacherProfile.updateMany({ where: { schoolId, siteOrder: { not: null } }, data: { siteOrder: null } }),
+      ...teacherIds.map((id, i) => prisma.teacherProfile.update({ where: { id }, data: { siteOrder: i } })),
+    ]);
+    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Homepage teachers saved", data: await listSiteTeachers(schoolId) });
+  }),
+);
+
 export const schoolSettingsRoutes = router;

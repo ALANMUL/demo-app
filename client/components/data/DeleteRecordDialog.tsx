@@ -16,11 +16,14 @@ export type DeleteTarget = {
   confirmText?: string;
   done: string;
   run: (reason?: string) => Promise<unknown>;
+  // fee setup and funds: a reason and the name typed too; anything else is a warning only
+  money?: boolean;
 };
 
 /**
  * Deleting one record that takes others with it (a class, a section, a fee type, a class fee,
- * a fund): shows what stops it and what goes, asks a reason and the name typed, then deletes.
+ * a fund): shows what stops it and what goes, with a warning. Money records (fee setup, funds)
+ * also ask a reason and the name typed.
  */
 export function DeleteRecordDialog({ target, onClose }: { target: DeleteTarget | null; onClose: () => void }) {
   const describeError = useErrorMessage();
@@ -51,10 +54,11 @@ export function DeleteRecordDialog({ target, onClose }: { target: DeleteTarget |
       open={!!target}
       onClose={close}
       title={target?.title ?? ""}
-      description={target?.description}
+      description={target?.money ? target.description : undefined}
+      warning={target?.money ? undefined : target?.description}
       check={target ? check : null}
-      reason="optional"
-      confirmText={target?.confirmText}
+      reason={target?.money ? "optional" : "none"}
+      confirmText={target?.money ? target.confirmText : null}
       pending={pending}
       error={error}
       onConfirm={confirm}

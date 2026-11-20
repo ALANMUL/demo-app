@@ -148,6 +148,27 @@ const notifyPayment = async (schoolId: string, paymentId: string, type: "PAYMENT
 };
 
 /*
+ * A payment erased: the family is told its receipt no longer counts, with the same message
+ * (and SMS) as a cancelled one. The payment is gone, so the facts come from the caller.
+ */
+const notifyPaymentErased = async (
+  schoolId: string,
+  facts: { paymentId: string; studentId: string; amount: string; receiptNo: string },
+) => {
+  const student = await prisma.student.findFirst({ where: { id: facts.studentId, schoolId }, select: studentRef });
+  if (!student) return;
+  await send([
+    {
+      schoolId,
+      student,
+      type: "PAYMENT_CANCELLED",
+      dedupeKey: `cancelled:${facts.paymentId}`,
+      data: { amount: facts.amount, receiptNo: facts.receiptNo },
+    },
+  ]);
+};
+
+/*
  * After a section's roll call is saved: present, absent and late students get an in-app
  * message for that day. Saving again changes it rather than adding another: another status
  * updates it (unread again), on leave removes it.
@@ -511,6 +532,7 @@ const markAllRead = async (auth: Auth) => {
 export const NotificationService = {
   notifyAdmitted,
   notifyPayment,
+  notifyPaymentErased,
   syncAttendance,
   notifyResultPublished,
   withdrawResult,

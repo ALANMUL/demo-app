@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AboutCard } from "./AboutCard";
 import { AdmissionCard } from "./AdmissionCard";
+import { SiteTeachersCard } from "./SiteTeachersCard";
 import { PhotoListCard } from "./PhotoListCard";
 
 /** The school's own settings (super admin only): the colours of its site, and its homepage's slider and admission section. */
@@ -46,6 +47,7 @@ export function SchoolSettingsPage() {
       <AppearanceCard />
       <PhotoListCard list="slides" />
       <AboutCard />
+      <SiteTeachersCard />
       <AdmissionCard />
       <PhotoListCard list="gallery" icon={GalleryHorizontalEnd} />
     </div>

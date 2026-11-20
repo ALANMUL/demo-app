@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../shared/catchAsync";
 import sendResponse from "../../shared/sendResponse";
+import type { ReasonPayload } from "../../shared/deleteSchemas";
 import { PaymentService } from "./payment.service";
 import type { ListPaymentsQuery } from "./payment.type";
 
@@ -33,13 +34,13 @@ const recordPayment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const cancelPayment = catchAsync(async (req: Request, res: Response) => {
-  const result = await PaymentService.cancelPayment(req.auth!, req.params.paymentId as string, req.body);
+const deletePayment = catchAsync(async (req: Request, res: Response) => {
+  const result = await PaymentService.deletePayment(req.auth!, req.params.paymentId as string, req.query as unknown as ReasonPayload);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Payment cancelled successfully!",
+    message: "Payment deleted successfully!",
     data: result,
   });
 });
@@ -94,7 +95,7 @@ const listStudentPayments = catchAsync(async (req: Request, res: Response) => {
 export const PaymentController = {
   getPayableFees,
   recordPayment,
-  cancelPayment,
+  deletePayment,
   getPaymentById,
   getReceipt,
   listPayments,

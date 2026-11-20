@@ -14,9 +14,8 @@ import { useDeleteExam, useRemoveExamClass, type Exam } from "@/lib/school/exams
 export type ExamDeleteTarget = { exam: Exam; classId?: string; className?: string };
 
 /**
- * Deletes an exam (or a class of it) at any stage. Nothing entered yet: a plain confirm.
- * Marks, results or a published result: the super admin only, with a reason and the exam's
- * name typed; the server checks the same and keeps the marks in the activity log.
+ * Deletes an exam (or a class of it) at any stage, after a warning: a stronger one once there
+ * are marks or a published result. The server keeps the marks in the activity log.
  */
 export function DeleteExamDialog({ target, onClose, onDeleted }: { target: ExamDeleteTarget | null; onClose: () => void; onDeleted?: () => void }) {
   const t = useTranslations("deletes.exam");
@@ -50,12 +49,11 @@ export function DeleteExamDialog({ target, onClose, onDeleted }: { target: ExamD
     if (!target?.classId) onDeleted?.();
   };
 
-  const confirm = ({ reason }: { reason: string }) => {
+  const confirm = () => {
     if (!target) return;
-    const extra = strict ? { reason, confirmName: examName } : {};
     const handlers = { onSuccess: done, onError: (e: unknown) => setError(describeError(e)) };
-    if (target.classId) removeClass.mutate({ examId: target.exam.id, classId: target.classId, ...extra }, handlers);
-    else removeExam.mutate({ examId: target.exam.id, ...extra }, handlers);
+    if (target.classId) removeClass.mutate({ examId: target.exam.id, classId: target.classId }, handlers);
+    else removeExam.mutate({ examId: target.exam.id }, handlers);
   };
 
   return (
@@ -63,11 +61,9 @@ export function DeleteExamDialog({ target, onClose, onDeleted }: { target: ExamD
       open={!!target}
       onClose={close}
       title={target?.classId ? t("classTitle", { class: target.className ?? "", name: examName }) : t("title", { name: examName })}
-      description={strict ? undefined : t("description")}
-      warning={strict ? t("warning", { marks: removed.marks ?? 0, published: removed.publishedClasses ?? 0 }) : undefined}
+      // a warning only: stronger once there are marks or a published result
+      warning={strict ? t("warning", { marks: removed.marks ?? 0, published: removed.publishedClasses ?? 0 }) : t("description")}
       check={{ data, isPending: check.isPending, error: check.error }}
-      reason={strict ? "required" : "none"}
-      confirmText={strict ? examName : null}
       pending={pending}
       error={error}
       onConfirm={confirm}

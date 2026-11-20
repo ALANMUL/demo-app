@@ -1046,6 +1046,12 @@
       "add": "Add teacher",
       "searchPlaceholder": "Search name, phone or designation",
       "allStatuses": "All",
+      "sort": {
+        "label": "Sort",
+        "oldest": "Oldest",
+        "newest": "Newest",
+        "name": "Name A–Z"
+      },
       "columns": {
         "name": "Teacher",
         "phone": "Mobile",
@@ -1565,20 +1571,17 @@
       "exporting": "Exporting…",
       "exportFailed": "Couldn't export the students.",
       "register": {
-        "title": "Classes",
-        "allClasses": "All classes",
         "school": "School",
         "college": "College",
-        "allSections": "All",
-        "sectionsOf": "Sections of {className}",
-        "classSection": "{className}, section {section}",
-        "countStatus": "{count, plural, one {# {status} student} other {# {status} students}} in {year}",
-        "countAll": "{count, plural, one {# student} other {# students}} in {year}",
-        "loading": "Loading…",
-        "countStatusAnyYear": "{count, plural, one {# {status} student} other {# {status} students}}",
-        "countAllAnyYear": "{count, plural, one {# student} other {# students}}",
         "noneInTab": "No {status} students here.",
         "showTab": "{status} ({count})"
+      },
+      "sort": {
+        "label": "Sort",
+        "roll": "Roll order",
+        "admissionNo": "Admission no.",
+        "newest": "Newest",
+        "oldest": "Oldest"
       },
       "actionsFor": "Actions for {name}"
     },
@@ -3320,18 +3323,7 @@
           "amount": "Amount"
         },
         "actions": "Actions",
-        "receipt": "Receipt",
-        "cancel": "Cancel payment",
-        "cancelDialog": {
-          "title": "Cancel payment {no}?",
-          "description": "{amount} goes back: the fees become unpaid again and the money leaves the fund. The payment stays in the records, marked cancelled.",
-          "reason": "Reason",
-          "reasonPlaceholder": "e.g. Taken twice by mistake",
-          "reasonRequired": "Write why it is cancelled.",
-          "confirm": "Cancel payment",
-          "working": "Cancelling…",
-          "done": "Payment {no} cancelled."
-        }
+        "receipt": "Receipt"
       },
       "receipt": {
         "title": "Money receipt",
@@ -3858,6 +3850,22 @@
         "principalTitleHint": "Leave empty to use “{fallback}”.",
         "principalMessage": "Message",
         "principalMessagePlaceholder": "A few words to students and guardians…"
+      },
+      "siteTeachers": {
+        "title": "Teachers on the homepage",
+        "hint": "Pick the teachers shown in the \"Our teachers\" row of your homepage, and their order. Their names, titles and photos come from the Teachers page.",
+        "show": "Show on homepage",
+        "shown": "{count, plural, =0 {No teachers on the homepage yet} one {# teacher on the homepage} other {# teachers on the homepage}}",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "empty": "No teachers yet. Add them on the Teachers page.",
+        "openTeachers": "Open Teachers",
+        "noTitle": "No designation",
+        "max": "Up to {max} teachers",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Homepage teachers saved",
+        "undo": "Undo changes"
       },
       "gallery": {
         "title": "Gallery",
@@ -5160,7 +5168,7 @@
   },
   "schoolHome": {
     "logIn": "Log in",
-    "openApp": "Open the app",
+    "dashboard": "Dashboard",
     "contact": {
       "title": "Contact us",
       "address": "Address",
@@ -5181,6 +5189,7 @@
       "menu": "Open menu",
       "closeMenu": "Close menu",
       "about": "About",
+      "teachers": "Teachers",
       "gallery": "Gallery",
       "label": "Homepage sections"
     },
@@ -5239,6 +5248,12 @@
       "principalHeading": "Message from the {title}",
       "principalTitle": "Principal",
       "learnMore": "Learn more"
+    },
+    "teachers": {
+      "title": "Our teachers",
+      "previous": "Previous teachers",
+      "next": "More teachers",
+      "page": "Page {n}"
     },
     "gallery": {
       "title": "Life at our school",
@@ -5347,7 +5362,7 @@
     "student": {
       "action": "Delete student",
       "title": "Delete {name}?",
-      "description": "Everything of theirs goes too. A student with any payment, online payment, paid or discounted fee can't be deleted.",
+      "description": "Everything of theirs is deleted for good: attendance, marks, results, unpaid fees. A student with any payment, online payment, paid or discounted fee can not be deleted.",
       "done": "{name} deleted."
     },
     "teacher": {
@@ -5393,7 +5408,7 @@
     "exam": {
       "title": "Delete {name}?",
       "classTitle": "Take {class} out of {name}?",
-      "description": "Nothing has been entered yet. Its routine goes with it.",
+      "description": "Its routine is deleted too.",
       "warning": "{marks, plural, one {# mark} other {# marks}} and the results will be deleted{published, plural, =0 {} other {, including a published result guardians can see}}. A copy is kept in the activity log.",
       "done": "{name} deleted.",
       "classDone": "{class} taken out of the exam."
@@ -5412,6 +5427,13 @@
       "confirm": "Place",
       "working": "Placing…",
       "done": "Placed in {class}."
+    },
+    "payment": {
+      "action": "Delete payment",
+      "title": "Delete payment {no}?",
+      "warning": "This erases receipt {no} for good. It disappears from every list and report, its fees ({amount}) become unpaid again, and the money is taken out of the fund. The family is told the receipt no longer counts. Only a copy is kept in the activity log.",
+      "warningCancelled": "Receipt {no} ({amount}) was cancelled earlier. Deleting it removes it, and its cancellation, from the records for good. Only a copy is kept in the activity log.",
+      "done": "Payment {no} deleted."
     }
   },
   "activityLog": {
@@ -5448,7 +5470,7 @@
     "snapshot": "The record as it was:",
     "actions": {
       "payment": {
-        "cancel": "Payment cancelled"
+        "delete": "Payment deleted"
       },
       "expense": {
         "void": "Expense voided"

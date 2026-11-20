@@ -24,16 +24,14 @@ export function DeleteAcademicYearDialog({ year, onClose }: { year: AcademicYear
         onClose();
       }}
       title={t("title", { name: year?.name ?? "" })}
-      description={t("description")}
+      warning={t("description")}
       check={check}
-      reason="optional"
-      confirmText={year?.name}
       pending={remove.isPending}
       error={error}
-      onConfirm={({ reason }) =>
+      onConfirm={() =>
         year &&
         remove.mutate(
-          { yearId: year.id, reason: reason || undefined },
+          { yearId: year.id },
           {
             onSuccess: () => {
               toast.success(t("done", { name: year.name }));

@@ -192,8 +192,10 @@ export const collectionApi = {
   recordPayment: async (body: RecordPaymentBody) => (await httpClient.post<ApiResponse<Payment>>("/payment", body)).data.data,
   payments: async (query: PaymentListQuery) => (await httpClient.get<ApiResponse<PaymentList>>("/payment", { params: query })).data.data,
   receipt: async (paymentId: string) => (await httpClient.get<ApiResponse<Receipt>>(`/payment/${paymentId}/receipt`)).data.data,
-  cancelPayment: async ({ paymentId, reason }: { paymentId: string; reason: string }) =>
-    (await httpClient.post<ApiResponse<Payment>>(`/payment/${paymentId}/cancel`, { reason })).data.data,
+  // erases a payment for good (the super admin only): its fees become unpaid, the money leaves the fund
+  deletePayment: async ({ paymentId, reason }: { paymentId: string; reason: string }) => {
+    await httpClient.delete(`/payment/${paymentId}`, { params: { reason } });
+  },
 };
 
 // ------------------------------------------------------------------- hooks
@@ -240,7 +242,7 @@ export const useRemoveCustomFee = () => useFinanceMutation(collectionApi.removeC
 export const useDiscount = () => useFinanceMutation(collectionApi.discount);
 export const useDiscountByFeeType = () => useFinanceMutation(collectionApi.discountByFeeType);
 export const useRecordPayment = () => useFinanceMutation(collectionApi.recordPayment);
-export const useCancelPayment = () => useFinanceMutation(collectionApi.cancelPayment);
+export const useDeletePayment = () => useFinanceMutation(collectionApi.deletePayment);
 
 // ------------------------------------------------------------------- dates
 

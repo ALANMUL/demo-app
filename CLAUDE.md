@@ -25,7 +25,7 @@ Client (`cd client`): `npm run dev` (:3000), `npm run build`, `npm run lint` (ES
 
 Mobile (`cd mobile`): `flutter analyze`, `flutter test`, and `flutter test test/family_test.dart` for a single file. CI runs both. To run against the local API: `adb reverse tcp:5000 tcp:5000` (repeat after every reconnect or install), then `flutter run --dart-define=API_ORIGIN=http://localhost:5000`. Strings live in `lib/l10n/app_en.arb` and `app_bn.arb`; `flutter gen-l10n` regenerates them.
 
-Whole stack: `docker compose up -d --build` (web, api, redis); migrations: `docker compose run --rm migrate`. Root `.env` holds the domain and port settings (see `.env.example`); API secrets go in `server/.env`.
+Whole stack: `docker compose up -d --build` (web, api, redis); migrations: `docker compose run --rm migrate`. Root `.env` holds the domain and port settings; API secrets go in `server/.env`.
 
 Android release: GitHub Actions → "Build Android APK" (manual dispatch). It publishes to the public repo `sncmt/sncmt-app`. The version name comes from `mobile/pubspec.yaml` and the build number is the run number. Details are in `mobile/store/README.md`.
 

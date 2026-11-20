@@ -1,13 +1,12 @@
 "use client";
 
-import { Ban, ChevronLeft, ChevronRight, MoreHorizontal, ReceiptText } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal, ReceiptText, Trash2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
-import { FormError } from "@/components/auth/AuthCard";
+import { ConfirmActionDialog } from "@/components/data/ConfirmActionDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,7 @@ import { useCanReverseMoney } from "@/lib/auth/hooks";
 import { bangladeshDay } from "@/lib/dates";
 import { useLocalizedName } from "@/lib/i18n/names";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
-import { bdDayEnd, bdDayStart, useCancelPayment, usePayments, type PaymentList, type PaymentListQuery, type PaymentMethod } from "@/lib/school/collection";
+import { bdDayEnd, bdDayStart, useDeletePayment, usePayments, type PaymentList, type PaymentListQuery, type PaymentMethod } from "@/lib/school/collection";
 import { useMoney } from "@/lib/school/finance";
 import { cn } from "@/lib/utils";
 import { ListState } from "../shared";
@@ -114,7 +113,7 @@ export function Pager({ page, totalPages, onPage }: { page: number; totalPages: 
   );
 }
 
-/** Payments with their receipt and, for those allowed, cancelling. */
+/** Payments with their receipt and, for the super admin, deleting. */
 export function PaymentsTable({
   data,
   isPending,
@@ -134,10 +133,11 @@ export function PaymentsTable({
   const format = useFormatter();
   const name = useLocalizedName();
   const money = useMoney();
-  // cancelling is a money reversal: the super admin only
-  const canCancel = useCanReverseMoney();
+  // erasing a payment: the super admin only
+  const canDelete = useCanReverseMoney();
+  const tDelete = useTranslations("deletes.payment");
   const [receiptId, setReceiptId] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState<PaymentList["items"][number] | null>(null);
+  const [deleting, setDeleting] = useState<PaymentList["items"][number] | null>(null);
 
   return (
     <>
@@ -194,9 +194,9 @@ export function PaymentsTable({
                           <DropdownMenuItem onSelect={() => setReceiptId(p.id)}>
                             <ReceiptText /> {t("receipt")}
                           </DropdownMenuItem>
-                          {!cancelled && canCancel && (
-                            <DropdownMenuItem variant="destructive" onSelect={() => setCancelling(p)}>
-                              <Ban /> {t("cancel")}
+                          {canDelete && (
+                            <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(p)}>
+                              <Trash2 /> {tDelete("action")}
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
@@ -211,62 +211,49 @@ export function PaymentsTable({
       </ListState>
 
       <ReceiptDialog paymentId={receiptId} onClose={() => setReceiptId(null)} />
-      <CancelPaymentDialog payment={cancelling} onClose={() => setCancelling(null)} />
+      <DeletePaymentDialog payment={deleting} onClose={() => setDeleting(null)} />
     </>
   );
 }
 
-function CancelPaymentDialog({ payment, onClose }: { payment: PaymentList["items"][number] | null; onClose: () => void }) {
-  const t = useTranslations("school.finance.payments.cancelDialog");
-  const tCommon = useTranslations("common");
+/* Erases a payment for good, after a warning, a reason and the receipt number typed. */
+function DeletePaymentDialog({ payment, onClose }: { payment: PaymentList["items"][number] | null; onClose: () => void }) {
+  const t = useTranslations("deletes.payment");
   const describeError = useErrorMessage();
   const money = useMoney();
-  const cancel = useCancelPayment();
-  const [reason, setReason] = useState("");
+  const remove = useDeletePayment();
   const [error, setError] = useState<string | null>(null);
+  const wasCancelled = payment?.status === "CANCELLED";
 
   const close = () => {
-    setReason("");
     setError(null);
     onClose();
   };
-  const submit = () => {
-    if (reason.trim().length < 3) return setError(t("reasonRequired"));
-    cancel.mutate(
-      { paymentId: payment!.id, reason: reason.trim() },
-      {
-        onSuccess: () => {
-          toast.success(t("done", { no: payment!.receiptNo }));
-          close();
-        },
-        onError: (e) => setError(describeError(e)),
-      },
-    );
-  };
 
   return (
-    <Dialog open={!!payment} onOpenChange={(open) => !open && !cancel.isPending && close()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("title", { no: payment?.receiptNo ?? "" })}</DialogTitle>
-          <DialogDescription>{t("description", { amount: money(payment?.amount) })}</DialogDescription>
-        </DialogHeader>
-        <FormError message={error} />
-        <div className="space-y-1.5">
-          <Label htmlFor="cancel-reason" required>
-            {t("reason")}
-          </Label>
-          <Input id="cancel-reason" value={reason} maxLength={300} onChange={(e) => setReason(e.target.value)} placeholder={t("reasonPlaceholder")} autoFocus />
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={close} disabled={cancel.isPending}>
-            {tCommon("cancel")}
-          </Button>
-          <Button variant="destructive" onClick={submit} disabled={cancel.isPending}>
-            <Ban /> {cancel.isPending ? t("working") : t("confirm")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmActionDialog
+      open={!!payment}
+      onClose={close}
+      title={t("title", { no: payment?.receiptNo ?? "" })}
+      warning={t(wasCancelled ? "warningCancelled" : "warning", { no: payment?.receiptNo ?? "", amount: money(payment?.amount) })}
+      reason="required"
+      confirmText={payment?.receiptNo}
+      confirmLabel={t("action")}
+      pending={remove.isPending}
+      error={error}
+      onConfirm={({ reason }) =>
+        payment &&
+        remove.mutate(
+          { paymentId: payment.id, reason },
+          {
+            onSuccess: () => {
+              toast.success(t("done", { no: payment.receiptNo }));
+              close();
+            },
+            onError: (e) => setError(describeError(e)),
+          },
+        )
+      }
+    />
   );
 }

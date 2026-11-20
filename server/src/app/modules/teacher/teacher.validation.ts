@@ -74,6 +74,8 @@ const teacherIdParams = z.object({ teacherId: idSchema("Teacher id") });
 const listTeachersQuery = z.object({
   search: z.string().trim().min(1).optional(),
   status: z.enum(TeacherStatus).optional(),
+  // the order: by when the teacher was added (oldest first by default), or by name
+  sort: z.enum(["oldest", "newest", "name"]).default("oldest"),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });

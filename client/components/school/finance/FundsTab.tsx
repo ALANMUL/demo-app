@@ -159,6 +159,7 @@ export function FundsTab({
             title: tDelete("title", { name: name(deleting) }),
             description: tDelete("description"),
             checkPath: `/fund/${deleting.id}/delete-check`,
+            money: true,
             confirmText: name(deleting),
             done: tDelete("done", { name: name(deleting) }),
             run: (reason) => remove.mutateAsync({ fundId: deleting.id, reason }),

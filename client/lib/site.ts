@@ -29,7 +29,12 @@ export type SchoolSite = {
   about: About;
   // the homepage's gallery; empty = no section
   gallery: { id: string; image: string; caption: string | null }[];
+  // the homepage's "Our teachers" row, in the school's order; empty = no section
+  teachers: SiteTeacher[];
 };
+
+// a teacher the school put on its homepage (photo: a signed link, or null)
+export type SiteTeacher = { id: string; nameEn: string; nameBn: string; designation: string | null; photo: string | null };
 
 export type Admission = {
   requirements: string[];
@@ -67,14 +72,15 @@ export type SocialKey = (typeof SOCIAL_KEYS)[number];
 // slides it opens the homepage instead)
 export const hasAbout = (a: About) => a.body.trim().length > 0 || a.facts.length > 0 || a.principalMessage.trim().length > 0;
 
-export type SiteChapter = "about" | "admission" | "notices" | "gallery" | "contact";
+export type SiteChapter = "about" | "teachers" | "admission" | "notices" | "gallery" | "contact";
 
 /**
  * The homepage's chapters in page order, leaving out those the school hasn't filled in (notices
  * and contact always show). The menu, the chapter numbers and the footer all follow this list.
  */
-export const siteChapters = (school: Pick<SchoolSite, "about" | "admission" | "gallery">): SiteChapter[] => [
+export const siteChapters = (school: Pick<SchoolSite, "about" | "admission" | "gallery" | "teachers">): SiteChapter[] => [
   ...(hasAbout(school.about) ? (["about"] as const) : []),
+  ...(school.teachers.length > 0 ? (["teachers"] as const) : []),
   ...(hasAdmission(school.admission) ? (["admission"] as const) : []),
   "notices",
   ...(school.gallery.length > 0 ? (["gallery"] as const) : []),

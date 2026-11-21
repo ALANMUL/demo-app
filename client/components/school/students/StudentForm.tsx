@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, TriangleAlert } from "lucide-react";
+import { Save, TriangleAlert, UserPlus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,8 +10,8 @@ import { useForm, useWatch, type FieldPath, type Resolver } from "react-hook-for
 import { toast } from "sonner";
 import { FormError } from "@/components/auth/AuthCard";
 import { PhotoField } from "@/components/data/PhotoField";
+import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -210,7 +210,8 @@ export function StudentForm({ student }: { student?: StudentDetail }) {
         await uploadPhoto(result.student.id, name);
         toast.success(t("admitted", { name, admissionNo: result.student.admissionNo }));
         for (const warning of result.warnings) toast.warning(warning);
-        finish(result.account, name, `/students/${result.student.id}`);
+        // back to the list, ready for the next admission
+        finish(result.account, name, "/students");
       }
     } catch (error) {
       setFormError(applyServerErrors(error, form.setError, FIELDS, describeError));
@@ -289,17 +290,13 @@ export function StudentForm({ student }: { student?: StudentDetail }) {
   const nameOrder = language === "BN" ? (["nameBn", "nameEn"] as const) : (["nameEn", "nameBn"] as const);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
-      <Button variant="ghost" size="sm" asChild className="-ml-2">
-        <Link href={backHref}>
-          <ArrowLeft /> {student ? localName(student) : t("back")}
-        </Link>
-      </Button>
-
-      <div>
-        <h1 className="page-title">{isEdit ? t("editTitle") : t("title")}</h1>
-        <p className="page-subtitle">{isEdit ? t("editDescription") : t("description")}</p>
-      </div>
+    // the header panel, then one sheet as wide as the page and at least as tall as the window
+    <div className="flex flex-1 flex-col gap-2 md:min-h-[calc(100svh-5.5rem)]">
+      <PageHero
+        title={isEdit ? t("editTitle") : t("title")}
+        description={isEdit ? t("editDescription") : t("description")}
+        trail={student ? [{ label: localName(student), href: backHref }, { label: t("editTitle") }] : [{ label: t("title") }]}
+      />
 
       {noYear && (
         <div className="flex items-start gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm">
@@ -314,23 +311,26 @@ export function StudentForm({ student }: { student?: StudentDetail }) {
       )}
 
       <Form {...form}>
-        <form onSubmit={onSubmit} className="space-y-4" noValidate>
-          <FormError message={formError} />
-
-          <Section title={t("sections.student")}>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">{t("photo")}</p>
-              <PhotoField currentUrl={student?.photo} file={photo} onChange={setPhotoFile} alt={t("photo")} />
+        <form onSubmit={onSubmit} className="flex flex-1 flex-col rounded-2xl border border-border/70 bg-card" noValidate>
+          {formError && (
+            <div className="px-4 pt-5 sm:px-7">
+              <FormError message={formError} />
             </div>
+          )}
+
+          <Band
+            title={t("sections.student")}
+            hint={t("sectionHints.student")}
+            // the photo fills the empty space under the hint
+            aside={<PhotoField currentUrl={student?.photo} file={photo} onChange={setPhotoFile} alt={t("photo")} />}
+          >
             {/* both names are required; the school's language comes first */}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className={FIELDS_GRID}>
               {nameOrder.map((field, i) => (
                 <div key={field}>
                   {textField(field, t(field), { autoFocus: !isEdit && i === 0, lang: field === "nameBn" ? "bn" : "en" })}
                 </div>
               ))}
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
               {selectField(
                 "gender",
                 t("gender"),
@@ -342,21 +342,21 @@ export function StudentForm({ student }: { student?: StudentDetail }) {
                 RELIGIONS.map((r) => ({ value: r, label: tReligion(r) })),
               )}
               {textField("dob", t("dob"), { type: "date", max: new Date().toISOString().slice(0, 10) })}
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
               {isEdit && textField("admissionNo", t("admissionNo"))}
-              {textField(
-                "admissionDate",
-                t("admissionDate"),
-                { type: "date", max: todayKey(), disabled: isEdit && !canChangeDate },
-                isEdit && !canChangeDate ? t("admissionDateLocked") : t("admissionDateHint"),
-              )}
+              <div className="sm:col-span-2">
+                {textField(
+                  "admissionDate",
+                  t("admissionDate"),
+                  { type: "date", max: todayKey(), disabled: isEdit && !canChangeDate },
+                  isEdit && !canChangeDate ? t("admissionDateLocked") : t("admissionDateHint"),
+                )}
+              </div>
             </div>
-          </Section>
+          </Band>
 
           {!isEdit && (
-            <Section title={t("sections.admission", { year: chosenYear?.name ?? "" })}>
-              <div className="grid gap-4 sm:grid-cols-2">
+            <Band title={t("sections.admission", { year: chosenYear?.name ?? "" })} hint={t("sectionHints.admission")}>
+              <div className={FIELDS_GRID}>
                 {openYears.length > 1 &&
                   selectField(
                     "academicYearId",
@@ -397,41 +397,52 @@ export function StudentForm({ student }: { student?: StudentDetail }) {
                 )}
                 {textField("rollNumber", t("rollNumber"), { inputMode: "numeric" })}
               </div>
-              <AdmissionTypeField control={form.control} name="admissionType" hint={t("admissionTypeHint")} />
-              {textField("admissionNo", t("admissionNo"), {}, t("admissionNoHint"))}
-            </Section>
+              <div className="grid items-start gap-x-5 gap-y-5 lg:grid-cols-2">
+                <AdmissionTypeField control={form.control} name="admissionType" hint={t("admissionTypeHint")} />
+                {textField("admissionNo", t("admissionNo"), {}, t("admissionNoHint"))}
+              </div>
+            </Band>
           )}
 
-          <Section title={t("sections.family")}>
-            <div className="grid gap-4 sm:grid-cols-2">
+          <Band title={t("sections.family")} hint={t("sectionHints.family")}>
+            <div className={FIELDS_GRID}>
               {textField("fatherName", t("fatherName"))}
               {textField("motherName", t("motherName"))}
               {textField("guardianName", t("guardianName"), {}, t("guardianNameHint"))}
               {textField("guardianPhone", t("guardianPhone"), { type: "tel", inputMode: "tel" })}
             </div>
-          </Section>
+          </Band>
 
-          <Section title={t("sections.contact")}>
-            {textField(
-              "phone",
-              t("phone"),
-              { type: "tel", inputMode: "tel", placeholder: "01712345678" },
-              isEdit && student?.phone ? t("phoneEditHint") : t("phoneHint"),
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
+          <Band title={t("sections.contact")} hint={t("sectionHints.contact")}>
+            <div className={FIELDS_GRID}>
+              <div className="sm:col-span-2">
+                {textField(
+                  "phone",
+                  t("phone"),
+                  { type: "tel", inputMode: "tel", placeholder: "01712345678" },
+                  isEdit && student?.phone ? t("phoneEditHint") : t("phoneHint"),
+                )}
+              </div>
               {textField("email", t("email"), { type: "email", autoCapitalize: "none" })}
               {textField("whatsApp", t("whatsApp"), { type: "tel", inputMode: "tel" })}
             </div>
             <AddressFields form={form} />
-          </Section>
+          </Band>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" asChild>
-              <Link href={backHref}>{tCommon("cancel")}</Link>
-            </Button>
-            <Button type="submit" disabled={saving || !!noYear}>
-              {saving ? t("saving") : isEdit ? t("save") : t("submit")}
-            </Button>
+          {/* always in view at the bottom of the window (above the phone's bottom bar) */}
+          <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 mt-auto flex items-center gap-3 rounded-b-2xl border-t border-border/70 bg-card/95 px-4 py-3 backdrop-blur sm:px-7 md:bottom-0">
+            <p className="hidden text-sm text-muted-foreground sm:block">
+              <span className="text-destructive">*</span> {t("requiredNote")}
+            </p>
+            <div className="flex flex-1 justify-end gap-2">
+              <Button variant="outline" asChild className="max-sm:flex-1">
+                <Link href={backHref}>{tCommon("cancel")}</Link>
+              </Button>
+              <Button type="submit" disabled={saving || !!noYear} className="max-sm:flex-1">
+                {isEdit ? <Save /> : <UserPlus />}
+                {saving ? t("saving") : isEdit ? t("save") : t("submit")}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
@@ -499,13 +510,25 @@ function AddressFields({ form }: { form: ReturnType<typeof useForm<StudentFormIn
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+// a band's fields: four across from 1280px, three from 1024px, two from 640px, one on a phone
+const FIELDS_GRID = "grid items-start gap-x-5 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
+/*
+ * One part of the form as a band across the sheet: its name and a line about it on the left
+ * (with room for something more, like the photo), its fields on the right; a hairline between
+ * bands. On narrower screens the name sits above the fields.
+ */
+function Band({ title, hint, aside, children }: { title: string; hint: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">{children}</CardContent>
-    </Card>
+    <section className="grid gap-x-8 gap-y-4 px-4 py-5 sm:px-7 sm:py-7 lg:grid-cols-[13.75rem_minmax(0,1fr)] [&+&]:border-t [&+&]:border-border/70">
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-[17px] leading-snug font-bold text-navy">{title}</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{hint}</p>
+        </div>
+        {aside}
+      </div>
+      <div className="min-w-0 space-y-5">{children}</div>
+    </section>
   );
 }

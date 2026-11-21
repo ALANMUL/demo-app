@@ -164,6 +164,11 @@ export function SidebarShell({
   const current = groups
     .flatMap((g) => g.items.map((item) => ({ item, group: g })))
     .find(({ item }) => isActive(item.href, pathname));
+  const trail: Crumb[] = [
+    { label: tShell("home"), href: brand.home },
+    ...(current?.group.label && current.group.items.length > 1 ? [{ label: tGroups(current.group.label) }] : []),
+    ...(current && current.item.href !== brand.home ? [{ label: t(current.item.label), href: current.item.href, here: true }] : []),
+  ];
 
 
   return (
@@ -276,43 +281,17 @@ export function SidebarShell({
           </div>
         </header>
         {/* on a phone with the bottom bar, room under the page so the bar never covers it */}
+        {/* 8px around the page (6px on a phone); on a phone with the bottom bar, room under the
+            page so the bar never covers it */}
         <main
           className={cn(
-            "flex-1 p-3 md:p-4 lg:p-5",
-            bottomNav && "pb-28 md:pb-4 lg:pb-5",
+            "flex flex-1 flex-col p-1.5 md:p-2",
+            bottomNav && "pb-28 md:pb-2",
           )}
         >
-          <nav
-            aria-label={tShell("home")}
-            className="no-print mb-3 flex flex-wrap items-center gap-2 font-mono text-xs"
-          >
-            <Link
-              href={brand.home}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {tShell("home")}
-            </Link>
-            {current?.group.label && current.group.items.length > 1 && (
-              <>
-                <span className="text-muted-foreground/50">/</span>
-                <span className="text-muted-foreground">
-                  {tGroups(current.group.label)}
-                </span>
-              </>
-            )}
-            {current && current.item.href !== brand.home && (
-              <>
-                <span className="text-muted-foreground/50">/</span>
-                <Link
-                  href={current.item.href}
-                  className="font-semibold text-foreground hover:underline"
-                >
-                  {t(current.item.label)}
-                </Link>
-              </>
-            )}
-          </nav>
-          {children}
+          {/* the trail; a page with its own header panel (PageHero) shows it there instead */}
+          <Breadcrumb trail={trail} className="mb-2 px-0.5 [main:has(.page-hero)_&]:hidden" />
+          <TrailContext.Provider value={trail}>{children}</TrailContext.Provider>
         </main>
       </SidebarInset>
       {bottomNav}
@@ -500,6 +479,40 @@ function Menu({
               </ul>
             )}
           </div>
+          </Fragment>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ------------------------------------------------------------- the trail ("Home / People / Students")
+
+export type Crumb = { label: string; href?: string; here?: boolean };
+
+// the shell's trail, for a page that shows it in its own header (PageHero)
+const TrailContext = createContext<Crumb[]>([]);
+export const useShellTrail = () => useContext(TrailContext);
+
+/* The trail as small links, divided by slashes; "light" for the accent header panel. */
+export function Breadcrumb({ trail, light, className }: { trail: Crumb[]; light?: boolean; className?: string }) {
+  const tShell = useTranslations("shell");
+  return (
+    <nav aria-label={tShell("home")} className={cn("no-print flex flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-[11px] leading-5", className)}>
+      {trail.map((crumb, i) => {
+        const tone = crumb.here
+          ? light ? "font-semibold text-white" : "font-semibold text-foreground"
+          : light ? "text-white/65" : "text-muted-foreground";
+        return (
+          <Fragment key={`${i}-${crumb.label}`}>
+            {i > 0 && <span className={light ? "text-white/40" : "text-muted-foreground/50"}>/</span>}
+            {crumb.href ? (
+              <Link href={crumb.href} className={cn(tone, "hover:underline", light ? "hover:text-white" : "hover:text-foreground")}>
+                {crumb.label}
+              </Link>
+            ) : (
+              <span className={tone}>{crumb.label}</span>
+            )}
           </Fragment>
         );
       })}

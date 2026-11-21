@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 import { TablePagination } from "@/components/data/TablePagination";
-import { Badge } from "@/components/ui/badge";
+import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -361,33 +361,40 @@ export function StudentsList() {
   // statuses with students when this one has none ("No active students here; Suspended (1)")
   const otherTabs = counts ? STATUS_TABS.filter((s) => s !== filters.status && counts[s] > 0) : [];
 
+  // the year whose classes the list shows (the current one unless another is picked)
+  const shownYear = years.data?.find((y) => y.id === (filters.academicYearId ?? currentYear?.id));
+
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex min-w-0 items-end gap-3">
-          <h1 className="page-title">{t("title")}</h1>
-          {allCount !== undefined && (
-            <Badge className="mb-1 rounded-full border-0 bg-navy-soft px-2.5 font-semibold text-navy tabular-nums">{format.number(allCount)}</Badge>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ExportButton query={{ search: search || undefined, ...filters }} sort={sort ? SORT_QUERY[sort] : undefined} filtered={filtering} />
-          {can("student:create") && (
-            <Button asChild className="h-9 px-4">
-              <Link href="/students/new">
-                <Plus /> {t("add")}
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
+    // the header panel, the status cards, then one sheet down to the bottom of the window
+    <div className="flex flex-1 flex-col gap-2 md:min-h-[calc(100svh-5.5rem)]">
+      <PageHero
+        title={t("title")}
+        description={shownYear ? t("descriptionYear", { year: shownYear.name }) : t("description")}
+        actions={
+          <>
+            <ExportButton
+              query={{ search: search || undefined, ...filters }}
+              sort={sort ? SORT_QUERY[sort] : undefined}
+              filtered={filtering}
+              className="border-white/35 bg-transparent text-white shadow-none hover:bg-white/10 hover:text-white max-sm:flex-1 dark:border-white/35 dark:bg-transparent dark:hover:bg-white/10"
+            />
+            {can("student:create") && (
+              <Button asChild className="h-9 bg-white px-4 text-brand-ink hover:bg-white/90 max-sm:flex-1">
+                <Link href="/students/new">
+                  <Plus /> {t("add")}
+                </Link>
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {/* the statuses as cards: each picks its students (All clears it), with how many there are
           and their share of all. A row that scrolls sideways below lg, five across from lg */}
       <div
         role="group"
         aria-label={t("columns.status")}
-        className="-mx-1 flex gap-3 overflow-x-auto px-1 py-1 scrollbar-none lg:grid lg:grid-cols-5 lg:overflow-visible"
+        className="-mx-1 flex gap-2 overflow-x-auto px-1 py-0.5 scrollbar-none lg:grid lg:grid-cols-5 lg:overflow-visible"
       >
         {([ALL, ...STATUS_TABS] as const).map((s) => {
           const count = counts ? (s === ALL ? allCount : counts[s]) : undefined;
@@ -407,7 +414,7 @@ export function StudentsList() {
         })}
       </div>
 
-      <Card className="gap-0 overflow-hidden border-border/60 py-0">
+      <Card className="flex-1 gap-0 overflow-hidden border-border/60 py-0">
         {/* the toolbar, two rows: the search, the class and its section, and the order at the end;
             under them the other filters and "clear" */}
         <div className="space-y-3 border-b border-border/60 bg-muted/40 px-5 py-3">
@@ -528,8 +535,9 @@ export function StudentsList() {
           </Table>
         </div>
 
+        {/* at the bottom of the sheet, however few rows there are */}
         {data && data.meta.total > 0 && (
-          <div className="border-t border-border/60 px-5 py-3">
+          <div className="mt-auto border-t border-border/60 px-5 py-3">
             <TablePagination
               page={data.meta.page}
               limit={data.meta.limit}
@@ -786,7 +794,17 @@ function StudentRow({ student, columns, canUpdate }: { student: StudentListItem;
 }
 
 /** Saves (Excel) or prints (PDF) the students under the current filters and status, in the list's order. */
-function ExportButton({ query, sort, filtered }: { query: StudentFilterQuery; sort: StudentSort | undefined; filtered: boolean }) {
+function ExportButton({
+  query,
+  sort,
+  filtered,
+  className,
+}: {
+  query: StudentFilterQuery;
+  sort: StudentSort | undefined;
+  filtered: boolean;
+  className?: string;
+}) {
   const t = useTranslations("school.students");
   const tStatus = useTranslations("studentStatuses");
   const tGender = useTranslations("genders");
@@ -840,5 +858,5 @@ function ExportButton({ query, sort, filtered }: { query: StudentFilterQuery; so
     };
   };
 
-  return <ExportMenu load={load} />;
+  return <ExportMenu load={load} className={className} />;
 }

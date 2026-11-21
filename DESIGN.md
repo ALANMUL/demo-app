@@ -253,7 +253,7 @@ The whole scale is one step larger in Bangla than in English (the English scale 
 
 ## Layout
 
-A fixed white menu (256px, folding to 80px of icons) on the left; a white top bar (72px) across the content; the content area on the grey canvas with 12px padding on phones, 16px on tablets and 20px from 1024px up. Pages open with the title row (title and count on the left, actions on the right, aligned to the bottom), then one main card holding the work.
+A fixed white menu (256px, folding to 80px of icons) on the left; a white top bar (72px) across the content; the content area on the grey canvas with 6px padding on phones and 8px from 768px up, so pages use the full width. A small monospace trail (11px, "Home / People / Students") sits above each page; a page with a header panel (Page Hero) carries it there instead. Pages open with the title row (title and count on the left, actions on the right, aligned to the bottom), then one main card holding the work.
 
 Spacing follows a 4px grid; the common steps are 8px between related controls, 12px between toolbar items, 20px of padding inside cards and 24px between page sections. Tables keep their first and last columns aligned with the card's 20px padding.
 
@@ -337,6 +337,12 @@ The school dashboard's menu reads like the index of the school's register binder
 
 ### Page Title (signature)
 Every page opens with its title in Display weight, a 28px by 3px accent bar above it, a count badge beside it when the page lists things, and its actions aligned to the bottom on the right.
+
+### Page Hero
+A page's header as its own panel in Accent Ink, fixed, with an 8px corner, 8px above the page's sheet and never overlapping it: the trail in white (the current step bold), the title (1.75rem, bold) and a line under it in 75% white. A page's main actions sit at its right end, aligned to the bottom: secondary ones outlined in 35% white, the primary solid white with Accent Ink words; on phones they share a full-width row under the title. Used by the Students list and the student admit and edit pages; other pages are moving to it. Below it, a list page's sheet (toolbar, table, pages) reaches the bottom of the window, with the pagination at its foot.
+
+### Form Pages (signature: register bands)
+A long form is one white sheet as wide as the page and at least as tall as the window, divided by hairlines into bands. Each band has its name (bold, Accent Ink) and a one-line hint in Quiet Ink in a 220px column on the left, with room under them for a photo picker; its fields sit on the right, four across from 1280px, three from 1024px, two from 640px, one on phones, 20px apart and aligned to the top of their row. Bands have 28px of padding (16px on phones). The actions (Cancel, then the primary in Accent Ink with its icon) stay pinned at the bottom of the window on a frosted strip, with "Fields marked with a star are required" on the left; on phones they sit just above the bottom bar, full width. Admitting a student returns to the student list; saving an edit returns to the student.
 
 ### Dashboard Welcome
 A banner in the school's accent, in its fixed deep shade (Accent Ink, fixed): the date and year chip, the greeting with the school's full name (wrapping, never cut), and the quick actions (Collect fee, Take attendance, Add student, New notice) as an even two-column grid of pills, 12px apart, beside it. On phones the actions sit under the greeting, and a long label wraps inside its pill.

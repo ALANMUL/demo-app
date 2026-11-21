@@ -1409,6 +1409,13 @@
           "family": "Parents and guardian",
           "contact": "Family login and contact"
         },
+        "sectionHints": {
+          "student": "Their name in both languages. The photo and the rest can be added later.",
+          "admission": "The class and section they join, and their roll.",
+          "family": "The parents' names, and whoever else looks after them.",
+          "contact": "The family logs in to the app with this number."
+        },
+        "requiredNote": "Fields marked with a star are required",
         "photo": "Photo",
         "nameEn": "Name in English",
         "nameBn": "Name in Bangla",

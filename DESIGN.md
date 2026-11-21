@@ -60,12 +60,6 @@ typography:
     fontWeight: 700
     lineHeight: 1.15
     letterSpacing: "-0.01em"
-  chapter-numeral:
-    fontFamily: "\"Times New Roman\", Tinos, \"Anek Bangla\", Times, serif"
-    fontSize: "4rem"
-    fontWeight: 400
-    lineHeight: 1
-    letterSpacing: "-0.03em"
 rounded:
   xs: "2px"
   sm: "3px"
@@ -170,7 +164,7 @@ The system is flat. Surfaces are white paper on a cool grey desk, separated by h
 
 Density follows the work. Tables and forms are compact enough to show a full class on one screen, but every row has room to breathe and every control reads as clickable for staff who are not technical. Bangla and English share every screen, so layouts allow for longer Bangla words and Bangla digits.
 
-Each school's public homepage is the same register turned outward: the school's prospectus. It opens on the school's own photographs at the full size of the screen, then its about section with the principal's message, its teachers, and its newest notices as cards, then numbered chapters on ruled paper (admission, gallery, contact). Real photographs supply the warmth; the rest is order, serif type and hairlines, in the school's own accent.
+Each school's public homepage is the same register turned outward: the school's prospectus. It opens on the school's own photographs at the full size of the screen, then its about section with the principal's message, its teachers, and its newest notices as cards, then chapters on ruled paper (admission, gallery, contact). Real photographs supply the warmth; the rest is order, serif type and hairlines, in the school's own accent.
 
 **Key Characteristics:**
 - White menu, white paper, cool grey desk; the current page is an index tab in the school's accent.
@@ -240,7 +234,6 @@ Status pills use their own soft pairs: emerald for active and present, red for s
 - **Body** (400, 0.9375rem in English, 1rem in Bangla, 1.43): table cells, form text, descriptions. Keep prose under 75 characters a line.
 - **Label** (600, 0.8125rem, 0.08em, uppercase in shared tables): column headings and small field labels. The Students list uses the same size in sentence case.
 - **Site Name** (700, 17px on phones, 22px from 640px, 24px from 1024px; 1.15): the school's name in the homepage header, over at most two lines, in Accent Ink.
-- **Chapter Numeral** (400, 4rem from 1024px, 2.75rem below; 1; -0.03em; Accent Ink): a homepage chapter's number ("01", "০১"), regular weight so it reads as a printed folio, not a headline.
 
 The whole scale is one step larger in Bangla than in English (the English scale runs 13, 15, 16, 18, 20, 24 and 30px).
 
@@ -264,12 +257,12 @@ On phones the menu becomes a drawer opened from the top bar, a bottom bar carrie
   - a thin white contact bar, 36px on phones and 40px from 640px, that scrolls away with the page. Phone, email and address sit on the left with hairline dividers; the email and address drop off on narrow screens, and only the address shortens with "…". The login link ("Open the app" once logged in) and a language dropdown sit on the right.
   - a sticky white bar under it, 64px on phones and 88px from 640px. The school's round logo and its Site Name sit on the left; the menu (Home, then the chapters) sits on the right from 1024px; below 1024px a menu button opens a panel holding the links and a Log in button.
 - **Hero:** the school's photographs at the full size of the screen under the header (`100svh` minus the header's 100px or 128px). Its height and the chapters' scroll margins follow the header's height.
-- **Order:** the latest-notice strip, then About, Teachers and Notices (unnumbered, each its own layout), then the numbered chapters (admission, gallery, contact), then the footer.
+- **Order:** the latest-notice strip, then About, Teachers and Notices (each its own layout), then the chapters (admission, gallery, contact), then the footer.
 - **Column:** everything sits in a centred 1152px column with a 16px gutter.
 - **Chapters:** each is a 12-column grid from 1024px: the number and title in a 3-column margin that stays in view while the chapter scrolls, the content in the other 9, 48px apart. On phones the number sits beside the title above the content. Chapters are 56px, 80px and 96px tall in padding (phone, tablet, desktop), divided by hairlines, and alternate paper and the grey desk.
 
 ### Named Rules
-**The Counted Chapters Rule.** Homepage chapters are numbered in page order, counting only the chapters the school has filled in (About is never numbered), so they always run 01, 02, 03 in the page's digits. The menu and the footer follow the same list.
+**The Filled Chapters Rule.** The homepage shows only the chapters the school has filled in (notices and contact always), in page order, and none of them is numbered. The menu and the footer follow the same list.
 
 ## Elevation & Depth
 
@@ -339,13 +332,16 @@ The school dashboard's menu reads like the index of the school's register binder
 Every page opens with its title in Display weight, a 28px by 3px accent bar above it, a count badge beside it when the page lists things, and its actions aligned to the bottom on the right.
 
 ### Page Hero
-A page's header as its own panel in Accent Ink, fixed, with an 8px corner, 8px above the page's sheet and never overlapping it: the trail in white (the current step bold), the title (1.75rem, bold) and a line under it in 75% white. A page's main actions sit at its right end, aligned to the bottom: secondary ones outlined in 35% white, the primary solid white with Accent Ink words; on phones they share a full-width row under the title. Used by the Students list and the student admit and edit pages; other pages are moving to it. Below it, a list page's sheet (toolbar, table, pages) reaches the bottom of the window, with the pagination at its foot.
+A page's header as its own panel in Accent Ink, fixed, with an 8px corner, 8px above the page's sheet and never overlapping it: the trail in white (the current step bold), the title (1.75rem, bold) and a line under it in 75% white. A page's main actions sit at its right end, aligned to the bottom: secondary ones outlined in 35% white, the primary solid white with Accent Ink words; on phones they share a full-width row under the title. Used by the Students and Teachers lists and the student admit and edit pages; other pages are moving to it. Below it, a list page's sheet (toolbar, table, pages) reaches the bottom of the window, with the pagination at its foot.
 
 ### Form Pages (signature: register bands)
 A long form is one white sheet as wide as the page and at least as tall as the window, divided by hairlines into bands. Each band has its name (bold, Accent Ink) and a one-line hint in Quiet Ink in a 220px column on the left, with room under them for a photo picker; its fields sit on the right, four across from 1280px, three from 1024px, two from 640px, one on phones, 20px apart and aligned to the top of their row. Bands have 28px of padding (16px on phones). The actions (Cancel, then the primary in Accent Ink with its icon) stay pinned at the bottom of the window on a frosted strip, with "Fields marked with a star are required" on the left; on phones they sit just above the bottom bar, full width. Admitting a student returns to the student list; saving an edit returns to the student.
 
+### Page Index (Exams)
+A page with many parts (Exams: ten) has no tab bar. Under its Page Hero, one sheet holds the page's own index down its left (240px, on the Muted Fill, a hairline to its right) and the open part beside it. The index groups the parts by when they're used, each group under a small Quiet Ink name (Exams and results; For exam day; Setup); each part is a 36px row with its icon. The open one is paper with Accent Ink words, a 3px Merit Gold edge on its left and a faint shadow. The open part is in the address (?part=marks), so Back and links return to it, and the trail ends on it ("Home / Exams / Marks"). Below 1024px the index folds into a picker at the top of the sheet.
+
 ### Dashboard Welcome
-A banner in the school's accent, in its fixed deep shade (Accent Ink, fixed): the date and year chip, the greeting with the school's full name (wrapping, never cut), and the quick actions (Collect fee, Take attendance, Add student, New notice) as an even two-column grid of pills, 12px apart, beside it. On phones the actions sit under the greeting, and a long label wraps inside its pill.
+The dashboard's header panel (it takes the Page Hero's place, so no trail shows above it), with the number cards and panels under it 8px apart. A banner in the school's accent, in its fixed deep shade (Accent Ink, fixed): the date and year chip, the greeting with the school's full name (wrapping, never cut), and the quick actions (Collect fee, Take attendance, Add student, New notice) as an even two-column grid of pills, 12px apart, beside it. On phones the actions sit under the greeting, and a long label wraps inside its pill.
 
 ### Status Cards (Students)
 The Students register opens with a card per status: All, Active, Suspended, Inactive, Graduated. Each is paper with a hairline edge and 8px corners: a 32px icon box and the status name, the count in large tabular figures, and a 4px bar of its share of all the students with the percent. Icon and bar take the status pill's colours (emerald, red, grey, Accent Ink; All in the accent). The picked card carries a 3px Merit Gold Deep bar along its top and a darker edge; hover only darkens the edge. Five across from 1024px, a sideways-scrolling row below. Under them one card holds the toolbar on a Muted Fill band (search; Class, grouped School and College, and its Section; Year, Group, New or old, Gender, Religion; Clear filters; the order, "Sort", at the right end: the usual order, Newest, Oldest) and the table.
@@ -373,16 +369,16 @@ The school's introduction and its principal's message as one compact row of up t
 - **Missing parts:** any part the school hasn't filled in drops out, and the columns close up.
 
 ### Homepage Teachers
-Right after About, unnumbered, on paper with a hairline above. The teachers the school picked in Settings ("Teachers on the homepage"), in its order; with none picked there is no section and no menu item.
+Right after About, on paper with a hairline above. The teachers the school picked in Settings ("Teachers on the homepage"), in its order; with none picked there is no section and no menu item.
 - **Heading row:** a short Merit Gold Deep line and "Our teachers" in Accent Ink; across from it two 36px round outline arrows in Accent Ink, faded at the ends, shown only when the cards don't all fit.
 - **Cards:** five across from 1024px, four from 768px, three from 640px, two on phones, 16px apart, sliding a page at a time (swipe on phones, snap to each card). Each is the Accent Wash with an 8px corner: a round photo (96px, 112px from 640px) with a white ring and soft shadow (a drawn silhouette on an accent tint without one), the name bold in Accent Ink, the designation in Quiet Ink, both two lines at most.
 - **Dots:** one per page under the row; the current one a 24px Merit Gold pill, the rest 8px grey dots.
 
 ### Homepage Chapters
-- **Margin:** the Chapter Numeral, a 48px hairline and the chapter title (bold, 1.5rem). No introduction line: the title says it.
+- **Margin:** a 48 by 3px Merit Gold Deep line and the chapter title (bold, 1.75rem from 1024px, Accent Ink), the same mark as the About and Notices headings. No number and no introduction line: the title says it.
 - **Latest notice strip:** a paper band under the hero, with a hairline below. It holds "Latest notice" in Accent Ink, the date, the title (truncated) and a chevron, and opens the notice.
 - **Admission sheet:** one paper card divided by hairlines into parts, each titled in its own margin. Requirements are numbered, dates are label/value rows, and fees follow a printed fee schedule: label, dotted leader, amount ("TK 2,000" in English, "৳২,০০০" in Bangla).
-- **Notices:** unnumbered, on the grey desk. A short Merit Gold Deep line and the heading in Accent Ink, with "View all notices →" across from it when there are more than three. Below, the newest three as white cards with an 8px corner and a hairline border, three across on desktop, two from 768px, stacked on phones. Each card holds the date in a box of the Accent Wash (the day large and bold in Accent Ink, the month and year under it) with a short hairline beside it (56px, centred on the box), then the title in Accent Ink (two lines at most), the start of the text in Quiet Ink (two lines), then "View" with an eye icon in Accent Ink with pinned and file marks, and the category's icon in the top corner. The whole card opens the notice in a window. "View all notices" opens a window listing every notice as dated rows, with "Show more" as an outline button in the accent; a notice opens on top of the list. Pinned notices come first.
+- **Notices:** on the grey desk. A short Merit Gold Deep line and the heading in Accent Ink, with "View all notices →" across from it when there are more than three. Below, the newest three as white cards with an 8px corner and a hairline border, three across on desktop, two from 768px, stacked on phones. Each card holds the date in a box of the Accent Wash (the day large and bold in Accent Ink, the month and year under it) with a short hairline beside it (56px, centred on the box), then the title in Accent Ink (two lines at most), the start of the text in Quiet Ink (two lines), then "View" with an eye icon in Accent Ink with pinned and file marks, and the category's icon in the top corner. The whole card opens the notice in a window. "View all notices" opens a window listing every notice as dated rows, with "Show more" as an outline button in the accent; a notice opens on top of the list. Pinned notices come first.
 - **Gallery:** photographs in even 4:3 frames (1px hairline, 4px inset, 8px corners) with captions beneath them. The first six show, then "Show all".
 - **Contact rows:** label in Quiet Ink, the value large, and the action on the right as an Accent Ink link: call, email, map or website. Links that leave the page carry an outward arrow.
 
@@ -420,7 +416,7 @@ The platform's own marketing page shares the type and the gold but has its own l
 - **Do** show a school's name whole, wrapping where it must.
 - **Do** keep corners small and consistent: 4px controls, 8px cards, full circles only for avatars, pills, badges and the homepage's menu and buttons.
 - **Do** open every school's homepage on its own photographs at full size, and give the slideshow a pause button.
-- **Do** lay homepage content out as numbered chapters with their titles in the margin, ruled with hairlines rather than boxed in cards (About excepted).
+- **Do** lay homepage content out as chapters with their titles in the margin, ruled with hairlines rather than boxed in cards (About excepted).
 
 ### Don't:
 - **Don't** use a fixed blue, navy or gold where the school's colour belongs, and don't use the sidebar colour on the homepage.

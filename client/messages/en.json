@@ -2218,6 +2218,12 @@
         "seating": "Seat plan",
         "admit": "Admit cards"
       },
+      "groups": {
+        "work": "Exams and results",
+        "examDay": "For exam day",
+        "setup": "Setup"
+      },
+      "partsLabel": "Exam pages",
       "scales": {
         "description": "How marks become grades: each subject's marks % gives a grade and point, the average point is the GPA, and the GPA gives the overall grade. A scale used by a published result is locked; copy it to change it.",
         "add": "Add grading scale",

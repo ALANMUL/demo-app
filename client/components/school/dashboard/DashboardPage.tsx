@@ -30,7 +30,7 @@ export function DashboardPage() {
   const family = useFamilyHome(isFamily && isStaff);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       <WelcomeBanner name={me?.user.fullname ?? ""} year={data?.academicYear?.name} showActions={isStaff} />
 
       {me && isFamily && !isStaff ? (
@@ -38,7 +38,7 @@ export function DashboardPage() {
       ) : (
         <>
           {family.data && family.data.children.length > 0 && (
-            <section className="space-y-3">
+            <section className="space-y-2 pt-2">
               <h2 className="font-semibold">{t("yourChildren")}</h2>
               <ChildrenGrid items={family.data.children} mainYearId={family.data.academicYear?.id} canPayOnline={family.data.onlinePayment.enabled} />
             </section>
@@ -47,7 +47,7 @@ export function DashboardPage() {
             error ? (
               <p className="rounded-2xl border bg-card p-8 text-center text-sm text-muted-foreground">{describeError(error)}</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                 {Array.from({ length: 4 }, (_, i) => (
                   <Skeleton key={i} className="h-[154px] rounded-2xl" />
                 ))}
@@ -85,7 +85,8 @@ function WelcomeBanner({ name, year, showActions }: { name: string; year?: strin
 
   return (
     // the school's accent, in its deep shade (the same in dark mode, so the white words always read)
-    <section className="dark relative isolate overflow-hidden rounded-2xl bg-brand-ink px-6 py-6 text-white sm:px-8 sm:py-7">
+    // it is the page's header panel (page-hero): the shell's "Home" trail hides
+    <section className="page-hero dark relative isolate overflow-hidden rounded-2xl bg-brand-ink px-6 py-6 text-white sm:px-8 sm:py-7">
       {/* dots fading in from the right, and a warm light in the corner */}
       <div aria-hidden className="site-dots absolute inset-0 -z-10 text-white/[0.07] [mask-image:linear-gradient(to_left,black,transparent_65%)]" />
       <div aria-hidden className="absolute -top-24 -right-16 -z-10 size-72 rounded-full bg-sidebar-primary/25 blur-3xl" />
@@ -197,12 +198,12 @@ function Dashboard({ data }: { data: DashboardSummary }) {
   const hasRail = !!(data.attendance || data.upcoming || data.recentPayments);
 
   return (
-    <div className="space-y-6">
-      {cards.length > 0 && <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards}</div>}
+    <div className="space-y-2">
+      {cards.length > 0 && <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">{cards}</div>}
 
-      <div className={cn("grid items-start gap-6", hasRail && "xl:grid-cols-3")}>
+      <div className={cn("grid items-start gap-2", hasRail && "xl:grid-cols-3")}>
         {/* the main column: money, notices, duties */}
-        <div className="space-y-6 xl:col-span-2">
+        <div className="space-y-2 xl:col-span-2">
           {data.money && (
             <Panel title={t("chart.title")} description={t("chart.subtitle")} action={<PanelLink href="/finance">{t("openFinance")}</PanelLink>}>
               <dl className="mb-6 grid grid-cols-3 divide-x rounded-xl border bg-muted/30">
@@ -220,7 +221,7 @@ function Dashboard({ data }: { data: DashboardSummary }) {
 
         {/* the rail: today, the calendar, the latest money in */}
         {hasRail && (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-1">
             {data.attendance && <AttendancePanel attendance={data.attendance} />}
             {data.recentPayments && <PaymentsPanel items={data.recentPayments} />}
             {data.upcoming && (

@@ -10,12 +10,12 @@ import { Chapter } from "./Chapter";
  * what to bring (numbered), the dates that matter and the fee schedule, each part titled in the
  * margin of the sheet. Fees in taka: "TK 2,000" in English, "৳২,০০০" in Bangla.
  */
-export async function AdmissionSection({ admission, number }: { admission: Admission; number: number }) {
+export async function AdmissionSection({ admission }: { admission: Admission }) {
   const [t, format, locale] = await Promise.all([getTranslations("schoolHome.admission"), getFormatter(), getLocale()]);
   const { requirements, dates, fees } = admission;
 
   return (
-    <Chapter id="admission" number={number} title={t("title")} tone="desk">
+    <Chapter id="admission" title={t("title")} tone="desk">
       <div className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-card">
         {requirements.length > 0 && (
           <Part icon={ClipboardList} title={t("requirements")}>

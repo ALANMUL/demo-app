@@ -3,7 +3,7 @@ import { getPublicNotices } from "@/lib/publicNotices";
 import { NoticeBoard } from "./NoticeBoard";
 
 /*
- * The homepage's notices, unnumbered, with a layout of its own: a short gold line and the heading,
+ * The homepage's notices, with a layout of its own: a short gold line and the heading,
  * "View all notices" across from it, and the newest notices as a row of cards on the grey desk.
  */
 export async function NoticesSection({ subdomain }: { subdomain: string }) {

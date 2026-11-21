@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { RequirePermission } from "@/components/auth/Can";
 import { ExamsPage } from "@/components/school/exams/ExamsPage";
@@ -11,7 +12,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function SchoolExamsPage() {
   return (
     <RequirePermission permission={["exam:view", "grading:view"]} any>
-      <ExamsPage />
+      {/* the open part is in the address (?part=marks) */}
+      <Suspense>
+        <ExamsPage />
+      </Suspense>
     </RequirePermission>
   );
 }

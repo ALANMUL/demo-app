@@ -28,8 +28,8 @@ type ContactRow = { icon: LucideIcon; label: string; value: string; action?: { h
  * A school's public homepage (no login), its only page, laid out like a printed prospectus: the
  * header, the photos with the school's name over them and the newest notice under them, then a
  * part per menu item: the about section, the teachers row and the notice cards in layouts of their own, and admission,
- * gallery and contact as numbered chapters (those the school left empty are skipped and the rest
- * keep counting), then the footer. The menu scrolls to them.
+ * gallery and contact as chapters with their titles in the margin (those the school left empty are
+ * skipped), then the footer. The menu scrolls to them.
  */
 export default async function SchoolHomePage() {
   const [t, locale, school] = await Promise.all([getTranslations("schoolHome"), getLocale(), getCurrentSchoolSite()]);
@@ -38,10 +38,8 @@ export default async function SchoolHomePage() {
   // the name in the language being read (the other one only when this one is missing)
   const name = pickName(school, locale);
 
-  // each chapter's number, counting only those shown (about, teachers and notices have layouts of their own, unnumbered)
+  // the parts the school has filled in (notices and contact always show)
   const chapters = siteChapters(school);
-  const numbered = chapters.filter((id) => id !== "about" && id !== "teachers" && id !== "notices");
-  const numberOf = (id: (typeof numbered)[number]) => numbered.indexOf(id) + 1;
 
   const contacts = [
     school.phone && {
@@ -86,13 +84,13 @@ export default async function SchoolHomePage() {
 
         {chapters.includes("teachers") && <TeachersSection teachers={school.teachers} />}
 
-        {chapters.includes("admission") && <AdmissionSection admission={school.admission} number={numberOf("admission")} />}
+        {chapters.includes("admission") && <AdmissionSection admission={school.admission} />}
 
         <NoticesSection subdomain={school.subdomain} />
 
-        {chapters.includes("gallery") && <GallerySection photos={school.gallery} number={numberOf("gallery")} />}
+        {chapters.includes("gallery") && <GallerySection photos={school.gallery} />}
 
-        <Chapter id="contact" number={numberOf("contact")} title={t("contact.title")}>
+        <Chapter id="contact" title={t("contact.title")}>
           {contacts.length === 0 ? (
             <p className="border-y border-border/70 py-6 text-muted-foreground">{t("contact.none")}</p>
           ) : (

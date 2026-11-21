@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useState } from "react";
 import { TablePagination } from "@/components/data/TablePagination";
+import { PageHero } from "@/components/layout/PageHero";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,6 +37,8 @@ import { cn } from "@/lib/utils";
 import { TeacherCredentialsDialog, type TeacherCredentials } from "./TeacherCredentialsDialog";
 import { TeacherFormDialog } from "./TeacherFormDialog";
 import { TeacherStatusBadge } from "./TeacherStatusBadge";
+// a person's photo as a small circle, else their initials: the same in every list
+import { StudentAvatar } from "../students/StudentAvatar";
 
 const ALL = "ALL";
 const PAGE_SIZES = [20, 50, 100];
@@ -72,23 +75,30 @@ export function TeachersList() {
   const filtering = !!search || !!status;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="page-title">{t("title")}</h1>
-          <p className="page-subtitle">{t("description")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <TeachersExport query={{ search: search || undefined, status, sort }} filtered={filtering} />
-          {can("teacher:create") && (
-            <Button onClick={() => setAdding(true)}>
-              <Plus /> {t("add")}
-            </Button>
-          )}
-        </div>
-      </div>
+    // the header panel, then one sheet (toolbar, table, pages) down to the bottom of the window
+    <div className="flex flex-1 flex-col gap-2 md:min-h-[calc(100svh-5.5rem)]">
+      <PageHero
+        title={t("title")}
+        description={t("description")}
+        actions={
+          <>
+            <TeachersExport
+              query={{ search: search || undefined, status, sort }}
+              filtered={filtering}
+              className="border-white/35 bg-transparent text-white shadow-none hover:bg-white/10 hover:text-white max-sm:flex-1 dark:border-white/35 dark:bg-transparent dark:hover:bg-white/10"
+            />
+            {can("teacher:create") && (
+              <Button onClick={() => setAdding(true)} className="h-9 bg-white px-4 text-brand-ink hover:bg-white/90 max-sm:flex-1">
+                <Plus /> {t("add")}
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-border/60 bg-card">
+      {/* the toolbar: the search, then the status and the order */}
+      <div className="flex flex-wrap items-end gap-2 border-b border-border/60 bg-muted/40 px-4 py-3 sm:px-5">
         <Select
           value={status ?? ALL}
           onValueChange={(v) => {
@@ -126,7 +136,7 @@ export function TeachersList() {
             ))}
           </SelectContent>
         </Select>
-        <div className="relative w-full sm:ml-auto sm:w-64">
+        <div className="relative order-first w-full sm:mr-auto sm:w-72">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchInput}
@@ -136,19 +146,22 @@ export function TeachersList() {
             }}
             placeholder={t("searchPlaceholder")}
             aria-label={tCommon("search")}
-            className="pl-8"
+            className="bg-card pl-8 dark:bg-card"
           />
         </div>
       </div>
 
-      <div className={cn("rounded-md border transition-opacity", isFetching && !isPending && "opacity-60")}>
-        <Table>
-          <TableHeader>
+      <div className={cn("transition-opacity", isFetching && !isPending && "opacity-60")}>
+        {/* the first and last cells line up with the toolbar's padding */}
+        <Table className="[&_td:first-child]:pl-5 [&_td:last-child]:pr-5">
+          <TableHeader className="bg-navy-soft/70 [&_tr]:border-navy/10">
             <TableRow>
               {COLUMNS.map((column) => (
-                <TableHead key={column}>{t(`columns.${column}`)}</TableHead>
+                <TableHead key={column} className={HEAD}>
+                  {t(`columns.${column}`)}
+                </TableHead>
               ))}
-              <TableHead className="w-12">
+              <TableHead className={cn(HEAD, "w-12")}>
                 <span className="sr-only">{t("columns.actions")}</span>
               </TableHead>
             </TableRow>
@@ -190,7 +203,9 @@ export function TeachersList() {
         </Table>
       </div>
 
+      {/* at the bottom of the sheet, however few rows there are */}
       {data && data.meta.total > 0 && (
+        <div className="mt-auto border-t border-border/60 px-4 py-3 sm:px-5">
         <TablePagination
           page={data.meta.page}
           limit={data.meta.limit}
@@ -204,7 +219,9 @@ export function TeachersList() {
           }}
           disabled={isFetching}
         />
+        </div>
       )}
+      </div>
 
       <TeacherFormDialog
         open={adding || !!editing}
@@ -219,6 +236,9 @@ export function TeachersList() {
     </div>
   );
 }
+
+// headings as plain words in the accent, like the Students register
+const HEAD = "h-11 tracking-normal text-navy normal-case first:pl-5 last:pr-5";
 
 function MessageRow({ children }: { children: React.ReactNode }) {
   return (
@@ -242,10 +262,18 @@ function TeacherRow({ teacher, canUpdate, onEdit }: { teacher: Teacher; canUpdat
   return (
     <TableRow>
       <TableCell>
-        <Link href={`/teachers/${teacher.id}`} className="font-medium hover:underline">
-          {name(teacher)}
-        </Link>
-        {teacher.designation && <div className="text-xs text-muted-foreground">{teacher.designation}</div>}
+        {/* the photo (or initials) beside the name and designation; both open the teacher */}
+        <div className="flex items-center gap-3">
+          <Link href={`/teachers/${teacher.id}`} tabIndex={-1} aria-hidden className="shrink-0">
+            <StudentAvatar photo={teacher.photo} name={name(teacher)} className="size-9" />
+          </Link>
+          <div className="min-w-0">
+            <Link href={`/teachers/${teacher.id}`} className="font-medium hover:underline">
+              {name(teacher)}
+            </Link>
+            {teacher.designation && <div className="text-xs text-muted-foreground">{teacher.designation}</div>}
+          </div>
+        </div>
       </TableCell>
       <TableCell className="whitespace-nowrap">
         <div>{user.phone?.replace(/^\+?880/, "0")}</div>
@@ -282,7 +310,15 @@ function TeacherRow({ teacher, canUpdate, onEdit }: { teacher: Teacher; canUpdat
 }
 
 /** Saves (Excel) or prints (PDF) the teachers under the current filters, in the list's order. */
-function TeachersExport({ query, filtered }: { query: { search?: string; status?: TeacherStatus; sort?: TeacherSort }; filtered: boolean }) {
+function TeachersExport({
+  query,
+  filtered,
+  className,
+}: {
+  query: { search?: string; status?: TeacherStatus; sort?: TeacherSort };
+  filtered: boolean;
+  className?: string;
+}) {
   const t = useTranslations("school.teachers");
   const tStatus = useTranslations("teacherStatuses");
   const tGender = useTranslations("genders");
@@ -331,5 +367,5 @@ function TeachersExport({ query, filtered }: { query: { search?: string; status?
     };
   };
 
-  return <ExportMenu load={load} />;
+  return <ExportMenu load={load} className={className} />;
 }

@@ -4,7 +4,7 @@ import type { SiteTeacher } from "@/lib/site";
 import { TeacherSlider } from "./TeacherSlider";
 
 /*
- * The homepage's "Our teachers", right after About and unnumbered like it: the teachers the
+ * The homepage's "Our teachers", right after About: the teachers the
  * school picked in its settings, in its order, as a row of cards that slides (TeacherSlider).
  */
 export async function TeachersSection({ teachers }: { teachers: SiteTeacher[] }) {

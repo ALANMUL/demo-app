@@ -17,7 +17,7 @@
  * them in step.
  */
 
-export const ACCENT_COLORS = ["NAVY", "BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
+export const ACCENT_COLORS = ["NAVY", "BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "DEEP_TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 export type AccentColor = (typeof ACCENT_COLORS)[number];
 
 /** A school's accent until it picks one (saved as no choice; any other is saved by name). */
@@ -65,6 +65,15 @@ const ACCENTS: Record<AccentColor, Accent> = {
   TEAL: {
     light: { brand: "oklch(0.5 0.09 195)", soft: "oklch(0.955 0.022 195)", ink: "oklch(0.36 0.07 195)", inkSoft: "oklch(0.955 0.018 195)" },
     dark: { brand: "oklch(0.72 0.1 195)", soft: "oklch(0.29 0.045 195)", ink: "oklch(0.84 0.06 195)", inkSoft: "oklch(0.27 0.035 195)" },
+  },
+  /*
+   * A deep blue-teal (#0a4a63, from the homepage mockup) for its buttons, headings and band, with a
+   * lighter step of it (#13607e) for highlights: white on the band 9.7 : 1, the highlight on white 7 : 1.
+   */
+  DEEP_TEAL: {
+    light: { brand: "oklch(0.459 0.085 230)", soft: "oklch(0.955 0.02 230)", ink: "oklch(0.384 0.073 231)", inkSoft: "oklch(0.955 0.016 231)" },
+    dark: { brand: "oklch(0.72 0.09 230)", soft: "oklch(0.29 0.045 230)", ink: "oklch(0.84 0.06 228)", inkSoft: "oklch(0.27 0.035 230)" },
+    band: { color: "oklch(0.384 0.073 231)", text: WHITE },
   },
   SLATE: {
     light: { brand: "oklch(0.42 0.04 255)", soft: "oklch(0.955 0.008 255)", ink: "oklch(0.32 0.03 255)", inkSoft: "oklch(0.955 0.008 255)" },

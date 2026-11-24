@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AboutCard } from "./AboutCard";
 import { AdmissionCard } from "./AdmissionCard";
+import { FacilitiesCard } from "./FacilitiesCard";
 import { SiteTeachersCard } from "./SiteTeachersCard";
 import { PhotoListCard } from "./PhotoListCard";
 
@@ -48,6 +49,7 @@ export function SchoolSettingsPage() {
       <PhotoListCard list="slides" />
       <AboutCard />
       <SiteTeachersCard />
+      <FacilitiesCard />
       <AdmissionCard />
       <PhotoListCard list="gallery" icon={GalleryHorizontalEnd} />
     </div>

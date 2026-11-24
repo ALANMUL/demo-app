@@ -1,19 +1,17 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import type { SchoolSite } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { siteContainer, siteFocus } from "./siteStyles";
 
-// how long a photo shows (the marker fills meanwhile), and the hand-over between two photos
-const HOLD_MS = 7000;
+// how long a photo shows, and the hand-over between two photos
+const HOLD_MS = 6000;
 const FADE_MS = 1200;
 // a swipe shorter than this is a tap
 const SWIPE_PX = 40;
-// a photo that would lose more than this share of itself to fill the stage is shown whole instead
-// (a tall poster); an ordinary landscape photo fills the width even on a short, wide screen
-const MAX_CROP = 0.5;
 
 type Slide = SchoolSite["slides"][number];
 
@@ -30,17 +28,16 @@ const usePrefersReducedMotion = () => {
 };
 
 /*
- * The homepage's opening: the school's photos at the full size of the screen (under the header),
- * one fading into the next, with nothing over them but the controls, each on a small dark backing
- * so it reads on any photo: the caption at the bottom left, and "02 / 05", a marker per photo
- * (filling while it shows) and pause/play at the bottom right. A photo fills the stage; one whose
- * shape would lose too much (a tall poster, or a landscape photo on a phone) is shown whole over a
- * softened copy of itself instead. Pointing at or focusing the controls holds the photo; arrows and
- * swipes move on. Photos that fail to load are left out; without any, nothing is shown.
+ * The homepage's opening: the school's photos across the whole width, one fading into the next,
+ * under a white veil that is solid on the left and clears to the right (from the top down on a
+ * phone), so the words (`children`: the school's line, name, tagline and buttons) sit on white and
+ * the photo shows beside them. At the bottom right, from 640px: the caption in a white pill and
+ * round previous / pause / next buttons. Under the stage, on a soft wave, a dot per photo (with
+ * pause on a phone). Pointing at or focusing the controls holds the photo; arrows and swipes move
+ * on. Photos that fail to load are left out; without any, the words on white.
  */
-export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string }) {
+export function HeroStage({ slides: all, name, children }: { slides: Slide[]; name: string; children: ReactNode }) {
   const t = useTranslations("schoolHome.slider");
-  const format = useFormatter();
   const [failed, setFailed] = useState<string[]>([]);
   const slides = all.filter((slide) => !failed.includes(slide.id));
   const count = slides.length;
@@ -57,15 +54,6 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
   const touchStart = useRef<number | null>(null);
   const stage = useRef<HTMLElement>(null);
 
-  // each photo's shape (width / height) once loaded, and the stage's, to tell fill from whole
-  const [shapes, setShapes] = useState<Record<string, number>>({});
-  const [stageShape, setStageShape] = useState<number | null>(null);
-  const measure = useCallback((id: string, img: HTMLImageElement | null) => {
-    if (!img?.complete || !img.naturalWidth) return;
-    const shape = img.naturalWidth / img.naturalHeight;
-    setShapes((had) => (had[id] === shape ? had : { ...had, [id]: shape }));
-  }, []);
-
   const current = Math.min(index, Math.max(count - 1, 0));
   // with one photo, or less motion asked for, nothing moves by itself
   const still = count < 2 || reducedMotion;
@@ -78,7 +66,6 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
   const nextId = count > 1 ? slides[(current + 1) % count].id : undefined;
   useEffect(() => {
     const ids = [currentId, nextId].filter((id): id is string => !!id);
-    // the next one a little later, once the showing one has had the connection to itself
     const timer = setTimeout(() => setFetched((had) => (ids.every((id) => had.includes(id)) ? had : [...new Set([...had, ...ids])])), 1500);
     return () => clearTimeout(timer);
   }, [currentId, nextId]);
@@ -88,15 +75,7 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
     if (!el) return;
     const observer = new IntersectionObserver(([entry]) => setOffscreen(!entry.isIntersecting));
     observer.observe(el);
-    const sizer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      if (height > 0) setStageShape(width / height);
-    });
-    sizer.observe(el);
-    return () => {
-      observer.disconnect();
-      sizer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
   const go = useCallback(
@@ -113,6 +92,13 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
     [count, current, slides],
   );
 
+  // the next photo after a while, unless held or paused (a fresh wait after every change)
+  useEffect(() => {
+    if (still || paused) return;
+    const timer = setTimeout(() => go(current + 1, false), HOLD_MS);
+    return () => clearTimeout(timer);
+  }, [still, paused, current, go]);
+
   // the photo before goes once it has fully faded out
   useEffect(() => {
     if (leaving === null) return;
@@ -124,32 +110,30 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
     if (e.key === "ArrowRight") go(current + 1);
     if (e.key === "ArrowLeft") go(current - 1);
   };
-
-  // true when filling the stage would cut away more than MAX_CROP of the photo
-  const showWhole = (id: string) => {
-    const shape = shapes[id];
-    if (!shape || !stageShape) return false;
-    const kept = shape > stageShape ? stageShape / shape : shape / stageShape;
-    return kept < 1 - MAX_CROP;
+  const hold = {
+    onKeyDown,
+    onMouseEnter: () => setHeld(true),
+    onMouseLeave: () => setHeld(false),
+    onFocus: () => setHeld(true),
+    onBlur: () => setHeld(false),
   };
 
-  const two = (n: number) => format.number(n, { minimumIntegerDigits: 2 });
   const caption = count > 0 ? slides[current].caption : null;
-
-  if (count === 0) return null;
+  const round = cn(
+    "flex size-9 shrink-0 items-center justify-center rounded-full bg-white/90 text-brand-ink shadow-md transition hover:bg-brand-ink hover:text-white",
+    siteFocus,
+  );
+  const pauseButton = (className?: string) =>
+    !still && (
+      <button type="button" onClick={() => setUserPaused((p) => !p)} aria-label={userPaused ? t("play") : t("pause")} className={cn(round, className)}>
+        {userPaused ? <Play className="size-3" /> : <Pause className="size-3" />}
+      </button>
+    );
 
   return (
     <section
       ref={stage}
-      // a screen on its side (a computer, a turned tablet or phone): the whole of it under the header
-      // (its thin bar and its white bar: 36px + 64px, 40px + 88px from 640px). An upright one (a
-      // phone, a tablet): the shape of a photo, 4:3
-      // then 16:9, since a wide photo at its full height would be a strip between blurred bands
-      className={cn(
-        "relative isolate overflow-hidden bg-brand-soft",
-        "aspect-4/3 sm:aspect-video",
-        "landscape:aspect-auto landscape:h-[calc(100svh-6.25rem)] landscape:min-h-80 sm:landscape:h-[calc(100svh-8rem)]",
-      )}
+      className="relative isolate overflow-hidden bg-white"
       onTouchStart={(e) => (touchStart.current = e.touches[0].clientX)}
       onTouchEnd={(e) => {
         if (touchStart.current === null) return;
@@ -158,115 +142,95 @@ export function HeroStage({ slides: all, name }: { slides: Slide[]; name: string
         if (Math.abs(dx) > SWIPE_PX) go(current + (dx < 0 ? 1 : -1));
       }}
     >
-      {/* the photos, one fading into the next; each caption is shown as text along the bottom */}
-      <div aria-hidden className="absolute inset-0">
-        {slides.map((slide, i) => {
-          const src = i === current || i === leaving || fetched.includes(slide.id) ? slide.image : undefined;
-          const whole = showWhole(slide.id);
-          return (
-            <div key={slide.id} className="hero-slide absolute inset-0" data-state={i === current ? "active" : i === leaving ? "leaving" : "idle"}>
-              {/* a photo shown whole sits over a softened copy of itself, so the stage stays full */}
-              {whole && src && (
-                // eslint-disable-next-line @next/next/no-img-element -- signed links to private storage
-                <img src={src} alt="" decoding="async" className="absolute inset-0 size-full scale-110 object-cover blur-2xl" />
-              )}
-              {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
-              <img
-                ref={(img) => measure(slide.id, img)}
-                src={src}
-                alt=""
-                fetchPriority={i === 0 ? "high" : "auto"}
-                decoding="async"
-                onLoad={(e) => measure(slide.id, e.currentTarget)}
-                onError={() => {
-                  setFailed((ids) => [...ids, slide.id]);
-                  setIndex(0);
-                  setLeaving(null);
-                }}
-                className={cn(
-                  "relative size-full transition-opacity duration-700",
-                  // shown once its shape is known, so it never jumps from filled to whole
-                  shapes[slide.id] ? "opacity-100" : "opacity-0",
-                  whole ? "object-contain" : "object-cover",
-                )}
-              />
-            </div>
-          );
-        })}
-      </div>
+      <div className="relative flex min-h-[500px] items-center lg:min-h-[560px]">
+        {count > 0 && (
+          // the photos, one fading into the next, under the white veil
+          <div aria-hidden className="absolute inset-0 -z-10">
+            {slides.map((slide, i) => {
+              const src = i === current || i === leaving || fetched.includes(slide.id) ? slide.image : undefined;
+              return (
+                <div key={slide.id} className="hero-slide absolute inset-0" data-state={i === current ? "active" : i === leaving ? "leaving" : "idle"}>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
+                  <img
+                    src={src}
+                    alt=""
+                    fetchPriority={i === 0 ? "high" : "auto"}
+                    decoding="async"
+                    onError={() => {
+                      setFailed((ids) => [...ids, slide.id]);
+                      setIndex(0);
+                      setLeaving(null);
+                    }}
+                    className="size-full object-cover object-center"
+                  />
+                </div>
+              );
+            })}
+            <div className="hero-veil absolute inset-0 z-3" />
+          </div>
+        )}
 
-      {(caption || count > 1) && (
-        <div className="absolute inset-x-0 bottom-0 z-10">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-2 px-3 pb-3 sm:px-4 sm:pb-5">
+        {/* the words: on the veil's solid white at the left */}
+        <div className={cn(siteContainer, "relative z-10 w-full py-14 lg:py-20")}>
+          <div className="max-w-xl">{children}</div>
+        </div>
+
+        {/* the caption and the buttons, at the bottom right */}
+        {(caption || count > 1) && (
+          <div role="group" aria-label={t("label", { name })} className="absolute right-8 bottom-10 z-20 hidden items-center gap-2.5 sm:flex" {...hold}>
             {caption && (
-              <p
-                key={slides[current].id}
-                className="line-clamp-2 max-w-full animate-in rounded-md bg-black/45 px-3 py-1.5 text-sm leading-snug text-white backdrop-blur-sm duration-700 fade-in sm:max-w-md"
-              >
+              <p key={slides[current].id} className="mr-1 max-w-72 animate-in truncate rounded-full border border-slate-100 bg-white/90 px-3.5 py-2 text-xs font-semibold text-brand-ink shadow-sm backdrop-blur-sm duration-700 fade-in">
                 {caption}
               </p>
             )}
             {count > 1 && (
-              <div
-                role="group"
-                aria-label={t("label", { name })}
-                className="ml-auto flex items-center gap-3 rounded-full bg-black/40 py-0.5 pr-0.5 pl-4 text-white backdrop-blur-sm"
-                onKeyDown={onKeyDown}
-                onMouseEnter={() => setHeld(true)}
-                onMouseLeave={() => setHeld(false)}
-                onFocus={() => setHeld(true)}
-                onBlur={() => setHeld(false)}
-              >
-                <span className="shrink-0 text-sm text-white/90 tabular-nums" aria-live={announce ? "polite" : "off"}>
-                  <span className="sr-only">{t("slideOf", { current: current + 1, total: count })}</span>
-                  <span aria-hidden>
-                    {two(current + 1)} <span className="text-white/55">/</span> {two(count)}
-                  </span>
-                </span>
-                {/* a marker per photo: past ones full, the current one filling */}
-                <div className={cn("flex gap-1.5", reducedMotion ? "pr-3" : "", count > 4 ? "w-32 sm:w-48" : "w-24 sm:w-36")}>
-                  {slides.map((slide, i) => (
-                    <button
-                      key={slide.id}
-                      type="button"
-                      onClick={() => go(i)}
-                      aria-label={t("goTo", { number: i + 1 })}
-                      aria-current={i === current}
-                      className="group/bar relative h-11 flex-1 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                    >
-                      <span className="absolute inset-x-0 top-1/2 h-0.75 -translate-y-1/2 overflow-hidden rounded-full bg-white/35 group-hover/bar:bg-white/60">
-                        {i < current && <span className="absolute inset-0 bg-white" />}
-                        {i === current &&
-                          (still ? (
-                            <span className="absolute inset-0 bg-white" />
-                          ) : (
-                            <span
-                              key={current}
-                              className="slide-progress absolute inset-0 bg-white"
-                              data-paused={paused}
-                              style={{ "--slide-duration": `${HOLD_MS}ms` } as React.CSSProperties}
-                              onAnimationEnd={() => go(current + 1, false)}
-                            />
-                          ))}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                {!reducedMotion && (
-                  <button
-                    type="button"
-                    onClick={() => setUserPaused((p) => !p)}
-                    aria-label={userPaused ? t("play") : t("pause")}
-                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white"
-                  >
-                    {userPaused ? <Play className="size-4" /> : <Pause className="size-4" />}
-                  </button>
-                )}
-              </div>
+              <>
+                <button type="button" onClick={() => go(current - 1)} aria-label={t("previous")} className={round}>
+                  <ChevronLeft className="size-3" />
+                </button>
+                {pauseButton()}
+                <button type="button" onClick={() => go(current + 1)} aria-label={t("next")} className={round}>
+                  <ChevronRight className="size-3" />
+                </button>
+              </>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* a soft wave under the stage, with a dot per photo */}
+      <div className="relative bg-white pb-4">
+        <svg aria-hidden viewBox="0 0 1440 60" fill="none" preserveAspectRatio="none" className="pointer-events-none relative z-10 -mt-6 h-8 w-full sm:h-12">
+          <path d="M0,20 C480,65 960,-15 1440,30 L1440,60 L0,60 Z" fill="var(--color-site-ice)" opacity="0.6" />
+          <path d="M0,35 C420,0 1020,65 1440,20" stroke="var(--color-site-line)" strokeWidth="2" fill="none" />
+        </svg>
+        {count > 1 && (
+          <div className={cn(siteContainer, "relative z-20 -mt-2 flex items-center")} {...hold}>
+            <span className="sr-only" aria-live={announce ? "polite" : "off"}>
+              {t("slideOf", { current: current + 1, total: count })}
+            </span>
+            {slides.map((slide, i) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => go(i)}
+                aria-label={t("goTo", { number: i + 1 })}
+                aria-current={i === current}
+                // a 20px target around each 10px dot: 10px apart, as in the mockup
+                className="group/dot flex size-5 items-center justify-center rounded-full first:-ml-[5px] focus-visible:outline-2 focus-visible:outline-brand-ink"
+              >
+                <span
+                  className={cn(
+                    "block size-2.5 rounded-full transition-all duration-300",
+                    i === current ? "scale-110 bg-brand-ink" : "bg-slate-300 group-hover/dot:bg-brand-ink/60",
+                  )}
+                />
+              </button>
+            ))}
+            {pauseButton("ml-2 size-7 shadow-sm sm:hidden")}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

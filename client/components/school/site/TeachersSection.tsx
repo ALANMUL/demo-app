@@ -1,7 +1,9 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { pickName } from "@/lib/i18n/names";
 import type { SiteTeacher } from "@/lib/site";
+import { cn } from "@/lib/utils";
 import { TeacherSlider } from "./TeacherSlider";
+import { siteContainer, siteScrollMargin } from "./siteStyles";
 
 /*
  * The homepage's "Our teachers", right after About: the teachers the
@@ -11,9 +13,10 @@ export async function TeachersSection({ teachers }: { teachers: SiteTeacher[] })
   const [t, locale] = await Promise.all([getTranslations("schoolHome.teachers"), getLocale()]);
 
   return (
-    <section id="teachers" aria-labelledby="teachers-title" className="scroll-mt-16 border-t border-border/70 bg-card sm:scroll-mt-22">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+    <section id="teachers" aria-labelledby="teachers-title" className={cn(siteScrollMargin, "bg-white py-12")}>
+      <div className={siteContainer}>
         <TeacherSlider
+          label={t("label")}
           heading={t("title")}
           headingId="teachers-title"
           labels={{ previous: t("previous"), next: t("next"), page: t.raw("page") as string }}

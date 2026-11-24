@@ -24,6 +24,8 @@ export const authRoutes = {
 export const publicSchoolRoutes = {
   home: "/",
   notices: "/#notices",
+  // the admission application form (public, like the homepage)
+  apply: "/apply",
 } as const;
 
 export const publicNoticeHref = (noticeId: string) => `/?${new URLSearchParams({ notice: noticeId })}`;

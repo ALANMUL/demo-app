@@ -6,6 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import { MAX_ADMISSION_ROWS, useAdmission, useSaveAdmission } from "@/lib/school/settings";
@@ -14,12 +15,14 @@ import { useCurrencySign } from "@/lib/i18n/useCurrency";
 
 // what the form holds: the amounts as typed, turned into numbers on save
 type Draft = {
+  openYear: string;
   requirements: string[];
   dates: { label: string; value: string }[];
   fees: { label: string; amount: string }[];
 };
 
 const toDraft = (a: Admission): Draft => ({
+  openYear: a.openYear,
   requirements: a.requirements,
   dates: a.dates,
   fees: a.fees.map((f) => ({ label: f.label, amount: String(f.amount) })),
@@ -76,6 +79,7 @@ function AdmissionForm({ saved }: { saved: Admission }) {
     }
     save.mutate(
       {
+        openYear: draft.openYear.trim(),
         requirements: draft.requirements.map((r) => r.trim()).filter(Boolean),
         dates: draft.dates.filter((d) => d.label.trim() || d.value.trim()),
         fees: fees.map((f) => ({ label: f.label, amount: Number(f.amount.trim()) })),
@@ -86,6 +90,22 @@ function AdmissionForm({ saved }: { saved: Admission }) {
 
   return (
     <div className="space-y-7">
+      {/* the year on the homepage's "Admission open" button, which opens the application form; blank = no button */}
+      <div className="space-y-2">
+        <Label htmlFor="admission-open-year">{t("openYear")}</Label>
+        <Input
+          id="admission-open-year"
+          value={draft.openYear}
+          onChange={(e) => setDraft((d) => ({ ...d, openYear: e.target.value }))}
+          maxLength={20}
+          placeholder={t("openYearPlaceholder")}
+          aria-describedby="admission-open-year-hint"
+          className="max-w-48"
+        />
+        <p id="admission-open-year-hint" className="text-xs text-muted-foreground">
+          {t("openYearHint")}
+        </p>
+      </div>
       <ListEditor
         title={t("requirements")}
         addLabel={t("addRequirement")}

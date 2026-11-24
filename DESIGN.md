@@ -179,7 +179,7 @@ Each school's public homepage is the same register turned outward: the school's 
 A disciplined palette: the school's one accent, one gold marker, neutral paper and ink, and the status colours. A school sets two colours in Settings → Appearance: its **accent** and its **sidebar**.
 
 ### The school's accent
-A school picks one of nine accents: Navy (the default), Royal blue, Indigo, Violet, Maroon, Teal, Slate, Golden or Cream (`lib/theme/accents.ts`, `DEFAULT_ACCENT`; the server keeps the same list). No choice is saved as empty and means Navy; every other accent, Royal blue included, is saved by name. Royal blue stays the platform's own accent (the platform admin and globals.css). Each accent gives a set of shades, and everything that should look like "the school's colour" uses them:
+A school picks one of ten accents: Navy (the default), Royal blue, Indigo, Violet, Maroon, Teal, Deep teal (#0a4a63, the homepage mockup's), Slate, Golden or Cream (`lib/theme/accents.ts`, `DEFAULT_ACCENT`; the server keeps the same list). No choice is saved as empty and means Navy; every other accent, Royal blue included, is saved by name. Royal blue stays the platform's own accent (the platform admin and globals.css). Each accent gives a set of shades, and everything that should look like "the school's colour" uses them:
 - **Accent** (`--brand`; Signal Blue by default): the short bar above each page title, the open tab's underline, links, small highlights.
 - **Accent Wash** (`--brand-soft`; Signal Blue Wash by default): soft tinted fills: the principal's card, the facts row, the hero while photos load.
 - **Accent Ink** (`--navy`, `--primary`; Register Navy Ink by default): the accent's deep shade, for primary buttons, headings and figures in the accent, and white text on it. In dark mode it turns into a light tint.
@@ -194,9 +194,14 @@ Every accent is checked for WCAG AA: its text on white, white on its ink, and it
 - **Register Navy** (oklch(0.285 0.11 263)) stays the platform admin's menu colour.
 
 ### Merit Gold
-- **Merit Gold** (oklch(0.82 0.14 82)): marks on the platform admin's navy menu, and the homepage's gold lines (the menu pill, the About and Notices headings).
-- **Merit Gold Deep** (oklch(0.7 0.14 78)): the same gold on white: the line under the homepage menu's current item, the short line above the About heading, the phone menu's current-item bar, the top bar of the picked status card on the Students page.
+- **Merit Gold** (oklch(0.82 0.14 82)): marks on the platform admin's navy menu.
+- **Merit Gold Deep** (oklch(0.7 0.14 78)): the same gold on white: the top bar of the picked status card on the Students page, and other "you are here" marks in the dashboard. The homepage uses its own gold (below).
 - Gold never follows the accent: it is the one fixed colour that says "you are here".
+
+### The homepage's markers
+The public homepage uses two fixed marker colours of its own (`--color-site-gold`, `--color-site-label`), whatever the school's accent:
+- **Homepage Gold** (#f9a90c): the short line before the hero's line, the principal's quote mark, the line under the menu's current item, the teachers row's current dot, the application form's preview note, and the stroke along the footer's wave.
+- **Label Orange** (#c4510f): the small label above every section heading ("Who we are", "Notice board", "Campus", "Join us", "Campus life", "Get in touch"), bold 12 to 13px, in spaced capitals in English (Bangla keeps its own spacing).
 
 ### Neutral
 - **Paper** (oklch(1 0 0)): cards, tables, inputs, the top bar, the white menu.
@@ -224,6 +229,7 @@ Status pills use their own soft pairs: emerald for active and present, red for s
 **Display Font:** Times New Roman (with Tinos, then Times, serif)
 **Body Font:** Times New Roman for English; Anek Bangla for Bangla letters, drawn at 88% of its natural size so it sits evenly beside the English
 **Label/Mono Font:** Geist Mono, only for codes such as the school's subdomain
+**School homepage (and its application form):** English in Plus Jakarta Sans for text and Merriweather for headings, the school's name and the footer line (its italic), as in the agreed mockup (`components/school/site/SiteFonts.tsx`, only on those pages, windows they open included). Bangla letters still come from Anek Bangla.
 
 **Character:** a classic serif that reads like a printed register or a certificate, paired with a clean modern Bangla face. Formal without being stiff.
 
@@ -254,12 +260,12 @@ On phones the menu becomes a drawer opened from the top bar, a bottom bar carrie
 
 ### The public homepage
 - **Header** (two parts):
-  - a thin white contact bar, 36px on phones and 40px from 640px, that scrolls away with the page. Phone, email and address sit on the left with hairline dividers; the email and address drop off on narrow screens, and only the address shortens with "…". The login link ("Open the app" once logged in) and a language dropdown sit on the right.
-  - a sticky white bar under it, 64px on phones and 88px from 640px. The school's round logo and its Site Name sit on the left; the menu (Home, then the chapters) sits on the right from 1024px; below 1024px a menu button opens a panel holding the links and a Log in button.
-- **Hero:** the school's photographs at the full size of the screen under the header (`100svh` minus the header's 100px or 128px). Its height and the chapters' scroll margins follow the header's height.
-- **Order:** the latest-notice strip, then About, Teachers and Notices (each its own layout), then the chapters (admission, gallery, contact), then the footer.
-- **Column:** everything sits in a centred 1152px column with a 16px gutter.
-- **Chapters:** each is a 12-column grid from 1024px: the number and title in a 3-column margin that stays in view while the chapter scrolls, the content in the other 9, 48px apart. On phones the number sits beside the title above the content. Chapters are 56px, 80px and 96px tall in padding (phone, tablet, desktop), divided by hairlines, and alternate paper and the grey desk.
+  - a 40px white utility bar (13px slate text, icons in Accent Ink, fixed) that scrolls away with the page: phone, email and address on the left parted by light "|" bars (the email from 640px, the address from 768px, shortened to its last two parts); "Student portal | Parent portal" (both the school's login; "Dashboard" once logged in) and the language on the right.
+  - a sticky 80px white bar under it (95% white with a blur, a hairline and a soft shadow below): the school's 56px round logo and its name over two lines (split at the space nearest the middle when it has three words or more) in bold Accent Ink, fixed, and the menu on the right from 1024px; below 1024px a menu button opens a panel under the bar.
+- **Hero:** at least 480px tall (560px from 1024px), the school's photographs across the full width under a white veil, the words on the veil at the left; under it a soft wave with the slide dots.
+- **Order:** About (48px, 64px from 1024px) with its facts as a strip under it, Teachers, Notices, Facilities, Admission and Gallery, then the footer (the menu's Contact). The application form is its own page (`/apply`) with the same header and footer.
+- **Column:** everything sits in a centred 1280px column with 16px gutters (24px from 640px, 32px from 1024px). Every band is white; the pale tint (`--color-site-ice`, 5% of Accent Ink, fixed, with its edge `--color-site-line` at 16%) appears only inside boxes. Text is slate (#475569 for body, #64748b for small print). Sections land 80px under the top when the menu jumps to them.
+- **Sections:** each opens with its Label Orange label (11px bold) and its heading (20px, 24px from 640px, bold Accent Ink, fixed) on the left, an action across from it ("View all notices", arrows), then the content 28px below. 48px of padding above and below (Facilities 40px); no hairlines between them. The footer is the Contact part.
 
 ### Named Rules
 **The Filled Chapters Rule.** The homepage shows only the chapters the school has filled in (notices and contact always), in page order, and none of them is numbered. The menu and the footer follow the same list.
@@ -275,11 +281,13 @@ Flat. Nothing casts a shadow at rest: cards, tables, panels and the top bar are 
 
 **The No Lift Rule.** Cards and buttons do not rise, glow or scale on hover. Hover changes a background or a border, nothing more.
 
-**The Fill or Whole Rule.** A school's photograph fills the hero stage unless that would lose more than half of it. Then it is shown whole over a blurred copy of itself, never cut down to a fragment.
+**The White Veil Rule.** The hero's photographs fill the full width; the words never sit on a bare photo but on a white veil that is solid where they are (the left, or the top on a phone) and clears towards the other side, so the photo still shows. No dark shade and no blur.
 
 ## Shapes
 
 Small, consistent corners: 4px on buttons, inputs and selects, 5px on menu rows (the index tab rounds its outer end to 10px), 8px on cards, panels, the homepage's About photograph and the principal's card, and full circles for avatars, the homepage logo, status pills, count badges and the homepage's menu pill and buttons. Borders are 1px hairlines; the only thicker lines are the 2px tab underline and the 3px gold and accent marker bars.
+
+The school homepage follows the mockup's own corners instead, written in pixels (the app's scale above runs smaller): 6px on the menu's items, 12px on cards (notices, gallery, teachers, the admission sheet), 16px on the large boxes (the About photo, the principal's card, the facts strip) and on the facility tiles.
 
 ## Components
 
@@ -347,48 +355,49 @@ The dashboard's header panel (it takes the Page Hero's place, so no trail shows 
 The Students register opens with a card per status: All, Active, Suspended, Inactive, Graduated. Each is paper with a hairline edge and 8px corners: a 32px icon box and the status name, the count in large tabular figures, and a 4px bar of its share of all the students with the percent. Icon and bar take the status pill's colours (emerald, red, grey, Accent Ink; All in the accent). The picked card carries a 3px Merit Gold Deep bar along its top and a darker edge; hover only darkens the edge. Five across from 1024px, a sideways-scrolling row below. Under them one card holds the toolbar on a Muted Fill band (search; Class, grouped School and College, and its Section; Year, Group, New or old, Gender, Religion; Clear filters; the order, "Sort", at the right end: the usual order, Newest, Oldest) and the table.
 
 ### Homepage Header
-- **Contact bar:** Accent Ink text, small icons and hairline dividers (see Layout). The address shows only its last two parts (e.g. "Jatrabari, Bangladesh"), the whole of it on hover. The login link carries a small sign-in icon; once logged in it reads "Dashboard" with a dashboard icon. The language dropdown is a globe, the language's name and a small arrow.
-- **Main bar:** the logo is a round badge with a soft shadow. The Site Name sits beside it over two lines.
-- **Menu:** links in Accent Ink. The current one is a pill filled with the Accent Band, with a short Merit Gold Deep line under it; hover tints the pill area with the Accent Ink at 8%.
-- **Phone menu:** the current link carries a gold bar on its left.
+- **Utility bar:** see Layout. The language button is a globe in Accent Ink, the language's name in slate and a small arrow.
+- **Main bar:** the logo is a plain 56px circle. The name sits beside it over two lines, 16 / 14px (18 / 16px from 640px).
+- **Menu:** 14px semibold links in Accent Ink, fixed, in boxes with 6px corners (10px side padding up to 1280px, 14px from there), each followed by a small down arrow; hover turns the text Homepage Gold. The current one is filled with Accent Ink with white text and a small shadow. About opens a menu with About and Teachers (when the school shows teachers).
+- **Phone menu:** the links as rows with 6px corners, each ending in a small right arrow; the current one filled with Accent Ink, the rest tinted on hover; the way in at the end.
 
 ### Homepage Hero (signature)
-The school's photographs at the full size of the screen, one fading into the next (each shows for 7s, then a 1.2s fade with the standard ease); nothing zooms or drifts, and no words or shade sit over them. The school's name is still the page's heading for screen readers and search engines.
-- **A photo that doesn't fit:** it fills the stage unless that would lose more than half of it. A tall poster, or a landscape photo on a phone, is shown whole over a blurred copy of itself.
-- **Controls:** each sits on a small dark backing so it reads on any photo. The caption is at the bottom left. At the bottom right are "02 / 05" in the page's digits, a slim marker per photo that fills while it shows (each a 44px tap target), and pause/play.
-- **Holding and moving on:** pointing at or focusing the controls holds the photo; arrows and swipes move on. Nothing moves while the hero is scrolled out of view, or when the visitor asks for less motion.
-- **One photo or none:** with one photo there are no controls. With none, the stage stays a soft Accent Wash.
+The school's photographs across the full width, one fading into the next (each shows for 6s, then a 1.2s fade with the standard ease), under a white veil: solid white over the left quarter, clearing to nothing at the right edge (from the top down on phones, keeping a little photo at the bottom). On the white, in a column at most 576px wide:
+- **The school's line** (Settings → About, "Line above the school's name"; none when empty): a 40 by 2px Homepage Gold line, then the line in bold Accent Ink, fixed, 12 to 13px, in spaced capitals.
+- **The name** as the page's heading, black weight, Accent Ink, fixed (2rem on phones up to 2.875rem; a long name a step smaller).
+- **The tagline** (Settings → About; a default line until it writes one) in medium slate grey.
+- **Buttons:** "Admission open 2027" (the year from Settings → Admission, "Admission open for"; no button when empty), a 48px pill in Accent Ink, fixed, with white text and an arrow, opening the application form; and "Explore our school", a white pill with an Accent Ink outline, going to About (or Notices).
+- **Controls**, bottom right from 640px: the caption in a small white pill, then round 40px white previous, pause and next buttons in Accent Ink that fill with it on hover. Under the stage, on a soft wave in the accent's tint, a 10px dot per photo (the current one Accent Ink, the rest grey), with pause beside them on phones.
+- **Holding and moving on:** pointing at or focusing the controls holds the photo; arrows and swipes move on. Nothing moves while the hero is scrolled out of view, or when the visitor asks for less motion. With one photo there are no controls; with none, the words on white.
 - **Without slides:** the About photo or the first gallery photos stand in.
 
 ### Homepage About (signature)
 The school's introduction and its principal's message as one compact row of up to three parts of the same height, from 1024px (two columns on tablets, stacked on phones). Every part comes from Settings → About section.
 - **Photograph:** filling its column's height (at least 224px), 8px corners, a soft shadow.
-- **Words:** a short Merit Gold Deep line, the heading "About the school" in Accent Ink, the first paragraph cut to four lines, then a "Learn more →" pill in Accent Ink. It opens a window with the whole story and the principal's whole message, so the row never grows.
-- **Principal's card:** on the Accent Wash, with a gold quote mark and the heading "Message from the {title}" in Accent Ink. The message, cut to five lines, sits beside a round photo with a white ring, then "— Name" in Accent Ink with the title beside it in Quiet Ink. The title defaults to "Principal" / "অধ্যক্ষ"; the card shows only when the message isn't empty.
-- **Facts:** a ruled row on the Accent Wash, four across on desktop and two on phones, separated by accent hairlines. Each holds a large bold figure in Accent Ink over its label.
+- **Words:** the Label Orange label "Who we are", the heading "About the school" in Accent Ink, the first paragraph cut to four lines, then a "Learn more →" pill in Accent Ink. It opens a window with the whole story and the principal's whole message, so the row never grows.
+- **Principal's card:** on the pale tint with its edge (16px corners, 24 / 28px padding, a small shadow), with a Homepage Gold quote mark and the heading "Message from the {title}" in Accent Ink. The message, cut to five lines, sits beside a round photo with a white ring, then "— Name" in Accent Ink with the title beside it in Quiet Ink. The title defaults to "Principal" / "অধ্যক্ষ"; the card shows only when the message isn't empty.
+- **Stats strip:** under the About row (shown on every school's homepage), a rounded box in a light deep teal (#f1f7fa, the mockup's ice; edge and dividers #d6e9f0; the same whatever the accent), 28px tall in padding, four across from 1024px (ruled between them) and two on phones. Each card is a large icon in Accent Ink beside a bold figure over its label: the school's active students and its working teachers, counted by the app (a count of none drops out), then "A+ Quality Education" and "100% Commitment", the same for every school. Schools no longer type facts in Settings.
 - **Missing parts:** any part the school hasn't filled in drops out, and the columns close up.
 
 ### Homepage Teachers
 Right after About, on paper with a hairline above. The teachers the school picked in Settings ("Teachers on the homepage"), in its order; with none picked there is no section and no menu item.
-- **Heading row:** a short Merit Gold Deep line and "Our teachers" in Accent Ink; across from it two 36px round outline arrows in Accent Ink, faded at the ends, shown only when the cards don't all fit.
+- **Heading row:** the Label Orange label "Our faculty" over "Our teachers" in Accent Ink; across from it two 36px round outline arrows in Accent Ink, faded at the ends, shown only when the cards don't all fit.
 - **Cards:** five across from 1024px, four from 768px, three from 640px, two on phones, 16px apart, sliding a page at a time (swipe on phones, snap to each card). Each is the Accent Wash with an 8px corner: a round photo (96px, 112px from 640px) with a white ring and soft shadow (a drawn silhouette on an accent tint without one), the name bold in Accent Ink, the designation in Quiet Ink, both two lines at most.
-- **Dots:** one per page under the row; the current one a 24px Merit Gold pill, the rest 8px grey dots.
+- **Dots:** one per page under the row; the current one a 24px Homepage Gold pill, the rest 8px grey dots.
 
-### Homepage Chapters
-- **Margin:** a 48 by 3px Merit Gold Deep line and the chapter title (bold, 1.75rem from 1024px, Accent Ink), the same mark as the About and Notices headings. No number and no introduction line: the title says it.
-- **Latest notice strip:** a paper band under the hero, with a hairline below. It holds "Latest notice" in Accent Ink, the date, the title (truncated) and a chevron, and opens the notice.
+### Homepage Sections
+- **Facilities:** after Notices, on paper: the label "Campus" and "Our facilities", then the facilities the school ticked in Settings → Facilities (from a fixed list of twelve, each with its own icon), as even tiles in the stats strip's light deep teal (#f1f7fa, edge #d6e9f0), 16px corners, at least 128px tall (28px above and below): the icon in Accent Ink over the name in bold Accent Ink. Six across from 1024px, three from 640px, two on phones; none ticked, no section and no menu item.
 - **Admission sheet:** one paper card divided by hairlines into parts, each titled in its own margin. Requirements are numbered, dates are label/value rows, and fees follow a printed fee schedule: label, dotted leader, amount ("TK 2,000" in English, "৳২,০০০" in Bangla).
-- **Notices:** on the grey desk. A short Merit Gold Deep line and the heading in Accent Ink, with "View all notices →" across from it when there are more than three. Below, the newest three as white cards with an 8px corner and a hairline border, three across on desktop, two from 768px, stacked on phones. Each card holds the date in a box of the Accent Wash (the day large and bold in Accent Ink, the month and year under it) with a short hairline beside it (56px, centred on the box), then the title in Accent Ink (two lines at most), the start of the text in Quiet Ink (two lines), then "View" with an eye icon in Accent Ink with pinned and file marks, and the category's icon in the top corner. The whole card opens the notice in a window. "View all notices" opens a window listing every notice as dated rows, with "Show more" as an outline button in the accent; a notice opens on top of the list. Pinned notices come first.
+- **Notices:** on the grey desk. The label "Notice board" over the heading in Accent Ink, with "View all notices →" across from it when there are more than three. Below, the newest three as white cards with an 8px corner and a hairline border, three across on desktop, two from 768px, stacked on phones. Each card holds the date in a box of the Accent Wash (the day large and bold in Accent Ink, the month and year under it) with a short hairline beside it (56px, centred on the box), then the title in Accent Ink (two lines at most), the start of the text in Quiet Ink (two lines), then "View" with an eye icon in Accent Ink with pinned and file marks, and the category's icon in the top corner. The whole card opens the notice in a window. "View all notices" opens a window listing every notice as dated rows, with "Show more" as an outline button in the accent; a notice opens on top of the list. Pinned notices come first.
 - **Gallery:** photographs in even 4:3 frames (1px hairline, 4px inset, 8px corners) with captions beneath them. The first six show, then "Show all".
-- **Contact rows:** label in Quiet Ink, the value large, and the action on the right as an Accent Ink link: call, email, map or website. Links that leave the page carry an outward arrow.
+- **Application form (`/apply`):** a preview for now: nothing is sent. The label "Admission 2027", the heading and a line on what to fill in; a note on a Homepage Gold tint saying it is a preview; then one white sheet split by hairlines into bands (Student; Parents and guardian), each band's name and hint in a 220px column from 1024px and its fields two across. Required fields carry a Danger star; problems show under their field on submit, the first one focused. Sending shows a confirmation in place of the form.
 
 ### Homepage Footer
-On paper, with a hairline above, in up to four columns parted by vertical hairlines from 1024px (two columns from 640px, stacked on phones). Every colour follows the accent:
-- **School:** the round logo (56px, white, soft shadow) beside the name in bold Accent Ink, then its footer line (or the default one) in italic in the accent.
-- **Quick links:** the heading in bold Accent Ink, then the chapters and the login (or "Open app" once logged in), each after a small chevron in Accent Ink; hover turns the text Accent Ink.
-- **Contact:** phone, email and full address, each beside a 28px round mark in Accent Ink, fixed, with a white icon.
-- **Follow us:** the school's Facebook, YouTube and Instagram pages (set in Settings → About) as 36px round marks in Accent Ink, fixed, with white glyphs. Only the links a school filled in show; with none, the column drops out.
-- **Bottom:** the copyright line in Quiet Ink, over a soft two-layer wave in the accent's tint along the bottom right.
+The menu's Contact. On white with a hairline above, 56px of padding on top, in four columns from 1024px (4 / 3 / 3 / 2 of 12; two from 640px, stacked on phones), 32px apart:
+- **School:** the 64px round logo beside the name over two lines in bold Accent Ink, then its footer line (or the default one) in italic Accent Ink at 80%.
+- **Quick links:** a 14px bold heading, then the homepage's parts and the login (or "Dashboard"), 12px medium slate, each after a small chevron in Accent Ink.
+- **Contact us:** phone, email, address (opening Google Maps) and website, 12px medium slate, each after a small icon in Accent Ink.
+- **Follow us:** the school's Facebook, YouTube and Instagram pages as 32px round marks in Accent Ink, gold on hover; only those it filled in.
+- **Bottom:** under a hairline, the 11px copyright line over a wave in the pale tint's edge colour with a 5px Homepage Gold stroke, at 60%.
 
 ## The main site (sncmt.com)
 
@@ -421,8 +430,8 @@ The platform's own marketing page shares the type and the gold but has its own l
 ### Don't:
 - **Don't** use a fixed blue, navy or gold where the school's colour belongs, and don't use the sidebar colour on the homepage.
 - **Don't** add drop shadows, hover lifts, glows or scaling to cards and buttons.
-- **Don't** use gradients, gradient text or decorative colour washes, and don't cut a school's photograph down to a fragment.
-- **Don't** put words or a shade over the hero photographs.
+- **Don't** use gradients, gradient text or decorative colour washes (the hero's white veil is the one gradient), and don't cut a school's photograph down to a fragment.
+- **Don't** put words straight on a hero photograph, or a dark shade or blur over it: the words sit on the white veil.
 - **Don't** decorate the homepage with glow blobs, dot patterns, tilted colour blocks or pinging badges, and don't put a small label (a kicker) above a heading.
 - **Don't** use a second accent colour or any hue that does not carry a status.
 - **Don't** show a visible scrollbar or a rail across the school menu's tab.

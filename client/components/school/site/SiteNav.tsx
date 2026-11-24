@@ -1,34 +1,42 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type MouseEvent } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { jumpToSection, useActiveSection } from "@/lib/useSectionNav";
 import { cn } from "@/lib/utils";
+import { siteContainer, siteFocus } from "./siteStyles";
 
-// section "top" is the top of the homepage; the others are ids of its sections
-export type SiteLink = { href: string; label: string; section: string };
-
-// the ring every control on the white bar shows when reached by keyboard, in the school's colour
-const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink";
+// section "top" is the top of the homepage; the others are ids of its sections. A link with
+// children opens them in a small menu (About: the school, its teachers)
+export type SiteLink = { href: string; label: string; section: string; children?: SiteLink[] };
 
 /*
- * The menu of the public header's white bar: from lg the links in a row at the bar's right, the
- * one in view a pill in the school's accent with a short gold line under it; below lg a button
- * opens them as a panel under the bar, with the way in (the language and the portals are in the
- * thin bar above). A link scrolls to its chapter.
+ * The menu of the header's white bar, as in the mockup: from 1024px the links in a row at its right
+ * (14px semibold in the school's deep accent, turning gold on hover), the one in view a box filled
+ * with the deep accent in white with 6px corners; every item carries a small down arrow (one with
+ * children opens them). In the phone panel each row ends in a small right arrow. Below 1024px a button opens them as a panel under the bar, with the way in. On the
+ * homepage a link scrolls to its section; on another page of the site it goes to the homepage's.
  */
 export function SiteNav({
   links,
   account,
   labels,
+  onHome = true,
 }: {
   links: SiteLink[];
   account: { href: string; label: string };
   labels: { menu: string; close: string; nav: string };
+  // on the homepage the links scroll to its sections and the one in view is marked; on another
+  // page of the site (the application form) they simply go to the homepage's sections
+  onHome?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const active = useActiveSection(links.map((link) => link.section));
+  const all = links.flatMap((link) => [link, ...(link.children ?? [])]);
+  const inView = useActiveSection([...new Set(all.map((link) => link.section))]);
+  const active = onHome ? inView : null;
+  const isCurrent = (link: SiteLink) => active === link.section || !!link.children?.some((child) => child.section === active);
 
   // Escape closes the panel
   useEffect(() => {
@@ -40,33 +48,51 @@ export function SiteNav({
 
   const jump = (e: MouseEvent, link: SiteLink) => {
     setOpen(false);
-    jumpToSection(link.section, link.href, e);
+    if (onHome) jumpToSection(link.section, link.href, e);
   };
+
+  const item = (current: boolean) =>
+    cn(
+      // a little tighter from 1024px to 1280px, so the school's name keeps its room beside a full menu
+      "flex items-center gap-1 rounded-[6px] px-2.5 py-2 whitespace-nowrap transition xl:px-3.5",
+      siteFocus,
+      current ? "bg-brand-ink text-white shadow-sm" : "hover:text-site-gold",
+    );
 
   return (
     <>
-      <nav aria-label={labels.nav} className="ml-auto hidden items-center gap-1 lg:flex">
-        {links.map((link) => {
-          const current = active === link.section;
-          return (
+      <nav aria-label={labels.nav} className="hidden items-center gap-1 text-sm font-semibold text-brand-ink lg:flex">
+        {links.map((link) =>
+          link.children ? (
+            <DropdownMenu key={link.section} modal={false}>
+              <DropdownMenuTrigger className={item(isCurrent(link))}>
+                {link.label}
+                <ChevronDown aria-hidden className="size-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-44">
+                {link.children.map((child) => (
+                  <DropdownMenuItem key={child.section} asChild className="font-semibold text-brand-ink">
+                    <Link href={child.href} onClick={(e) => jump(e, child)}>
+                      {child.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
             <Link
               key={link.section}
               href={link.href}
               onClick={(e) => jump(e, link)}
-              aria-current={current ? "location" : undefined}
-              className={cn(
-                "relative rounded-full px-4 py-2 text-[15px] font-semibold whitespace-nowrap transition-colors",
-                focusRing,
-                current
-                  ? // the pill, and a short gold line under it
-                    "bg-brand-band text-brand-band-foreground after:absolute after:inset-x-4 after:-bottom-2.5 after:h-0.75 after:rounded-full after:bg-sidebar-primary"
-                  : "text-brand-ink hover:bg-brand-ink/8",
-              )}
+              aria-current={active === link.section ? "location" : undefined}
+              className={item(active === link.section)}
             >
               {link.label}
+              {/* every item carries the small arrow, as the ones that open a menu do */}
+              <ChevronDown aria-hidden className="size-3" />
             </Link>
-          );
-        })}
+          ),
+        )}
       </nav>
 
       <button
@@ -75,43 +101,37 @@ export function SiteNav({
         aria-expanded={open}
         aria-controls="site-menu"
         aria-label={open ? labels.close : labels.menu}
-        className={cn("flex size-10 shrink-0 items-center justify-center rounded-md text-brand-ink hover:bg-brand-ink/8 lg:hidden", focusRing)}
+        className={cn("rounded-[6px] p-2 text-brand-ink hover:bg-site-ice lg:hidden", siteFocus)}
       >
         {open ? <X className="size-5" /> : <Menu className="size-5" />}
       </button>
 
       {open && (
-        <div id="site-menu" className="absolute inset-x-0 top-full border-y border-border bg-white shadow-lg lg:hidden">
-          <nav aria-label={labels.nav} className="mx-auto flex max-w-6xl flex-col px-4 py-2">
-            {links.map((link) => (
-              <Link
-                key={link.section}
-                href={link.href}
-                onClick={(e) => jump(e, link)}
-                aria-current={active === link.section ? "location" : undefined}
-                className={cn(
-                  "border-l-2 px-3 py-2.5 text-[17px] font-medium",
-                  focusRing,
-                  active === link.section
-                    ? "border-sidebar-primary font-semibold text-brand-ink"
-                    : "border-transparent text-brand-ink/80 hover:text-brand-ink",
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="mx-auto flex max-w-6xl justify-end border-t border-border px-4 py-3">
-            <Link
-              href={account.href}
-              className={cn(
-                "inline-flex h-10 items-center rounded-full bg-brand-band px-6 text-sm font-semibold text-brand-band-foreground transition-opacity hover:opacity-90",
-                focusRing,
-              )}
-            >
+        <div id="site-menu" className="absolute inset-x-0 top-full border-t border-slate-100 bg-white shadow-lg lg:hidden">
+          <nav aria-label={labels.nav} className={cn(siteContainer, "space-y-2 pt-2 pb-4 text-sm font-semibold text-brand-ink")}>
+            {all
+              .filter((link) => !link.children)
+              .map((link) => (
+                <Link
+                  key={link.section}
+                  href={link.href}
+                  onClick={(e) => jump(e, link)}
+                  aria-current={active === link.section ? "location" : undefined}
+                  className={cn(
+                    "flex items-center justify-between gap-3 rounded-[6px] px-3 py-2",
+                    siteFocus,
+                    active === link.section ? "bg-brand-ink text-white" : "hover:bg-site-ice",
+                  )}
+                >
+                  {link.label}
+                  <ChevronRight aria-hidden className="size-3.5 shrink-0" />
+                </Link>
+              ))}
+            <Link href={account.href} className={cn("flex items-center justify-between gap-3 rounded-[6px] px-3 py-2 hover:bg-site-ice", siteFocus)}>
               {account.label}
+              <ChevronRight aria-hidden className="size-3.5 shrink-0" />
             </Link>
-          </div>
+          </nav>
         </div>
       )}
     </>

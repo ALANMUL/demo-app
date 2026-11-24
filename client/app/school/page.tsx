@@ -1,13 +1,14 @@
-import { ArrowRight, ArrowUpRight, Globe, Mail, MapPin, Phone, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 import { AboutSection } from "@/components/school/site/AboutSection";
 import { AdmissionSection } from "@/components/school/site/AdmissionSection";
-import { Chapter } from "@/components/school/site/Chapter";
+import { FacilitiesSection } from "@/components/school/site/FacilitiesSection";
+import { FactsStrip } from "@/components/school/site/FactsStrip";
 import { GallerySection } from "@/components/school/site/GallerySection";
 import { HeroSection } from "@/components/school/site/HeroSection";
 import { NoticesSection } from "@/components/school/site/NoticesSection";
 import { SchoolSiteHeader } from "@/components/school/site/SchoolSiteHeader";
+import { SiteFonts } from "@/components/school/site/SiteFonts";
 import { SiteFooter } from "@/components/school/site/SiteFooter";
 import { TeachersSection } from "@/components/school/site/TeachersSection";
 import { pickName } from "@/lib/i18n/names";
@@ -19,20 +20,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return school ? { title: pickName(school, locale) } : {};
 }
 
-// "+8801712345678" -> "01712345678", how people here write it
-const localPhone = (phone: string) => phone.replace(/^\+?880/, "0");
-
-type ContactRow = { icon: LucideIcon; label: string; value: string; action?: { href: string; label: string; external?: boolean } };
-
 /**
- * A school's public homepage (no login), its only page, laid out like a printed prospectus: the
- * header, the photos with the school's name over them and the newest notice under them, then a
- * part per menu item: the about section, the teachers row and the notice cards in layouts of their own, and admission,
- * gallery and contact as chapters with their titles in the margin (those the school left empty are
- * skipped), then the footer. The menu scrolls to them.
+ * A school's public homepage (no login), laid out as the agreed mockup on white: the header, the
+ * hero (its photos under a white veil, with its name, lines and the way to admission beside them),
+ * then a part per menu item: about (with its facts as a strip under it), the teachers row, the
+ * notice cards, the facilities, admission and the gallery (those the school left empty are
+ * skipped), and the footer, which is the contact part. The menu scrolls to them.
  */
 export default async function SchoolHomePage() {
-  const [t, locale, school] = await Promise.all([getTranslations("schoolHome"), getLocale(), getCurrentSchoolSite()]);
+  const [locale, school] = await Promise.all([getLocale(), getCurrentSchoolSite()]);
   // the school layout has already 404'd an unknown or inactive school
   if (!school) return null;
   // the name in the language being read (the other one only when this one is missing)
@@ -41,40 +37,9 @@ export default async function SchoolHomePage() {
   // the parts the school has filled in (notices and contact always show)
   const chapters = siteChapters(school);
 
-  const contacts = [
-    school.phone && {
-      icon: Phone,
-      label: t("contact.phone"),
-      value: localPhone(school.phone),
-      action: { href: `tel:${school.phone}`, label: t("contact.call") },
-    },
-    school.publicEmail && {
-      icon: Mail,
-      label: t("contact.email"),
-      value: school.publicEmail,
-      action: { href: `mailto:${school.publicEmail}`, label: t("contact.write") },
-    },
-    school.address && {
-      icon: MapPin,
-      label: t("contact.address"),
-      value: school.address,
-      action: {
-        // a plain map search for the address: no embedded map, nothing to set up
-        href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${school.address.replace(/\s*\n\s*/g, ", ")}`)}`,
-        label: t("contact.map"),
-        external: true,
-      },
-    },
-    school.website && {
-      icon: Globe,
-      label: t("contact.website"),
-      value: school.website.replace(/^https?:\/\//, ""),
-      action: { href: school.website, label: t("contact.visit"), external: true },
-    },
-  ].filter(Boolean) as ContactRow[];
-
   return (
-    <div className="site-home flex min-h-screen flex-1 flex-col bg-canvas">
+    <div className="site-home flex min-h-screen flex-1 flex-col bg-white text-slate-800">
+      <SiteFonts />
       <SchoolSiteHeader school={school} />
 
       <main className="flex-1">
@@ -82,43 +47,17 @@ export default async function SchoolHomePage() {
 
         {chapters.includes("about") && <AboutSection about={school.about} />}
 
-        {chapters.includes("teachers") && <TeachersSection teachers={school.teachers} />}
+        <FactsStrip stats={school.stats} />
 
-        {chapters.includes("admission") && <AdmissionSection admission={school.admission} />}
+        {chapters.includes("teachers") && <TeachersSection teachers={school.teachers} />}
 
         <NoticesSection subdomain={school.subdomain} />
 
-        {chapters.includes("gallery") && <GallerySection photos={school.gallery} />}
+        {chapters.includes("facilities") && <FacilitiesSection facilities={school.about.facilities} />}
 
-        <Chapter id="contact" title={t("contact.title")}>
-          {contacts.length === 0 ? (
-            <p className="border-y border-border/70 py-6 text-muted-foreground">{t("contact.none")}</p>
-          ) : (
-            <dl className="divide-y divide-border/70 border-y border-border/70">
-              {contacts.map(({ icon: Icon, label, value, action }) => (
-                <div key={label} className="grid gap-x-6 gap-y-1.5 py-5 sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:items-baseline">
-                  <dt className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                    <Icon className="size-4 shrink-0 text-navy" />
-                    {label}
-                  </dt>
-                  <dd className="text-lg font-medium break-words whitespace-pre-line tabular-nums">{value}</dd>
-                  {action && (
-                    <dd>
-                      <a
-                        href={action.href}
-                        {...(action.external ? { target: "_blank", rel: "noreferrer" } : {})}
-                        className="-my-3 inline-flex items-center gap-1 rounded-sm py-3 text-sm font-semibold text-navy underline-offset-4 hover:underline focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
-                      >
-                        {action.label}
-                        {action.external ? <ArrowUpRight className="size-4" /> : <ArrowRight className="size-4" />}
-                      </a>
-                    </dd>
-                  )}
-                </div>
-              ))}
-            </dl>
-          )}
-        </Chapter>
+        {chapters.includes("admission") && <AdmissionSection admission={school.admission} />}
+
+        {chapters.includes("gallery") && <GallerySection photos={school.gallery} />}
       </main>
 
       <SiteFooter school={school} />

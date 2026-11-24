@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { localeLabels, locales } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
-/** The homepage's thin top bar's language picker: a globe, the language's name and a small arrow, in the school's colour. */
+/** The homepage's utility bar's language picker: a globe in the school's deep accent, the language's name in slate and a small arrow. */
 export function SiteLanguageMenu() {
   const t = useTranslations("common");
   const { current, choose, pending } = useLocaleChoice();
@@ -15,15 +15,15 @@ export function SiteLanguageMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-sm font-medium text-brand-ink transition-opacity hover:opacity-80",
+          "inline-flex items-center gap-1.5 rounded-sm text-xs font-medium text-slate-700 transition-colors hover:text-brand-ink",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink",
           pending && "opacity-60",
         )}
         aria-label={t("language")}
       >
-        <Globe className="size-4" />
+        <Globe className="size-3.5 text-brand-ink" />
         <span lang={current}>{localeLabels[current]}</span>
-        <ChevronDown className="size-3.5 opacity-70" />
+        <ChevronDown className="size-2.5" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         {locales.map((locale) => (

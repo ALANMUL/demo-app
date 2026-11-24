@@ -38,6 +38,17 @@
   --color-mk-rule: var(--mk-rule);
   --color-mk-margin: var(--mk-margin);
   --color-mk-wash: var(--mk-wash);
+  /* the school homepage's two fixed markers, whatever the school's accent: the bright gold of its
+     lines and marks, and the burnt orange of the small labels above its headings */
+  --color-site-gold: #f9a90c;
+  --color-site-label: #c4510f;
+  /* the homepage's pale tint and its edge, mixed from the school's deep accent (fixed in both modes)
+     the way the mockup's ice (#f1f7fa) and its line (#cfe6ef) come from its teal */
+  --color-site-ice: color-mix(in oklab, var(--brand-ink) 5%, white);
+  --color-site-line: color-mix(in oklab, var(--brand-ink) 16%, white);
+  /* the stats strip's light deep teal (from the mockup's #0a4a63), the same whatever the accent, and its edge */
+  --color-site-teal: #f1f7fa;
+  --color-site-teal-line: #d6e9f0;
   --color-mk-slate: var(--mk-slate);
   --color-mk-sky: var(--mk-sky);
   --color-mk-board: var(--mk-board);
@@ -389,9 +400,8 @@
 }
 
 /*
- * The school's public homepage (app/school/page): smooth jumps to its sections, a faint grid
- * behind the hero that fades out towards the edges, and the bar under the slider that fills
- * while a picture is shown (paused with the slider).
+ * The school's public homepage (app/school/page): smooth jumps to its sections. The faint grid and
+ * the dot pattern are the marketing site's and the dashboard's.
  */
 @media (prefers-reduced-motion: no-preference) {
   html:has(.site-home) {
@@ -409,26 +419,11 @@
   background-image: radial-gradient(currentColor 1.5px, transparent 1.5px);
   background-size: 14px 14px;
 }
-.slide-progress {
-  transform-origin: left center;
-  animation: slide-progress var(--slide-duration, 6s) linear forwards;
-}
-.slide-progress[data-paused="true"] {
-  animation-play-state: paused;
-}
-@keyframes slide-progress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
 
 /*
- * The homepage hero's photos (components/school/site/HeroStage): the whole screen, with no shade
- * over them, the next fading in while the one before fades out (nothing fades when the visitor asks
- * for less motion).
+ * The homepage hero's photos (components/school/site/HeroStage): the whole width, under a white veil
+ * on the words' side, the next fading in while the one before fades out (nothing fades when the
+ * visitor asks for less motion).
  */
 .hero-slide {
   opacity: 0;
@@ -444,6 +439,16 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-slide {
     transition: none;
+  }
+}
+/* the white veil over the hero's photos: solid where the words sit on the left, clearing to the
+   right (on a phone, where the words fill the width, from the top down, keeping a little photo) */
+.hero-veil {
+  background: linear-gradient(90deg, #fff 0%, #fff 25%, rgb(255 255 255 / 0.92) 48%, rgb(255 255 255 / 0.35) 68%, rgb(255 255 255 / 0) 100%);
+}
+@media (max-width: 47.99rem) {
+  .hero-veil {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.96) 0%, rgb(255 255 255 / 0.88) 55%, rgb(255 255 255 / 0.45) 100%);
   }
 }
 

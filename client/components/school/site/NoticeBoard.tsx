@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { publicSchoolRoutes } from "@/lib/auth/routes";
 import { fetchPublicNotice, fetchPublicNotices, type PublicNotice, type PublicNoticeItem, type PublicNoticePage } from "@/lib/publicNotices";
 import type { NoticeCategory } from "@/lib/school/noticeKinds";
+import { SiteHeader } from "./SiteSection";
 
 type Opened = { id: string; preview?: PublicNoticeItem };
 
@@ -45,7 +46,7 @@ const CATEGORY_ICONS: Record<NoticeCategory, LucideIcon> = {
 };
 
 /*
- * The homepage's notices: a short gold line and the heading with "View all notices" across from it,
+ * The homepage's notices: a small orange label and the heading with "View all notices" across from it,
  * then the newest three as cards (the date in a box of the accent's tint, the title, the start of
  * the text, "View", and the category's icon). "View" opens the notice in full in a dialog; "View all
  * notices" lists them all in another, a page at a time ("Show more"). The open notice is in the
@@ -55,11 +56,14 @@ const CATEGORY_ICONS: Record<NoticeCategory, LucideIcon> = {
 export function NoticeBoard({
   subdomain,
   first,
+  label,
   heading,
   headingId,
 }: {
   subdomain: string;
   first: PublicNoticePage | null;
+  // the small orange label above the heading
+  label: string;
   heading: string;
   headingId: string;
 }) {
@@ -112,30 +116,33 @@ export function NoticeBoard({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-        <h2 id={headingId} className="flex items-center gap-3 text-[1.5rem] leading-tight font-bold tracking-[-0.015em] text-navy sm:text-[1.75rem]">
-          <span aria-hidden className="h-1 w-10 shrink-0 rounded-full bg-sidebar-primary" />
-          {heading}
-        </h2>
-        {total > CARDS && (
-          <button
-            type="button"
-            onClick={() => setListOpen(true)}
-            className="-my-2 inline-flex items-center gap-1.5 rounded-sm py-2 text-sm font-semibold text-navy underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            {t("viewAll")}
-            <ArrowRight className="size-4" />
-          </button>
-        )}
-      </div>
+      <SiteHeader
+        label={label}
+        title={heading}
+        headingId={headingId}
+        action={
+          total > 0 && (
+            <button
+              type="button"
+              onClick={() => setListOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-sm text-xs font-bold text-brand-ink transition hover:text-site-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink"
+            >
+              {t("viewAll")}
+              <ArrowRight className="size-3.5" />
+            </button>
+          )
+        }
+      />
 
       {items.length === 0 ? (
-        <p className="mt-6 flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-5 py-6 text-muted-foreground">
-          <Megaphone className="size-5 shrink-0 text-muted-foreground/60" />
+        <p className="flex items-center gap-3 rounded-[12px] border border-slate-200/80 bg-white p-5 text-sm text-slate-600 shadow-sm">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-site-ice text-brand-ink">
+            <Megaphone className="size-4" />
+          </span>
           {t("empty")}
         </p>
       ) : (
-        <ul className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {items.slice(0, CARDS).map((n) => (
             <li key={n.id} className="min-w-0">
               <NoticeCard notice={n} onOpen={() => open(n)} />
@@ -179,7 +186,12 @@ const useDay = (iso: string) => {
   return (opts: { day?: "numeric"; month?: "short"; year?: "numeric" }) => format.dateTime(new Date(iso), { ...opts, timeZone: "Asia/Dhaka" });
 };
 
-/* One notice on the page: its date in a box, the title, the start of the text and "View". */
+/*
+ * One notice on the page, as the mockup's card: white, 12px corners, a light edge and a soft shadow;
+ * its date as a ruled block (the day extra bold in the deep accent, the month, the year), the title,
+ * the start of the text and "View", and the category's icon in a round pale tint at the right.
+ * The whole card opens the notice.
+ */
 function NoticeCard({ notice: n, onOpen }: { notice: PublicNoticeItem; onOpen: () => void }) {
   const t = useTranslations("schoolHome.notices");
   const tCategory = useTranslations("school.notices.categories");
@@ -187,47 +199,43 @@ function NoticeCard({ notice: n, onOpen }: { notice: PublicNoticeItem; onOpen: (
   const Icon = CATEGORY_ICONS[n.category];
 
   return (
-    <article className="group relative flex h-full gap-4 rounded-2xl border border-border/70 bg-card p-4 shadow-[0_1px_2px_rgb(15_23_42/0.04)] transition-shadow focus-within:shadow-[0_10px_28px_-14px_rgb(15_23_42/0.3)] hover:shadow-[0_10px_28px_-14px_rgb(15_23_42/0.3)] sm:p-5">
-      <time
-        dateTime={n.publishAt}
-        className="flex w-16 shrink-0 flex-col items-center self-start rounded-xl bg-brand-soft px-1 py-2.5 text-center text-navy tabular-nums"
-      >
-        <span className="text-[1.75rem] leading-none font-bold">{day({ day: "numeric" })}</span>
-        <span className="mt-1.5 text-xs font-semibold">{day({ month: "short" })}</span>
-        <span className="text-xs opacity-75">{day({ year: "numeric" })}</span>
-      </time>
-      {/* a short, light rule between the date and the words, centred on the date */}
-      <span aria-hidden className="mt-4.5 h-14 w-px shrink-0 self-start bg-border" />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <h3 className="line-clamp-2 pr-9 text-base leading-snug font-bold text-navy text-pretty">{n.title}</h3>
-        {n.excerpt && <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">{n.excerpt}</p>}
-        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-3 text-xs text-muted-foreground">
-          {/* the whole card opens the notice, through this button */}
-          <button
-            type="button"
-            onClick={onOpen}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-navy underline-offset-4 group-hover:underline after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-primary"
-          >
-            <Eye className="size-4" />
-            {t("view")}
-          </button>
-          {n.pinned && (
-            <span className="inline-flex items-center gap-1">
-              <Pin className="size-3.5" /> {t("pinned")}
-            </span>
-          )}
-          {n.attachmentCount > 0 && (
-            <span className="inline-flex items-center gap-1">
-              <Paperclip className="size-3.5" /> {t("files", { count: n.attachmentCount })}
-            </span>
-          )}
+    <article className="group relative flex h-full items-start justify-between gap-4 rounded-[12px] border border-slate-200/80 bg-white p-5 shadow-sm transition hover:shadow-md">
+      <div className="flex min-w-0 items-start gap-4">
+        <time dateTime={n.publishAt} className="shrink-0 border-r border-slate-200 pr-4 text-center tabular-nums">
+          <span className="block text-2xl leading-none font-extrabold text-brand-ink">{day({ day: "numeric" })}</span>
+          <span className="mt-1 block text-xs font-semibold text-slate-600">{day({ month: "short" })}</span>
+          <span className="block text-[11px] text-slate-500">{day({ year: "numeric" })}</span>
+        </time>
+        <div className="min-w-0">
+          <h3 className="mb-1.5 line-clamp-2 text-sm font-bold text-brand-ink sm:text-[15px]">{n.title}</h3>
+          {n.excerpt && <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-600">{n.excerpt}</p>}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+            {/* the whole card opens the notice, through this button */}
+            <button
+              type="button"
+              onClick={onOpen}
+              className="inline-flex items-center gap-1.5 font-bold text-brand-ink transition group-hover:text-site-gold after:absolute after:inset-0 after:rounded-[12px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-brand-ink"
+            >
+              <Eye className="size-3.5" />
+              {t("view")}
+            </button>
+            {n.pinned && (
+              <span className="inline-flex items-center gap-1">
+                <Pin className="size-3" /> {t("pinned")}
+              </span>
+            )}
+            {n.attachmentCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Paperclip className="size-3" /> {t("files", { count: n.attachmentCount })}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* what kind of notice it is */}
-      <span className="pointer-events-none absolute top-4 right-4 flex size-8 items-center justify-center rounded-lg text-navy/80 sm:top-5 sm:right-5">
-        <Icon aria-hidden className="size-5" />
+      <span className="pointer-events-none flex size-10 shrink-0 items-center justify-center rounded-full bg-site-ice text-brand-ink">
+        <Icon aria-hidden className="size-4" />
         <span className="sr-only">{tCategory(n.category)}</span>
       </span>
     </article>
@@ -244,7 +252,7 @@ function NoticeRow({ notice: n, onOpen }: { notice: PublicNoticeItem; onOpen: ()
     <button
       type="button"
       onClick={onOpen}
-      className="group grid w-full grid-cols-[3.5rem_minmax(0,1fr)_auto] items-center gap-4 rounded-md px-1 py-3.5 text-left transition-colors hover:bg-brand-soft/60 focus-visible:bg-brand-soft focus-visible:outline-none sm:px-2"
+      className="group grid w-full grid-cols-[3.5rem_minmax(0,1fr)_auto] items-center gap-4 rounded-[6px] px-1 py-3.5 text-left transition-colors hover:bg-brand-soft/60 focus-visible:bg-brand-soft focus-visible:outline-none sm:px-2"
     >
       <time dateTime={n.publishAt} className="flex flex-col border-r border-border/70 pr-3 sm:pr-5">
         <span className="text-[1.75rem] leading-none font-normal text-navy tabular-nums">{day({ day: "numeric" })}</span>
@@ -314,7 +322,7 @@ function NoticeDialog({ subdomain, opened, onClose }: { subdomain: string; opene
           )}
           <DialogTitle className="text-xl leading-snug text-navy">
             {/* a span, not Skeleton's div: the title is a heading */}
-            {head ? head.title : failed ? t("notFound") : <span className="block h-6 w-2/3 animate-pulse rounded-md bg-muted" />}
+            {head ? head.title : failed ? t("notFound") : <span className="block h-6 w-2/3 animate-pulse rounded-[6px] bg-muted" />}
           </DialogTitle>
           {head ? (
             <DialogDescription>

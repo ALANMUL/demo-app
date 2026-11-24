@@ -257,7 +257,8 @@ const getAllSchools = async (query: GetAllSchoolsQuery) => {
 
 /*
  * What a school's own site may show before anyone logs in: name, logo, language, colours,
- * contacts and the homepage's slider and admission section. Only active schools; anything else
+ * contacts, the homepage's slider and admission section, and its counts of active students and
+ * working teachers. Only active schools; anything else
  * is "not found".
  */
 const getPublicSite = async (subdomain: string) => {
@@ -281,12 +282,13 @@ const getPublicSite = async (subdomain: string) => {
       website: true,
       status: true,
       slides: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
-      admissionInfo: { select: { requirements: true, dates: true, fees: true } },
+      admissionInfo: { select: { requirements: true, dates: true, fees: true, openYear: true } },
       about: {
         select: {
           body: true,
           image: true,
           facts: true,
+          heroLine: true,
           tagline: true,
           footerNote: true,
           principalMessage: true,
@@ -296,6 +298,7 @@ const getPublicSite = async (subdomain: string) => {
           facebookUrl: true,
           youtubeUrl: true,
           instagramUrl: true,
+          facilities: true,
         },
       },
       galleryPhotos: { select: { id: true, image: true, caption: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
@@ -305,13 +308,20 @@ const getPublicSite = async (subdomain: string) => {
         orderBy: { siteOrder: "asc" },
         select: { id: true, nameEn: true, nameBn: true, designation: true, photo: true },
       },
+      // the homepage's figures: its active students and its working teachers
+      _count: {
+        select: {
+          students: { where: { status: "ACTIVE" } },
+          teacherProfiles: { where: { status: { in: ["ACTIVE", "ON_LEAVE"] } } },
+        },
+      },
     },
   });
   if (!school || school.status !== "ACTIVE") {
     throw new AppError("School not found!", httpStatus.NOT_FOUND);
   }
 
-  const { status: _status, email, slides, admissionInfo, about, galleryPhotos, teacherProfiles, ...site } = school;
+  const { status: _status, email, slides, admissionInfo, about, galleryPhotos, teacherProfiles, _count, ...site } = school;
   const [withUrls, signedSlides, signedAbout, signedGallery, signedTeachers] = await Promise.all([
     withFileUrls({ ...site, publicEmail: site.publicEmail ?? email }, ["logo", "favicon"]),
     Promise.all(slides.map((slide) => withFileUrls(slide, ["image"]))),
@@ -324,12 +334,13 @@ const getPublicSite = async (subdomain: string) => {
     ...withUrls,
     slides: signedSlides.filter((slide) => slide.image),
     // never saved = nothing to show
-    admission: admissionInfo ?? { requirements: [], dates: [], fees: [] },
+    admission: admissionInfo ?? { requirements: [], dates: [], fees: [], openYear: "" },
     // tagline / footerNote "" = the site shows its default lines
     about: signedAbout ?? {
       body: "",
       image: null,
       facts: [],
+      heroLine: "",
       tagline: "",
       footerNote: "",
       principalMessage: "",
@@ -339,10 +350,12 @@ const getPublicSite = async (subdomain: string) => {
       facebookUrl: "",
       youtubeUrl: "",
       instagramUrl: "",
+      facilities: [],
     },
     gallery: signedGallery.filter((photo) => photo.image),
     // a teacher without a photo still shows (with a drawn silhouette)
     teachers: signedTeachers,
+    stats: { students: _count.students, teachers: _count.teacherProfiles },
   };
 };
 

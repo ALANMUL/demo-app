@@ -11,7 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useErrorMessage } from "@/lib/i18n/useErrorMessage";
 import {
-  MAX_ABOUT_FACTS,
   useAbout,
   useRemoveAboutImage,
   useRemovePrincipalPhoto,
@@ -20,10 +19,10 @@ import {
   useUploadPrincipalPhoto,
 } from "@/lib/school/settings";
 import { SOCIAL_KEYS, type About, type SocialKey } from "@/lib/site";
-import { ListEditor } from "./AdmissionCard";
 
 const MAX_BODY = 3000;
 // the same limits as the server
+const MAX_HERO_LINE = 80;
 const MAX_TAGLINE = 160;
 const MAX_FOOTER_NOTE = 300;
 const MAX_MESSAGE = 1200;
@@ -31,7 +30,7 @@ const MAX_PRINCIPAL_NAME = 80;
 const MAX_PRINCIPAL_TITLE = 60;
 const MAX_SOCIAL_URL = 300;
 
-/** The public homepage's about section: the school's own words, a picture, up to four facts and its principal's message. */
+/** The public homepage's about section: the school's own words, a picture and its principal's message (the figures under it are counted by the app). */
 export function AboutCard() {
   const t = useTranslations("school.settings.about");
   const describeError = useErrorMessage();
@@ -60,7 +59,7 @@ export function AboutCard() {
             <AboutForm
               key={JSON.stringify([
                 about.data.body,
-                about.data.facts,
+                about.data.heroLine,
                 about.data.tagline,
                 about.data.footerNote,
                 about.data.principalMessage,
@@ -137,7 +136,7 @@ function AboutForm({ saved }: { saved: About }) {
   const describeError = useErrorMessage();
   const save = useSaveAbout();
   const [body, setBody] = useState(saved.body);
-  const [facts, setFacts] = useState(saved.facts);
+  const [heroLine, setHeroLine] = useState(saved.heroLine);
   const [tagline, setTagline] = useState(saved.tagline);
   const [footerNote, setFooterNote] = useState(saved.footerNote);
   const [principalMessage, setPrincipalMessage] = useState(saved.principalMessage);
@@ -147,7 +146,7 @@ function AboutForm({ saved }: { saved: About }) {
   const [social, setSocial] = useState(savedSocial);
   const changed =
     body !== saved.body ||
-    JSON.stringify(facts) !== JSON.stringify(saved.facts) ||
+    heroLine !== saved.heroLine ||
     tagline !== saved.tagline ||
     footerNote !== saved.footerNote ||
     principalMessage !== saved.principalMessage ||
@@ -158,12 +157,28 @@ function AboutForm({ saved }: { saved: About }) {
   const submit = () =>
     save.mutate(
       // rows left wholly blank are dropped; half-filled ones go to the server, which names the problem
-      { body, facts: facts.filter((f) => f.label.trim() || f.value.trim()), tagline, footerNote, principalMessage, principalName, principalTitle, ...social },
+      { body, facts: [], heroLine, tagline, footerNote, principalMessage, principalName, principalTitle, ...social },
       { onSuccess: () => toast.success(t("saved")), onError: (e) => toast.error(describeError(e)) },
     );
 
   return (
     <div className="space-y-7">
+      {/* the short line above the school's name at the top of the homepage; blank = none */}
+      <div className="space-y-2">
+        <Label htmlFor="about-hero-line">{t("heroLine")}</Label>
+        <Input
+          id="about-hero-line"
+          value={heroLine}
+          onChange={(e) => setHeroLine(e.target.value)}
+          maxLength={MAX_HERO_LINE}
+          placeholder={t("heroLinePlaceholder")}
+          aria-describedby="about-hero-line-hint"
+        />
+        <p id="about-hero-line-hint" className="text-xs text-muted-foreground">
+          {t("heroLineHint")}
+        </p>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="about-tagline">{t("tagline")}</Label>
         <Input
@@ -186,21 +201,6 @@ function AboutForm({ saved }: { saved: About }) {
           {body.length} / {MAX_BODY}
         </p>
       </div>
-
-      <ListEditor
-        title={t("facts")}
-        addLabel={t("addFact")}
-        rows={facts}
-        onChange={setFacts}
-        blank={{ label: "", value: "" }}
-        max={MAX_ABOUT_FACTS}
-        render={(row, update) => (
-          <div className="grid flex-1 gap-2 sm:grid-cols-2">
-            <Input value={row.label} onChange={(e) => update({ ...row, label: e.target.value })} placeholder={t("factLabelPlaceholder")} maxLength={40} />
-            <Input value={row.value} onChange={(e) => update({ ...row, value: e.target.value })} placeholder={t("factValuePlaceholder")} maxLength={40} />
-          </div>
-        )}
-      />
 
       {/* the principal's message: shown beside the about text, hidden while the message is empty */}
       <fieldset className="space-y-5 rounded-xl border border-border/70 p-4 sm:p-5">
@@ -297,7 +297,7 @@ function AboutForm({ saved }: { saved: About }) {
             variant="ghost"
             onClick={() => {
               setBody(saved.body);
-              setFacts(saved.facts);
+              setHeroLine(saved.heroLine);
               setTagline(saved.tagline);
               setFooterNote(saved.footerNote);
               setPrincipalMessage(saved.principalMessage);

@@ -43,21 +43,21 @@ export function GalleryGrid({ photos }: { photos: SchoolSite["gallery"] }) {
 
   return (
     <>
-      <ul className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 sm:gap-x-5 sm:gap-y-7">
+      <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
         {shown.map((photo, i) => (
           <li key={photo.id}>
             <button
               type="button"
               onClick={() => setOpen(i)}
               aria-label={photo.caption ? t("openNamed", { caption: photo.caption }) : t("open", { number: i + 1 })}
-              className="group block w-full rounded-2xl text-left focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+              className="group block w-full rounded-[12px] text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink"
             >
-              <span className="block rounded-2xl border border-border/70 bg-card p-1 transition-colors group-hover:border-foreground/25">
+              <span className="block overflow-hidden rounded-[12px] border border-slate-200/80 bg-white shadow-sm transition group-hover:shadow-md">
                 {/* eslint-disable-next-line @next/next/no-img-element -- signed links to private storage */}
-                <img src={photo.image} alt={photo.caption ?? ""} loading="lazy" decoding="async" className="aspect-4/3 w-full rounded-xl bg-muted object-cover" />
+                <img src={photo.image} alt={photo.caption ?? ""} loading="lazy" decoding="async" className="aspect-4/3 w-full bg-slate-100 object-cover" />
               </span>
               {photo.caption && (
-                <span className="mt-2 line-clamp-2 block px-1 text-sm leading-snug text-foreground/75 group-hover:text-foreground">{photo.caption}</span>
+                <span className="mt-2 line-clamp-2 block px-1 text-xs leading-relaxed text-slate-600 group-hover:text-brand-ink">{photo.caption}</span>
               )}
             </button>
           </li>
@@ -69,9 +69,9 @@ export function GalleryGrid({ photos }: { photos: SchoolSite["gallery"] }) {
           <button
             type="button"
             onClick={() => setAll(true)}
-            className="inline-flex h-10 items-center gap-2 rounded-md border border-border bg-card px-5 text-sm font-semibold transition-colors hover:bg-muted focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="inline-flex items-center gap-2 rounded-full border border-brand-ink/30 bg-white px-5 py-2.5 text-xs font-semibold text-brand-ink transition hover:border-brand-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink"
           >
-            <Images className="size-4 text-navy" />
+            <Images className="size-3.5" />
             {t("showAll", { count })}
           </button>
         </div>
@@ -98,7 +98,7 @@ export function GalleryGrid({ photos }: { photos: SchoolSite["gallery"] }) {
                 key={current.id}
                 src={current.image}
                 alt={current.caption ?? ""}
-                className="animate-in fade-in max-h-[80dvh] w-auto max-w-full rounded-lg object-contain shadow-2xl duration-300"
+                className="animate-in fade-in max-h-[80dvh] w-auto max-w-full rounded-[8px] object-contain shadow-2xl duration-300"
               />
               <figcaption className="mt-4 flex w-full items-center justify-between gap-4 px-2 text-sm text-white">
                 <span className="min-w-0 truncate">{current.caption}</span>

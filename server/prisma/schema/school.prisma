@@ -372,6 +372,8 @@ model AdmissionInfo {
   dates        Json     @default("[]")
   // [{ label, amount }]: "Admission fee" / 2000 (whole taka)
   fees         Json     @default("[]")
+  // the year admission is open for ("2027", "2027-28"); "" = no "Admission open" button on the homepage
+  openYear     String   @default("")
 
   updatedAt DateTime @updatedAt
 }
@@ -391,6 +393,8 @@ model SchoolAbout {
   // [{ label, value }]: "Established" / "1998", "Students" / "1,200"; up to four
   facts Json    @default("[]")
 
+  // the short line above the school's name at the top of the homepage ("Learning • Discipline • Success"); "" = none
+  heroLine   String @default("")
   // the line under the school's name at the top of the homepage; "" = the app's default line
   tagline    String @default("")
   // the line in the homepage's footer; "" = the app's default line
@@ -408,6 +412,9 @@ model SchoolAbout {
   facebookUrl  String @default("")
   youtubeUrl   String @default("")
   instagramUrl String @default("")
+
+  // the homepage's "Our facilities": keys from a fixed list (library, scienceLab…), in the school's order; empty = no section
+  facilities String[] @default([])
 
   updatedAt DateTime @updatedAt
 }

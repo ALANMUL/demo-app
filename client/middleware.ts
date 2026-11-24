@@ -48,8 +48,8 @@ const appSite = (req: NextRequest, type: SessionType) => {
     return redirect(req, noticeId ? publicNoticeHref(decodeURIComponent(noticeId)) : publicSchoolRoutes.notices);
   }
 
-  if (type === "SCHOOL" && pathname === publicSchoolRoutes.home) {
-    // no session check: the school's public homepage (logged in or not)
+  if (type === "SCHOOL" && (pathname === publicSchoolRoutes.home || pathname === publicSchoolRoutes.apply)) {
+    // no session check: the school's public homepage and its application form (logged in or not)
   } else if (pathname === login) {
     if (hasSession) return redirect(req, home);
   } else if (!hasSession) {

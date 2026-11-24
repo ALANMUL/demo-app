@@ -9,6 +9,7 @@ import { superAdminOnly } from "../../middlewares/authorize";
 import catchAsync from "../../shared/catchAsync";
 import { imageUploadMiddleware, processImage } from "../../shared/imageUpload";
 import sendResponse from "../../shared/sendResponse";
+import { SITE_FACILITIES } from "../../shared/siteFacilities";
 import { deleteFile, fileKey, putFile, withFileUrls } from "../../shared/storage";
 
 /*
@@ -20,7 +21,7 @@ import { deleteFile, fileKey, putFile, withFileUrls } from "../../shared/storage
  * The colours themselves live in the client (lib/theme/accents.ts): keep the lists in step.
  */
 // NAVY is a school's default and is saved as null; BLUE is saved by name
-export const ACCENT_COLORS = ["NAVY", "BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
+export const ACCENT_COLORS = ["NAVY", "BLUE", "INDIGO", "VIOLET", "MAROON", "TEAL", "DEEP_TEAL", "SLATE", "GOLDEN", "CREAM"] as const;
 // LIGHT (off-white) is the default and is saved as null; NAVY is saved by name
 export const SIDEBAR_COLORS = ["LIGHT", "NAVY", "INDIGO", "TEAL", "OCEAN", "EMERALD", "PURPLE", "CHARCOAL"] as const;
 
@@ -168,10 +169,12 @@ const admissionBody = z.strictObject({
   fees: z
     .array(z.strictObject({ label: text(100), amount: z.number().int("Whole taka only").min(0).max(10_000_000) }))
     .max(MAX_ADMISSION_ROWS),
+  // the year admission is open for ("2027", "2027-28"); blank = no "Admission open" button on the homepage
+  openYear: z.string().trim().max(20, "Keep it under 20 characters").default(""),
 });
 
-const admissionSelect = { requirements: true, dates: true, fees: true } as const;
-const NO_ADMISSION = { requirements: [], dates: [], fees: [] };
+const admissionSelect = { requirements: true, dates: true, fees: true, openYear: true } as const;
+const NO_ADMISSION = { requirements: [], dates: [], fees: [], openYear: "" };
 
 router.get(
   "/admission",
@@ -213,6 +216,8 @@ const socialUrl = z
 const aboutBody = z.strictObject({
   body: z.string().trim().max(3000, "Keep it under 3000 characters"),
   facts: z.array(z.strictObject({ label: text(40), value: text(40) })).max(MAX_FACTS, `Up to ${MAX_FACTS} facts`),
+  // the short line above the school's name at the top of the homepage (blank = none)
+  heroLine: z.string().trim().max(80, "Keep it under 80 characters").default(""),
   // the homepage's line under the school's name, and its footer line; blank = the app's default line
   tagline: z.string().trim().max(160, "Keep it under 160 characters").default(""),
   footerNote: z.string().trim().max(300, "Keep it under 300 characters").default(""),
@@ -229,6 +234,7 @@ const aboutSelect = {
   body: true,
   image: true,
   facts: true,
+  heroLine: true,
   tagline: true,
   footerNote: true,
   principalMessage: true,
@@ -238,11 +244,13 @@ const aboutSelect = {
   facebookUrl: true,
   youtubeUrl: true,
   instagramUrl: true,
+  facilities: true,
 } as const;
 const NO_ABOUT = {
   body: "",
   image: null,
   facts: [],
+  heroLine: "",
   tagline: "",
   footerNote: "",
   principalMessage: "",
@@ -252,6 +260,7 @@ const NO_ABOUT = {
   facebookUrl: "",
   youtubeUrl: "",
   instagramUrl: "",
+  facilities: [] as string[],
 };
 
 const readAbout = async (schoolId: string) => {
@@ -275,6 +284,22 @@ router.put(
     const data = req.body as z.infer<typeof aboutBody>;
     await prisma.schoolAbout.upsert({ where: { schoolId }, create: { schoolId, ...data }, update: data });
     sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "About saved", data: await readAbout(schoolId) });
+  }),
+);
+
+// the homepage's "Our facilities": keys from the fixed list, in the order given (none = no section)
+const facilitiesBody = z.strictObject({
+  facilities: z.array(z.enum(SITE_FACILITIES)).max(SITE_FACILITIES.length).refine((keys) => new Set(keys).size === keys.length, "Each facility once"),
+});
+
+router.put(
+  "/facilities",
+  validateRequest({ body: facilitiesBody }),
+  catchAsync(async (req: Request, res: Response) => {
+    const schoolId = req.auth!.schoolId!;
+    const { facilities } = req.body as z.infer<typeof facilitiesBody>;
+    await prisma.schoolAbout.upsert({ where: { schoolId }, create: { schoolId, facilities }, update: { facilities } });
+    sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Facilities saved", data: await readAbout(schoolId) });
   }),
 );
 

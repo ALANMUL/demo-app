@@ -3750,6 +3750,7 @@
             "VIOLET": "Violet",
             "MAROON": "Maroon",
             "TEAL": "Teal",
+            "DEEP_TEAL": "Deep teal",
             "SLATE": "Slate",
             "GOLDEN": "Golden",
             "CREAM": "Cream"
@@ -3815,11 +3816,14 @@
         "undo": "Undo changes",
         "save": "Save",
         "saving": "Saving…",
-        "saved": "Admission section saved"
+        "saved": "Admission section saved",
+        "openYear": "Admission open for",
+        "openYearPlaceholder": "e.g. 2027",
+        "openYearHint": "Shows an \"Admission open 2027\" button at the top of the homepage, which opens the application form. Leave it empty when admission is closed."
       },
       "about": {
         "title": "About section",
-        "hint": "Tell visitors about your school on the homepage: your story, a picture and a few facts. Without words or facts the section is hidden; the picture then opens the homepage when there are no slides.",
+        "hint": "Tell visitors about your school on the homepage: your story, a picture and your principal's message. Without words the section is hidden; the picture then opens the homepage when there are no slides.",
         "picture": "Picture",
         "pictureHint": "Shown beside the words, cropped to 4 : 3 (1200 × 900). JPG, PNG or WebP, up to 5 MB.",
         "addPicture": "Add picture",
@@ -3830,11 +3834,7 @@
         "pictureRemoved": "Picture removed",
         "body": "About your school",
         "bodyPlaceholder": "When it was founded, what it stands for, what makes it special… Leave a blank line to start a new paragraph.",
-        "facts": "Facts",
-        "addFact": "Add fact",
-        "factLabelPlaceholder": "e.g. Established",
-        "factValuePlaceholder": "e.g. 1998",
-        "note": "Up to four facts, shown as tiles under the words. Changes show on the homepage straight away.",
+        "note": "The figures under this section (students, teachers) are counted by the app. Changes show on the homepage straight away.",
         "undo": "Undo changes",
         "save": "Save",
         "saving": "Saving…",
@@ -3862,7 +3862,10 @@
         "principalTitle": "Title",
         "principalTitleHint": "Leave empty to use “{fallback}”.",
         "principalMessage": "Message",
-        "principalMessagePlaceholder": "A few words to students and guardians…"
+        "principalMessagePlaceholder": "A few words to students and guardians…",
+        "heroLine": "Line above the school's name",
+        "heroLinePlaceholder": "e.g. Learning • Discipline • Success",
+        "heroLineHint": "A few words at the top of the homepage, after a gold line. Put a dot between words with spaces around it (Learning . Discipline . Success) and it shows as a large bold dot. Leave it empty to show none."
       },
       "siteTeachers": {
         "title": "Teachers on the homepage",
@@ -3900,6 +3903,14 @@
         "removeDescription": "It leaves the gallery and is deleted.",
         "note": "JPG, PNG or WebP, up to 5 MB. Changes show on the homepage straight away.",
         "full": "The gallery is full ({max} pictures). Remove one to add another."
+      },
+      "facilities": {
+        "title": "Facilities",
+        "hint": "Tick what your school has. They show as \"Our facilities\" on the homepage; with none ticked the section is hidden.",
+        "count": "{count, plural, =0 {None ticked} other {# ticked}}",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Facilities saved"
       }
     },
     "subscription": {
@@ -5183,16 +5194,7 @@
     "logIn": "Log in",
     "dashboard": "Dashboard",
     "contact": {
-      "title": "Contact us",
-      "address": "Address",
-      "phone": "Phone",
-      "email": "Email",
-      "website": "Website",
-      "none": "The school hasn't added its contact details yet.",
-      "call": "Call",
-      "write": "Send an email",
-      "map": "Open in Google Maps",
-      "visit": "Visit the website"
+      "none": "The school hasn't added its contact details yet."
     },
     "nav": {
       "home": "Home",
@@ -5204,7 +5206,8 @@
       "about": "About",
       "teachers": "Teachers",
       "gallery": "Gallery",
-      "label": "Homepage sections"
+      "label": "Homepage sections",
+      "facilities": "Facilities"
     },
     "slider": {
       "label": "Pictures of {name}",
@@ -5219,10 +5222,11 @@
       "title": "Admission",
       "requirements": "Requirements",
       "dates": "Important dates",
-      "fees": "Fees"
+      "fees": "Fees",
+      "label": "Join Us"
     },
     "notices": {
-      "title": "Latest notices",
+      "title": "Latest Notices & Announcements",
       "empty": "There are no notices right now.",
       "view": "View",
       "viewAll": "View all notices",
@@ -5235,7 +5239,8 @@
       "posted": "Posted {date}",
       "until": "until {date}",
       "notFound": "Notice not available",
-      "notFoundHint": "This notice has been removed or is no longer public."
+      "notFoundHint": "This notice has been removed or is no longer public.",
+      "label": "Notices"
     },
     "hero": {
       "tagline": "A place where curious minds grow, character is shaped, and every student is helped to shine.",
@@ -5244,39 +5249,125 @@
       "contact": "Contact us",
       "phone": "Call us",
       "address": "Find us",
-      "latestNotice": "Latest notice"
+      "latestNotice": "Latest notice",
+      "admissionOpen": "Admission open {year}",
+      "explore": "Explore our school"
     },
     "footer": {
       "about": "Learning, discipline and care, together. Visit us, call us, or follow our notices to stay up to date.",
-      "links": "Quick links",
+      "links": "Quick Links",
       "rights": "© {year} {name}. All rights reserved.",
-      "contact": "Contact us",
-      "follow": "Follow us",
+      "contact": "Contact Us",
+      "follow": "Follow Us",
       "facebookUrl": "Facebook",
       "youtubeUrl": "YouTube",
       "instagramUrl": "Instagram"
     },
     "about": {
-      "title": "About the school",
-      "principalHeading": "Message from the {title}",
+      "title": "About Our School",
+      "principalHeading": "Message from {title}",
       "principalTitle": "Principal",
-      "learnMore": "Learn more"
+      "learnMore": "Learn more",
+      "label": "Who We Are"
     },
     "teachers": {
-      "title": "Our teachers",
+      "title": "Our Teachers",
       "previous": "Previous teachers",
       "next": "More teachers",
-      "page": "Page {n}"
+      "page": "Page {n}",
+      "label": "Our Faculty"
     },
     "gallery": {
-      "title": "Life at our school",
+      "title": "Life at Our School",
       "open": "Open picture {number}",
       "openNamed": "Open picture: {caption}",
       "counter": "{current} of {total}",
       "previous": "Previous picture",
       "next": "Next picture",
       "close": "Close",
-      "showAll": "Show all {count, number} pictures"
+      "showAll": "Show all {count, number} pictures",
+      "label": "Campus Life"
+    },
+    "studentPortal": "Student portal",
+    "parentPortal": "Parent portal",
+    "facilities": {
+      "label": "Campus",
+      "title": "Our Facilities",
+      "items": {
+        "library": "Library",
+        "scienceLab": "Science Lab",
+        "computerLab": "Computer Lab",
+        "digitalClassroom": "Digital Classrooms",
+        "playground": "Playground",
+        "sports": "Sports & Games",
+        "prayerRoom": "Prayer Room",
+        "medical": "Medical Care",
+        "cctv": "CCTV Security",
+        "transport": "School Transport",
+        "canteen": "Canteen",
+        "hostel": "Hostel"
+      }
+    },
+    "apply": {
+      "title": "Application for admission",
+      "label": "Admission {year}",
+      "labelNoYear": "Admission",
+      "intro": "Fill in the student's details and how to reach the family. {school} will contact you about the next steps.",
+      "back": "Back to the homepage",
+      "previewNote": "This form is a preview: what you fill in is not sent to the school yet. To apply now, please contact the school.",
+      "student": "Student",
+      "studentHint": "As written on the birth registration certificate.",
+      "family": "Parents and guardian",
+      "familyHint": "We use the mobile number to reach you about the application.",
+      "nameEn": "Student's name (English)",
+      "nameEnPlaceholder": "e.g. Rahim Uddin",
+      "nameBn": "Student's name (Bangla)",
+      "nameBnPlaceholder": "যেমন: রহিম উদ্দিন",
+      "dateOfBirth": "Date of birth",
+      "gender": "Gender",
+      "religion": "Religion",
+      "classApplying": "Class applying for",
+      "birthRegNo": "Birth registration no.",
+      "previousSchool": "Previous school",
+      "fatherName": "Father's name",
+      "motherName": "Mother's name",
+      "guardianPhone": "Guardian's mobile",
+      "email": "Email",
+      "address": "Present address",
+      "choose": "Choose",
+      "required": "Fill this in",
+      "badPhone": "Enter an 11-digit mobile number starting with 01",
+      "badEmail": "Enter an email address like name@example.com",
+      "requiredNote": "Required",
+      "submit": "Submit application",
+      "sentTitle": "Application filled in for {name}",
+      "sentPreview": "This is a preview, so nothing has been sent to the school yet. Please contact the school to complete the admission.",
+      "another": "Fill in another",
+      "home": "Back to the homepage",
+      "classes": {
+        "play": "Play",
+        "nursery": "Nursery",
+        "kg": "KG",
+        "class1": "Class 1",
+        "class2": "Class 2",
+        "class3": "Class 3",
+        "class4": "Class 4",
+        "class5": "Class 5",
+        "class6": "Class 6",
+        "class7": "Class 7",
+        "class8": "Class 8",
+        "class9": "Class 9",
+        "class10": "Class 10",
+        "hsc1": "HSC 1st year"
+      }
+    },
+    "stats": {
+      "students": "Students",
+      "teachers": "Teachers",
+      "quality": "Quality Education",
+      "qualityValue": "A+",
+      "commitment": "Commitment",
+      "commitmentValue": "100%"
     }
   },
   "publicNotices": {

@@ -78,9 +78,6 @@ export const useRemovePhoto = (list: PhotoList) =>
 
 // ------------------------------------------------------------- about section
 
-// up to this many facts beside the words (the server's limit too)
-export const MAX_ABOUT_FACTS = 4;
-
 const aboutKey = ["school", "settings", "about"] as const;
 
 export const useAbout = () =>
@@ -94,11 +91,17 @@ const useAboutMutation = <T,>(request: (body: T) => Promise<About>) => {
   return useMutation({ mutationFn: request, onSuccess: (data) => queryClient.setQueryData(aboutKey, data) });
 };
 
-// the words and the facts
+// the words (facts are no longer typed: the homepage counts students and teachers itself)
 export const useSaveAbout = () =>
   useAboutMutation(
-    async (body: Pick<About, "body" | "facts" | "tagline" | "footerNote" | "principalMessage" | "principalName" | "principalTitle" | SocialKey>) =>
+    async (body: Pick<About, "body" | "facts" | "heroLine" | "tagline" | "footerNote" | "principalMessage" | "principalName" | "principalTitle" | SocialKey>) =>
       (await httpClient.put<ApiResponse<About>>("/school-settings/about", body)).data.data,
+  );
+
+// the homepage's "Our facilities": keys from lib/siteFacilities.ts, in the order shown
+export const useSaveFacilities = () =>
+  useAboutMutation(
+    async (facilities: string[]) => (await httpClient.put<ApiResponse<About>>("/school-settings/facilities", { facilities })).data.data,
   );
 
 export const useUploadAboutImage = () =>

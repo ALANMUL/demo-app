@@ -5250,8 +5250,8 @@
       "phone": "Call us",
       "address": "Find us",
       "latestNotice": "Latest notice",
-      "admissionOpen": "Admission open {year}",
-      "explore": "Explore our school"
+      "admissionOpen": "Admission Open {year}",
+      "explore": "Explore Our School"
     },
     "footer": {
       "about": "Learning, discipline and care, together. Visit us, call us, or follow our notices to stay up to date.",
@@ -5289,7 +5289,6 @@
       "label": "Campus Life"
     },
     "studentPortal": "Student portal",
-    "parentPortal": "Parent portal",
     "facilities": {
       "label": "Campus",
       "title": "Our Facilities",

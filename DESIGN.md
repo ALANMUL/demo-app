@@ -260,9 +260,9 @@ On phones the menu becomes a drawer opened from the top bar, a bottom bar carrie
 
 ### The public homepage
 - **Header** (two parts):
-  - a 40px white utility bar (13px slate text, icons in Accent Ink, fixed) that scrolls away with the page: phone, email and address on the left parted by light "|" bars (the email from 640px, the address from 768px, shortened to its last two parts); "Student portal | Parent portal" (both the school's login; "Dashboard" once logged in) and the language on the right.
+  - a 40px white utility bar (13px text, icons and light dividers all in Accent Ink, fixed) that scrolls away with the page: phone, email and address on the left parted by light "|" bars (the email from 640px, the address from 768px, shortened to its last two parts); "Student portal | Log in" (both the school's login, Log in after a sign-in icon; "Dashboard" with a dashboard icon once logged in) and the language on the right.
   - a sticky 80px white bar under it (95% white with a blur, a hairline and a soft shadow below): the school's 56px round logo and its name over two lines (split at the space nearest the middle when it has three words or more) in bold Accent Ink, fixed, and the menu on the right from 1024px; below 1024px a menu button opens a panel under the bar.
-- **Hero:** at least 480px tall (560px from 1024px), the school's photographs across the full width under a white veil, the words on the veil at the left; under it a soft wave with the slide dots.
+- **Hero:** on white warming to the pale teal at the right, a soft wave along the bottom; the words on the left, the school's photos as framed cards on the right (0.92 : 1 from 1024px, 80px apart), the next card peeking in past the column to the window's edge.
 - **Order:** About (48px, 64px from 1024px) with its facts as a strip under it, Teachers, Notices, Facilities, Admission and Gallery, then the footer (the menu's Contact). The application form is its own page (`/apply`) with the same header and footer.
 - **Column:** everything sits in a centred 1280px column with 16px gutters (24px from 640px, 32px from 1024px). Every band is white; the pale tint (`--color-site-ice`, 5% of Accent Ink, fixed, with its edge `--color-site-line` at 16%) appears only inside boxes. Text is slate (#475569 for body, #64748b for small print). Sections land 80px under the top when the menu jumps to them.
 - **Sections:** each opens with its Label Orange label (11px bold) and its heading (20px, 24px from 640px, bold Accent Ink, fixed) on the left, an action across from it ("View all notices", arrows), then the content 28px below. 48px of padding above and below (Facilities 40px); no hairlines between them. The footer is the Contact part.
@@ -281,7 +281,7 @@ Flat. Nothing casts a shadow at rest: cards, tables, panels and the top bar are 
 
 **The No Lift Rule.** Cards and buttons do not rise, glow or scale on hover. Hover changes a background or a border, nothing more.
 
-**The White Veil Rule.** The hero's photographs fill the full width; the words never sit on a bare photo but on a white veil that is solid where they are (the left, or the top on a phone) and clears towards the other side, so the photo still shows. No dark shade and no blur.
+**The Framed Photo Rule.** The hero's photographs sit in white-framed cards beside the words, never under them: no text on a photo, no shade, no blur.
 
 ## Shapes
 
@@ -355,20 +355,19 @@ The dashboard's header panel (it takes the Page Hero's place, so no trail shows 
 The Students register opens with a card per status: All, Active, Suspended, Inactive, Graduated. Each is paper with a hairline edge and 8px corners: a 32px icon box and the status name, the count in large tabular figures, and a 4px bar of its share of all the students with the percent. Icon and bar take the status pill's colours (emerald, red, grey, Accent Ink; All in the accent). The picked card carries a 3px Merit Gold Deep bar along its top and a darker edge; hover only darkens the edge. Five across from 1024px, a sideways-scrolling row below. Under them one card holds the toolbar on a Muted Fill band (search; Class, grouped School and College, and its Section; Year, Group, New or old, Gender, Religion; Clear filters; the order, "Sort", at the right end: the usual order, Newest, Oldest) and the table.
 
 ### Homepage Header
-- **Utility bar:** see Layout. The language button is a globe in Accent Ink, the language's name in slate and a small arrow.
+- **Utility bar:** see Layout. Every word in it is Accent Ink; links underline on hover. The language button is a globe, the language's name and a small arrow, also in Accent Ink; on phones the globe alone (with a larger tap area).
 - **Main bar:** the logo is a plain 56px circle. The name sits beside it over two lines, 16 / 14px (18 / 16px from 640px).
 - **Menu:** 14px semibold links in Accent Ink, fixed, in boxes with 6px corners (10px side padding up to 1280px, 14px from there), each followed by a small down arrow; hover turns the text Homepage Gold. The current one is filled with Accent Ink with white text and a small shadow. About opens a menu with About and Teachers (when the school shows teachers).
 - **Phone menu:** the links as rows with 6px corners, each ending in a small right arrow; the current one filled with Accent Ink, the rest tinted on hover; the way in at the end.
 
 ### Homepage Hero (signature)
-The school's photographs across the full width, one fading into the next (each shows for 6s, then a 1.2s fade with the standard ease), under a white veil: solid white over the left quarter, clearing to nothing at the right edge (from the top down on phones, keeping a little photo at the bottom). On the white, in a column at most 576px wide:
-- **The school's line** (Settings → About, "Line above the school's name"; none when empty): a 40 by 2px Homepage Gold line, then the line in bold Accent Ink, fixed, 12 to 13px, in spaced capitals.
-- **The name** as the page's heading, black weight, Accent Ink, fixed (2rem on phones up to 2.875rem; a long name a step smaller).
-- **The tagline** (Settings → About; a default line until it writes one) in medium slate grey.
-- **Buttons:** "Admission open 2027" (the year from Settings → Admission, "Admission open for"; no button when empty), a 48px pill in Accent Ink, fixed, with white text and an arrow, opening the application form; and "Explore our school", a white pill with an Accent Ink outline, going to About (or Notices).
-- **Controls**, bottom right from 640px: the caption in a small white pill, then round 40px white previous, pause and next buttons in Accent Ink that fill with it on hover. Under the stage, on a soft wave in the accent's tint, a 10px dot per photo (the current one Accent Ink, the rest grey), with pause beside them on phones.
-- **Holding and moving on:** pointing at or focusing the controls holds the photo; arrows and swipes move on. Nothing moves while the hero is scrolled out of view, or when the visitor asks for less motion. With one photo there are no controls; with none, the words on white.
-- **Without slides:** the About photo or the first gallery photos stand in.
+The school's photos as a row of framed cards on the right (each white with a 6px edge, 16px corners and a soft shadow, the photo inside at 10:7 with 12px corners), sliding one card at a time (0.6s, the standard ease; each shows for 6s). The card in view fills the right column; the next one peeks in past it, out to the window's edge, and the row runs on from the last photo to the first. Round white 44px arrows (40px on phones) with a navy chevron and a soft shadow sit centred on the card's left and right edges and fill with Accent Ink on hover. On the left, on white:
+- **The school's line** (Settings → About; none when empty): a 66 by 2px Homepage Gold line, then the line in bold Accent Ink, fixed, 12px in capitals spaced 0.2em, its parts parted by a heavy dot set as text with a plain space either side.
+- **The name** as the page's heading over two lines, bold Merriweather, Accent Ink, fixed: 53px with a 1.2 line height from 1024px (42px from 640px, 32px on phones), 12px under the school's line.
+- **The tagline** (Settings → About; a default line until it writes one), 19px medium slate (#334155), 24px under the name.
+- **Buttons**, 34px under it, 24px apart: "Admission Open 2027" (the year from Settings → Admission; no button when empty), a 48px pill (30px side padding) in Accent Ink, fixed, with white 15px semibold text, an arrow and a soft shadow, opening the application form; and "Explore Our School", a white 48px pill with a 40% Accent Ink outline (44px pills, 14px text below 1024px).
+- **Dots:** a 10px dot per photo at the foot of the left column (under the cards on phones), the current one Accent Ink, the rest light slate.
+- **Moving:** the row turns by itself, held while pointed at, focused or scrolled away; arrows, dots, the arrow keys and swipes move it. Nothing moves when the visitor asks for less motion. With one photo there are no arrows or dots; with none, the words alone. Without slides the About photo or the first gallery photos stand in.
 
 ### Homepage About (signature)
 The school's introduction and its principal's message as one compact row of up to three parts of the same height, from 1024px (two columns on tablets, stacked on phones). Every part comes from Settings → About section.
@@ -392,7 +391,7 @@ Right after About, on paper with a hairline above. The teachers the school picke
 - **Application form (`/apply`):** a preview for now: nothing is sent. The label "Admission 2027", the heading and a line on what to fill in; a note on a Homepage Gold tint saying it is a preview; then one white sheet split by hairlines into bands (Student; Parents and guardian), each band's name and hint in a 220px column from 1024px and its fields two across. Required fields carry a Danger star; problems show under their field on submit, the first one focused. Sending shows a confirmation in place of the form.
 
 ### Homepage Footer
-The menu's Contact. On white with a hairline above, 56px of padding on top, in four columns from 1024px (4 / 3 / 3 / 2 of 12; two from 640px, stacked on phones), 32px apart:
+The menu's Contact. On white with a hairline above, 56px of padding on top, in four columns from 1024px, each as wide as its content (the school at most 352px) with the space left over shared out evenly, so the white between any two columns is the same (at least 48px); two from 640px, stacked on phones. Both lists run in 20px rows 10px apart, each after a 14px icon in Accent Ink, so the quick links and the contacts line up across.
 - **School:** the 64px round logo beside the name over two lines in bold Accent Ink, then its footer line (or the default one) in italic Accent Ink at 80%.
 - **Quick links:** a 14px bold heading, then the homepage's parts and the login (or "Dashboard"), 12px medium slate, each after a small chevron in Accent Ink.
 - **Contact us:** phone, email, address (opening Google Maps) and website, 12px medium slate, each after a small icon in Accent Ink.
@@ -430,8 +429,8 @@ The platform's own marketing page shares the type and the gold but has its own l
 ### Don't:
 - **Don't** use a fixed blue, navy or gold where the school's colour belongs, and don't use the sidebar colour on the homepage.
 - **Don't** add drop shadows, hover lifts, glows or scaling to cards and buttons.
-- **Don't** use gradients, gradient text or decorative colour washes (the hero's white veil is the one gradient), and don't cut a school's photograph down to a fragment.
-- **Don't** put words straight on a hero photograph, or a dark shade or blur over it: the words sit on the white veil.
+- **Don't** use gradients, gradient text or decorative colour washes (the hero's soft white-to-teal ground is the one gradient), and don't cut a school's photograph down to a fragment.
+- **Don't** put words on a hero photograph, or a dark shade or blur over it: the photos are framed cards beside the words.
 - **Don't** decorate the homepage with glow blobs, dot patterns, tilted colour blocks or pinging badges, and don't put a small label (a kicker) above a heading.
 - **Don't** use a second accent colour or any hue that does not carry a status.
 - **Don't** show a visible scrollbar or a rail across the school menu's tab.

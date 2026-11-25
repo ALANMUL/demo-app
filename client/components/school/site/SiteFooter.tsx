@@ -12,7 +12,8 @@ import { siteContainer, siteFocus, siteScrollMargin, splitName } from "./siteSty
 
 /*
  * The homepage's footer, as in the mockup, and the place the menu's "Contact" goes to: on white,
- * a hairline above, in four columns from 1024px (two from 640px, stacked on phones):
+ * a hairline above, in four columns from 1024px (each as wide as its content, with the same space
+ * between any two; two from 640px, stacked on phones), their lists in rows of the same height:
  *   - the school: its 64px round logo, its name over two lines in the deep accent, and its line
  *     (its footer line, or the default one) in italic;
  *   - quick links: the homepage's parts, then the login (or the dashboard, once logged in);
@@ -47,9 +48,11 @@ export async function SiteFooter({ school }: { school: SchoolSite }) {
   return (
     <footer id="contact" aria-label={t("contact")} className={cn(siteScrollMargin, "relative overflow-hidden border-t border-slate-100 bg-white pt-14")}>
       <div className={cn(siteContainer, "relative z-10 pb-12")}>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-12">
+        {/* from 1024px: each column as wide as its content (the school at most 352px, its line wraps), the
+            space left over shared out evenly, so the white between any two columns is the same */}
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:flex lg:justify-between lg:gap-12">
           {/* the school */}
-          <div className="space-y-4 lg:col-span-4">
+          <div className="space-y-4 lg:max-w-88">
             <div className="flex items-center gap-3.5">
               <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white text-brand-ink">
                 {school.logo ? (
@@ -68,13 +71,14 @@ export async function SiteFooter({ school }: { school: SchoolSite }) {
           </div>
 
           {/* quick links */}
-          <nav aria-label={t("links")} className="lg:col-span-3">
+          <nav aria-label={t("links")}>
             <Heading>{t("links")}</Heading>
-            <ul className="space-y-2 text-xs font-medium text-slate-600">
+            {/* the same 20px rows, 10px apart, as the contacts beside them, so the two lists line up */}
+            <ul className="space-y-2.5 text-xs font-medium text-slate-600">
               {links.map((l) => (
-                <li key={l.href}>
-                  <a href={l.href} className={cn("flex items-center gap-1.5 rounded-sm hover:text-brand-ink", siteFocus)}>
-                    <ChevronRight className="size-3 text-brand-ink" />
+                <li key={l.href} className="flex min-h-5 items-center">
+                  <a href={l.href} className={cn("flex items-center gap-2.5 rounded-sm leading-5 hover:text-brand-ink", siteFocus)}>
+                    <ChevronRight aria-hidden className="size-3.5 shrink-0 text-brand-ink" />
                     {l.label}
                   </a>
                 </li>
@@ -83,7 +87,7 @@ export async function SiteFooter({ school }: { school: SchoolSite }) {
           </nav>
 
           {/* contact us */}
-          <div className="lg:col-span-3">
+          <div>
             <Heading>{t("contact")}</Heading>
             {school.phone || school.publicEmail || school.address || school.website ? (
               <ul className="space-y-2.5 text-xs font-medium text-slate-600">
@@ -123,7 +127,7 @@ export async function SiteFooter({ school }: { school: SchoolSite }) {
 
           {/* follow us */}
           {social.length > 0 && (
-            <div className="lg:col-span-2">
+            <div>
               <Heading>{t("follow")}</Heading>
               <ul className="flex items-center gap-2.5">
                 {social.map((key) => {
@@ -175,8 +179,8 @@ function Heading({ children }: { children: ReactNode }) {
 // one contact: a small icon in the deep accent, then the words
 function Contact({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
   return (
-    <li className="flex items-start gap-2.5">
-      <Icon className="mt-px size-3.5 shrink-0 text-brand-ink" />
+    <li className="flex min-h-5 items-start gap-2.5 leading-5">
+      <Icon aria-hidden className="mt-[3px] size-3.5 shrink-0 text-brand-ink" />
       <span className="min-w-0">{children}</span>
     </li>
   );

@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, School } from "lucide-react";
+import { LayoutDashboard, LogIn, Mail, MapPin, Phone, School } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -13,8 +13,8 @@ import { siteContainer, siteFocus, splitName } from "./siteStyles";
 
 /*
  * The header of the school's public homepage, as in the mockup, in two parts:
- * - a 40px white utility bar (13px slate text, icons in the school's deep accent): phone, email and
- *   address on the left, parted by light bars; the ways in ("Student portal | Parent portal", or
+ * - a 40px white utility bar, all in the school's deep accent (13px text, its icons, light bars): phone, email and
+ *   address on the left, parted by light bars; the ways in ("Student portal | Log in", or
  *   "Dashboard" once logged in) and the language on the right. It scrolls away with the page;
  * - the 80px white bar under it, which stays at the top (a little see-through, a hairline and a
  *   soft shadow under it): the school's 56px round logo and its name over two lines in the deep
@@ -42,7 +42,7 @@ export async function SchoolSiteHeader({ school, onHome = true }: { school: Scho
   // the utility bar's contacts, each after a light bar but the first
   const contacts = [
     school.phone && (
-      <a key="phone" href={`tel:${school.phone}`} className="flex items-center gap-1.5 tabular-nums transition hover:text-brand-ink">
+      <a key="phone" href={`tel:${school.phone}`} className="flex items-center gap-1.5 tabular-nums hover:underline">
         <Phone className="size-3 text-brand-ink" />
         <span>{localPhone(school.phone)}</span>
       </a>
@@ -61,7 +61,7 @@ export async function SchoolSiteHeader({ school, onHome = true }: { school: Scho
     ),
   ].filter(Boolean);
   const bar = (key: string, from: "sm" | "md" | "always") => (
-    <span key={key} aria-hidden className={from === "always" ? "text-slate-300" : from === "sm" ? "hidden text-slate-300 sm:inline" : "hidden text-slate-300 md:inline"}>
+    <span key={key} aria-hidden className={from === "always" ? "text-brand-ink/30" : from === "sm" ? "hidden text-brand-ink/30 sm:inline" : "hidden text-brand-ink/30 md:inline"}>
       |
     </span>
   );
@@ -69,7 +69,7 @@ export async function SchoolSiteHeader({ school, onHome = true }: { school: Scho
   return (
     <>
       {/* the utility bar: scrolls away */}
-      <div className="no-print border-b border-slate-100 bg-white text-[13px] text-slate-600">
+      <div className="no-print border-b border-slate-100 bg-white text-[13px] text-brand-ink">
         <div className={`${siteContainer} flex h-10 items-center justify-between gap-2`}>
           <div className="flex min-w-0 items-center gap-4 sm:gap-6">
             {contacts.map((c, i) => (
@@ -82,7 +82,8 @@ export async function SchoolSiteHeader({ school, onHome = true }: { school: Scho
 
           <div className="flex shrink-0 items-center gap-4 text-xs font-medium text-brand-ink">
             {loggedIn ? (
-              <Link href={authRoutes.SCHOOL.home} className={`rounded-sm hover:underline ${siteFocus}`}>
+              <Link href={authRoutes.SCHOOL.home} className={`inline-flex items-center gap-1.5 rounded-sm hover:underline ${siteFocus}`}>
+                <LayoutDashboard aria-hidden className="size-3.5" />
                 {t("dashboard")}
               </Link>
             ) : (
@@ -91,8 +92,9 @@ export async function SchoolSiteHeader({ school, onHome = true }: { school: Scho
                   {t("studentPortal")}
                 </Link>
                 {bar("portal-bar", "sm")}
-                <Link href={login} className={`rounded-sm hover:underline ${siteFocus}`}>
-                  {t("parentPortal")}
+                <Link href={login} className={`inline-flex items-center gap-1.5 rounded-sm hover:underline ${siteFocus}`}>
+                  <LogIn aria-hidden className="size-3.5" />
+                  {t("logIn")}
                 </Link>
               </>
             )}

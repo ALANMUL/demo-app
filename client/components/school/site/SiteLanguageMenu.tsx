@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { localeLabels, locales } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
-/** The homepage's utility bar's language picker: a globe in the school's deep accent, the language's name in slate and a small arrow. */
+/** The homepage's utility bar's language picker: a globe, the language's name and a small arrow (on a phone the globe alone), in the school's deep accent. */
 export function SiteLanguageMenu() {
   const t = useTranslations("common");
   const { current, choose, pending } = useLocaleChoice();
@@ -15,15 +15,20 @@ export function SiteLanguageMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-sm text-xs font-medium text-slate-700 transition-colors hover:text-brand-ink",
+          "inline-flex items-center gap-1.5 rounded-sm text-xs font-medium text-brand-ink transition-opacity hover:opacity-80",
+          // on a phone only the globe shows: a larger target around it
+          "-m-2 p-2 sm:m-0 sm:p-0",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-ink",
           pending && "opacity-60",
         )}
         aria-label={t("language")}
       >
-        <Globe className="size-3.5 text-brand-ink" />
-        <span lang={current}>{localeLabels[current]}</span>
-        <ChevronDown className="size-2.5" />
+        <Globe aria-hidden className="size-3.5 text-brand-ink" />
+        {/* the language's name and the arrow from 640px; on a phone only the globe */}
+        <span lang={current} className="hidden sm:inline">
+          {localeLabels[current]}
+        </span>
+        <ChevronDown aria-hidden className="hidden size-2.5 sm:block" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
         {locales.map((locale) => (
